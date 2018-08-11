@@ -1,0 +1,174 @@
+/* This css controls the background gradient */
+#gradient {
+  height: 100%;
+  width: 100vw;
+  /* margin: auto; */
+  /* position: absolute; */
+
+  /* background: linear-gradient(to bottom, rgba(0,0,0,.75), rgba(22,22,22,1)); */
+  background:#303030;
+  /* background-color: rgb(28, 66, 110); */
+
+}
+
+.fullScreen {
+  height: 100vh;
+}
+
+.gridNarrow {
+  width: 70vw;
+}
+
+.altBkg {
+  background: whitesmoke;
+}
+.no-margin {
+  margin: 0px
+}
+h1,h2,h3,h4,h5,h6,p {
+  font-family: 'Montserrat', sans-serif;
+  /* text-shadow: 3px 3px 5px #aaa; */
+}
+.blackBkg {
+  background-color: #303030;
+}
+
+.black {
+  color: #303030;
+}
+
+/* Changes the default text color */
+.white {
+  color: white;
+}
+
+/* css classes to stripe my tables. */
+.dark-striped {
+  background-color: #303030;
+  color: beige;
+    /* background-color: rgb(36, 116, 173); */
+      /* background-color: rgb(0, 60, 129); */
+
+
+}
+.darker-striped {
+  background-color: #202020;
+  color: beige;
+    /* background-color: rgb(36, 75, 131); */
+
+}
+
+.green {
+  color: #69cd3c;
+}
+
+.blue {
+  color: #2c689d;
+  -webkit-text-stroke: 1px lightgray;
+  font-style: italic;
+  font-stretch: expanded;
+}
+
+/* Address card formatter */
+.card {
+  background-color: #EEEEEE;
+  width: 300px;
+  border: 5px solid #CCCCCC;
+  box-shadow: 8px 8px 2px 1px rgba(0, 0, 0, 1);
+}
+
+.big-card {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #BBBBBB;
+  width: 700px;
+  border: 10px solid #999999;
+  box-shadow: 10px 10px 3px 3px rgba(0, 0, 0, 1);
+  font-size: 20pt;
+}
+
+.button-section {
+  margin: 5px 5px 5px 15px;  /* use this if Edit button is present */
+  margin: 5px 5px 5px 0px;
+
+}
+
+.details {
+  /* padding-left: 10px; */
+  text-align: right;
+}
+
+.card-title {
+  font-weight: bold;
+}
+
+.links {
+  font-size: 14pt;
+  font-weight: bold;
+  font-style: italic;
+  border: 2px solid white;
+  border-radius: 5px;
+  padding: 5px;
+  margin-top: 10px;
+  width: 200px
+
+}
+
+.table {
+  /* width: 80%; */
+  margin: auto;
+}
+
+/* Custom margins to use with react-bootstrap components */
+.ce-top-margin-5 {
+  margin: 5px 0px 0px 0px;
+}
+.ce-top-margin-10 {
+  margin: 10px 0px 0px 0px;
+}
+.ce-top-margin-20 {
+  margin: 20px 0px 0px 0px;
+}
+.ce-top-margin-30 {
+  margin: 30px 0px 0px 0px;
+}
+.ce-top-margin-40 {
+  margin: 40px 0px 0px 0px;
+}
+
+.ce-btm-margin-5 {
+  margin: 0px 0px 5px 0px;
+}
+.ce-btm-margin-10 {
+  margin: 0px 0px 10px 0px;
+}
+.ce-btm-margin-20 {
+  margin: 0px 0px 20px 0px;
+}
+.ce-btm-margin-30 {
+  margin: 0px 0px 30px 0px;
+}
+.ce-btm-margin-40 {
+  margin: 0px 0px 40px 0px;
+}
+
+
+.required {
+  background-color: lightgoldenrodyellow;
+}
+
+.rbt-input {
+  background-color: lightgoldenrodyellow;
+}
+
+.padding-0 {
+  padding-right:0;
+  padding-left:0;
+}
+
+.ce-found-format {
+  color: whitesmoke;
+  background-color:#69cd3c;
+  text-align: center;
+
+}
