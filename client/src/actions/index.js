@@ -327,6 +327,32 @@ function lookupLoaded(lookupList, type) {
   }
 }
 
+// Action to create the Account
+export function signUp(user) {
+  return function (dispatch) {
+    fetch("/signUp", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(signUp)
+    }).then(() => dispatch(loadSession(user.email)));
+  };
+}
+
+// Action to select the Account
+// export function signIn(user) {
+//   return function (dispatch) {
+//     fetch("/signIn", {
+//       method: "GET",
+//       headers: {"Content-Type": "application/json"},
+//       body: JSON.stringify(user)
+//     })
+//     .then( (response) => {
+//       return response.json();
+//     }).then((address) => {
+//       dispatch(getAddressDone(address));
+//     });
+//   };
+// }
 // Retrieving the country LOV
 // export function getCountryLookup(type) {
 //   return function (dispatch) {
