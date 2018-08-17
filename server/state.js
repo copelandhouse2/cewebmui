@@ -4,7 +4,6 @@ export default {
   cities: [],
   subdivisions: [],
   contacts: [],
-  session: {},
   jobnumberseqs: [],
   lookupList: [],
   session: {

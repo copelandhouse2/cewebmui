@@ -22,6 +22,17 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import AppBar from '@material-ui/core/AppBar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import Typography from '@material-ui/core/Typography';
+
+const styles = theme => ({
+  root: {
+    flexGrow: 1,
+    backgroundColor: theme.palette.background.paper,
+  },
+});
 
 class SignUpSignIn extends Component {
   constructor() {
@@ -29,7 +40,12 @@ class SignUpSignIn extends Component {
     this.state = {
       email: "",
       password: "",
-      showPassword: false
+      password_confirm: "",
+      showPassword: false,
+      role: "",
+      client: "",
+      access_approved: false,
+      tab: 0
     };
 
     this._initState = {...this.state};
@@ -40,7 +56,11 @@ class SignUpSignIn extends Component {
 
   }
 
-
+  handleSubmit = event => {
+    // event.preventDefault();
+    // this.props.onSignup(this.state);
+    console.log("In the handleSubmit")
+  }
 
   handleChange = name => event => {
     this.setState({
@@ -56,19 +76,72 @@ class SignUpSignIn extends Component {
     this.setState(state => ({ showPassword: !state.showPassword }));
   };
 
-  render() {
+  handleTab = (event, value) => {
+    console.log("In handleTab");
+    this.setState({ tab: value });
+  };
 
-    console.log("email", this.state.email);
-    console.log("password", this.state.password);
-
+  signUpForm = () => {
     return (
-      <Dialog 
-        open 
-        onRequestClose={this.props.toggleLogin}
-        fullScreen={this.props.fullScreen} >
-        <DialogTitle>Copeland Engineering Web Tools Login</DialogTitle>
+      <div>
         <DialogContent>
+          <TextField
+            id="email"
+            label="Email Address"
+            type="email"
+            margin="normal"
+            value={this.state.email}
+            onChange={this.handleChange("email")}
+            fullWidth
+            autoFocus
+          />
 
+         <FormControl>
+            <InputLabel htmlFor="adornment-password">Password</InputLabel>
+            <Input
+              id="adornment-password"
+              type={this.state.showPassword ? "text" : "password"}
+              value={this.state.password}
+              onChange={this.handleChange("password")}
+              endAdornment={
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="Toggle password visibility"
+                    onMouseDown={this.handleClickShowPassword}
+                    onMouseUp={this.handleClickShowPassword}
+                  >
+                    {this.state.showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              }
+            />
+          </FormControl>
+          <br />
+          <FormControl>
+            <InputLabel htmlFor="adornment-password">Confirm Password</InputLabel>
+            <Input
+              id="adornment-password-confirm"
+              type={this.state.showPassword ? "text" : "password"}
+              value={this.state.password_confirm}
+              onChange={this.handleChange("password_confirm")}
+            />
+          </FormControl>
+
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={this.handleSubmit} variant="contained" color="secondary">
+            Login
+          </Button>
+        </DialogActions>
+      </div>
+    )
+  }
+
+  signInForm = () => {
+    return (
+      <div>
+        <DialogContent>
           <TextField
             id="email"
             label="Email Address"
@@ -103,12 +176,39 @@ class SignUpSignIn extends Component {
           </FormControl>
 
         </DialogContent>
+
         <DialogActions>
-          <Button onClick={this.props.toggleLogin} variant="contained" color="secondary">
+          <Button onClick={this.handleSubmit} variant="contained" color="secondary">
             Login
           </Button>
         </DialogActions>
-      </Dialog>
+      </div>
+    )
+  }
+  render() {
+
+    console.log("email", this.state.email);
+    console.log("password", this.state.password);
+    const { classes } = this.props;
+
+    return (
+      <Dialog 
+      open 
+      onRequestClose={this.props.toggleLogin}
+      fullScreen={this.props.fullScreen} >
+      <DialogTitle>Copeland Engineering Web Tools</DialogTitle>
+
+      <div className={classes.root}>
+      <AppBar position="static">
+        <Tabs value={this.state.tab} onChange={this.handleTab} fullWidth>
+          <Tab label="Sign In" />
+          <Tab label="Sign Up" href="#basic-tabs" />
+        </Tabs>
+      </AppBar>
+      {this.state.tab === 0 && this.signInForm()}
+      {this.state.tab === 1 && this.signUpForm()}
+    </div>
+    </Dialog>
     );
   }
 
@@ -147,7 +247,7 @@ class SignUpSignIn extends Component {
           //   />
           // </FormControl>
           
-  //         <Button variant="contained" color="secondary">
+  //         <Button onClick={this.props.toggleLogin} variant="contained" color="secondary">
   //           Login
   //         </Button>
   //       </CardContent>
@@ -157,4 +257,4 @@ class SignUpSignIn extends Component {
   // }
 
 }
-export default (SignUpSignIn);
+export default withStyles(styles)(SignUpSignIn);
