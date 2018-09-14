@@ -9,6 +9,7 @@ import CityRoutes from "./routes/CityRoutes";
 import SubdivisionRoutes from "./routes/SubdivisionRoutes";
 import JobNumberSeqRoutes from "./routes/JobNumberSeqRoutes";
 import LookupRoutes from "./routes/LookupRoutes";
+import UserRoutes from "./routes/UserRoutes";
 import bodyParser from "body-parser";
 import path from "path";
 
@@ -47,6 +48,7 @@ app.use(CityRoutes);
 app.use(SubdivisionRoutes);
 app.use(JobNumberSeqRoutes);
 app.use(LookupRoutes);
+app.use(UserRoutes);
 
 const port = process.env.PORT || 3001;
 app.listen(port, () => {

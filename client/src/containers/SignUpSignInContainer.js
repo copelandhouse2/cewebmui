@@ -10,6 +10,12 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
+    signUp: (user)=> {
+      dispatch(signUp(user));
+    },
+    signIn: (user)=> {
+      dispatch(signIn(user));
+    },
     loadSession: function (username) {
       dispatch(loadSession(username));
     }

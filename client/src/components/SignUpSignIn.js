@@ -58,7 +58,7 @@ class SignUpSignIn extends Component {
 
   handleSubmit = event => {
     // event.preventDefault();
-    // this.props.onSignup(this.state);
+    this.props.Signup(this.state);
     console.log("In the handleSubmit")
   }
 

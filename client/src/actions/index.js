@@ -333,11 +333,21 @@ export function signUp(user) {
     fetch("/signUp", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(signUp)
+      body: JSON.stringify(user)
     }).then(() => dispatch(loadSession(user.email)));
   };
 }
 
+// Action to Login
+export function signIn(user) {
+  return function (dispatch) {
+    fetch("/signIn", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(user)
+    }).then(() => dispatch(loadSession(user.email)));
+  };
+}
 // Action to select the Account
 // export function signIn(user) {
 //   return function (dispatch) {
