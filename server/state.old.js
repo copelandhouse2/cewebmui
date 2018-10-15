@@ -5,26 +5,16 @@ export default {
   subdivisions: [],
   contacts: [],
   jobnumberseqs: [],
-  stateLookup: [],
-  countryLookup: [],
-  roleLookup: [],
+  lookupList: [],
   session: {
     user_id: null,
     username: "",
     auth_key: "",
     authenticated: false,
-    token: "",
     contact_id: null,
     full_name: "",
     role: "",
     client_id: null,
     client_name: ""
-  },
-  message: {
-    ok: true,
-    type: "",
-    status: null,
-    title: "",
-    content: ""
   }
 };

@@ -4,7 +4,7 @@ import "./App.css";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 // import StartsContainer from "./containers/StartsContainer";
 // import Navbar from "./components/Navbar";
-// import CreateStartContainer from "./containers/CreateStartContainer";
+import CreateStartContainer from "./containers/CreateStartContainer";
 // import ClientContainer from "./containers/ClientContainer";
 // import CitySubContainer from "./containers/CitySubContainer";
 // import JobNumberSeqContainer from "./containers/JobNumberSeqContainer";
@@ -37,6 +37,7 @@ class App extends Component {
       <BrowserRouter>
         <div>
           <Switch>
+            <Route path="/create-start" component={CreateStartContainer} />
             <Route path="/" render={() => <h1>I am protected!</h1>} />
             <Route render={() => <h1>NOT FOUND!</h1>} />
           </Switch>
@@ -61,6 +62,12 @@ class App extends Component {
           main: '#c0ca33',
           dark: '#8c9900',
           contrastText: '#000',
+        },
+        error: {
+        light: "#e57373",
+        main: "#f44336",
+        dark: "#d32f2f",
+        contrastText: "#fff",
         },
       },
     });

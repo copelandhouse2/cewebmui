@@ -1,10 +1,12 @@
 import { connect } from "react-redux";
 import SignUpSignIn from "../components/SignUpSignIn";
-import { loadSession } from "../actions";
+import { loadSession, getLookup, loadMessage, signUp, signIn } from "../actions";
 
 function mapStateToProps(state) {
   return {
-    session: state.session
+    session: state.session,
+    message: state.message,
+    roleLookup: state.roleLookup
   };
 }
 
@@ -18,6 +20,12 @@ function mapDispatchToProps(dispatch) {
     },
     loadSession: function (username) {
       dispatch(loadSession(username));
+    },
+    loadMessage: function (message, type) {
+      dispatch(loadMessage(message, type));
+    },
+    getLookup: (type)=> {
+      dispatch(getLookup(type));
     }
   };
 }

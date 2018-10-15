@@ -1,6 +1,6 @@
 import ClientModel from "../models/ClientModel";
 
-// function to get the list of cities.
+// function to get the list of clients.
 export const list = (request, response) => {
 
   ClientModel.getClients(function(err, rows, fields) {
@@ -15,7 +15,7 @@ export const list = (request, response) => {
   });
 }
 
-// function to get one city.
+// function to get one client.
 export const show = (request, response) => {
 
   ClientModel.getClientByID(request.params.id, function(err, rows, fields) {
@@ -30,7 +30,7 @@ export const show = (request, response) => {
   });
 }
 
-// function to add a city.
+// function to add a client.
 export const create = (request, response) => {
 
   ClientModel.addClient(request.body, function(err, result) {
@@ -39,7 +39,7 @@ export const create = (request, response) => {
   });
 }
 
-// function to update a city.
+// function to update a client.
 export const update = (request, response) => {
 
   ClientModel.updateClient(request.body, function(err, result) {
@@ -48,11 +48,11 @@ export const update = (request, response) => {
   });
 }
 
-// function to delete a city.
+// function to delete a client.
 export const remove = (request, response) => {
 
   ClientModel.deleteClient(request.params.id, function(err, result) {
     if (err) return response.json(err);
-    return response.json("city deleted");
+    return response.json("client deleted");
   });
 }

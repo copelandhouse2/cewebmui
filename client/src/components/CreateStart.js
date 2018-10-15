@@ -1,7 +1,30 @@
 import React, { Component } from "react";
-import { Grid, Row, Col, FormControl, Button, FormGroup, ControlLabel, InputGroup } from "react-bootstrap";
-import { Typeahead } from 'react-bootstrap-typeahead';
+// import { Grid, Row, Col, FormControl, Button, FormGroup, ControlLabel, InputGroup } from "react-bootstrap";
+// import { Typeahead } from 'react-bootstrap-typeahead';
+import PropTypes from 'prop-types';
+import { withStyles } from '@material-ui/core/styles';
+import AppBar from '@material-ui/core/AppBar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import PhoneIcon from '@material-ui/icons/Phone';
+import FavoriteIcon from '@material-ui/icons/Favorite';
+import PersonPinIcon from '@material-ui/icons/PersonPin';
+import HelpIcon from '@material-ui/icons/Help';
+import ShoppingBasket from '@material-ui/icons/ShoppingBasket';
+import ThumbDown from '@material-ui/icons/ThumbDown';
+import ThumbUp from '@material-ui/icons/ThumbUp';
+import Typography from '@material-ui/core/Typography';
+
 import { loadJobNumberSeqs } from "../actions";
+
+function TabContainer(props) {
+  return (
+    <Typography component="div" style={{ padding: 8 * 3 }}>
+      {props.children}
+    </Typography>
+  );
+}
+
 
 class CreateStart extends Component {
   constructor() {
@@ -47,13 +70,23 @@ class CreateStart extends Component {
       sequence_id: null,
       prefix: "",
       sequence: null,
-      year: null
+      year: null,
+      value: 0
     }
     this.stagedStarts = [];
   }
   componentDidMount() {
 
   }
+
+  styles = theme => ({
+    root: {
+      flexGrow: 1,
+      width: '100%',
+      backgroundColor: theme.palette.background.paper,
+    },
+  });
+
 
   pad(n, width, z) {
     z = z || "0";
@@ -104,7 +137,8 @@ class CreateStart extends Component {
   }
 
   render() {
-
+    const { classes } = this.props;
+    const { value } = this.state;
     // const clientList = [
     //   {id: 1, label: "Chesmar"},
     //   {id: 2, label: "Lennar"},
@@ -127,394 +161,34 @@ class CreateStart extends Component {
     console.log("jobNumber:", this.getJobNumber());
 
     return (
-      <Grid fluid className="gridNarrow fullScreen">
 
-        <Row className="show-grid">
-          <FormGroup bsSize="large">
-          <Col md={3}>
-            <h1 className="green">STARTS ADD</h1>
-          </Col>
-
-          <Col md={3}>
-            <br />
-            <Typeahead
-              onChange={(selected) => {
-                if (selected.length > 0) {
-                  this.setState({ client_id: selected[0].id,
-                    client: selected[0].name
-                  },
-                    () => {
-                      const seqObj = this.getJobNumber();
-                      this.setState({ sequence_id: seqObj.sequence_id,
-                        sequence: seqObj.sequence,
-                        year: seqObj.year,
-                        prefix: seqObj.prefix,
-                        job_number: seqObj.job_number
-                      });
-                    }
-                  );
-                }
-              }}
-            labelKey="name"
-            options={this.props.clients}
-            selected={this.state.selected}
-            placeholder="Client"
-          />
-        </Col>
-
-          <Col md={3}>
-            <br />
-            <Typeahead
-              onChange={(selected) => {
-                if (selected.length > 0) {
-                  this.setState({ owner_id: selected[0].id,
-                    owner: selected[0].label
-                  });
-                }
-              }}
-              options={ownerList}
-              selected={this.state.selected}
-              placeholder="Owner / Starts Coordinator"
-            />
-          </Col>
-
-          <Col md={3}>
-            <br />          
-            <FormControl type="text" placeholder="Job Number" className="required"
-              value = {this.state.job_number} disabled
-             />
-          </Col>
-          </FormGroup>
-        </Row>
-
-
-        <form className="container-fluid" onSubmit={(e) => {
-          e.preventDefault();
-          if (this.props.createAddress) {
-            this.setState({ created_by: this.props.session.id,
-              last_updated_by: this.props.session.id }, ()=> {
-                this.props.createAddress(this.state);
-              }
-            );   
-          }
-        }}>
-
-          <Row>
-            <Col md={3}>
-              <h2 className="green">Lot Details</h2>
-            </Col>
-            <Col md={3} mdOffset={4}>
-              <h2 className="green">Form Heights</h2>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col md={3}>
-
-              <Typeahead
-              onChange={(selected) => {
-                if (selected.length > 0) {
-                  this.setState({ subdivision_id: selected[0].id,
-                    subdivision: selected[0].subdivision },
-                    () => {
-                      const seqObj = this.getJobNumber();
-                      this.setState({ sequence_id: seqObj.sequence_id,
-                        sequence: seqObj.sequence,
-                        year: seqObj.year,
-                        prefix: seqObj.prefix,
-                        job_number: seqObj.job_number
-                      });
-                    }
-                  );
-                } else {
-                  this.setState({ subdivision_id: null,
-                    subdivision: null },
-                    () => {
-                      const seqObj = this.getJobNumber();
-                      this.setState({ sequence_id: seqObj.sequence_id,
-                        sequence: seqObj.sequence,
-                        year: seqObj.year,
-                        prefix: seqObj.prefix,
-                        job_number: seqObj.job_number
-                      });
-                    }
-                  );
-                }
-              }}
-              labelKey="subdivision"
-              options={this.props.subdivisions}
-              selected={this.state.selected}
-              placeholder="Subdivision"
-              />
-              <FormControl type="text" placeholder="Address 1" className="required" onChange={(e) => {
-                this.setState({
-                  address1: e.target.value
-                });
-              }} />
-
-              <Typeahead
-                onChange={(selected) => {
-                  if (selected.length > 0) {
-                    this.setState({ city_id: selected[0].id,
-                      city: selected[0].city },
-                      () => {
-                        const seqObj = this.getJobNumber();
-                        this.setState({ sequence_id: seqObj.sequence_id,
-                          sequence: seqObj.sequence,
-                          year: seqObj.year,
-                          prefix: seqObj.prefix,
-                          job_number: seqObj.job_number
-                        });
-                      }
-                    );
-                  }
-                }}
-                labelKey="city"
-                options={this.props.cities}
-                selected={this.state.selected}
-                placeholder="City"
-              />
-
-            </Col>
-
-            <Col md={2}>
-              <FormControl type="text" placeholder="Phase" onChange={(e) => {
-                this.setState({
-                  phase: e.target.value
-                });
-              }} />
-
-              <FormControl type="text" placeholder="Section" onChange={(e) => {
-                this.setState({
-                  section: e.target.value
-                });
-              }} />
-
-              <FormControl type="text" placeholder="Lot" className="required" onChange={(e) => {
-                this.setState({
-                  lot: e.target.value
-                });
-              }} />
-
-              <FormControl type="text" placeholder="Block" className="required" onChange={(e) => {
-                this.setState({
-                  block: e.target.value
-                });
-              }} />
-
-            </Col>
-
-            <Col md={2} mdOffset={2}>
-              <FormControl type="number" placeholder="Front Right (in)" onChange={(e) => {
-                this.setState({
-                  fnd_height_fr: e.target.value
-                });
-              }} />
-
-              <FormControl type="number" placeholder="Front Left (in)" onChange={(e) => {
-                this.setState({
-                  fnd_height_fl: e.target.value
-                });
-              }} />
-
-              <FormControl type="number" placeholder="Rear Right (in)" onChange={(e) => {
-                this.setState({
-                  fnd_height_rr: e.target.value
-                });
-              }} />
-
-              <FormControl type="number" placeholder="Rear Left (in)" onChange={(e) => {
-                this.setState({
-                  fnd_height_rl: e.target.value
-                });
-              }} />
-            </Col>
-          </Row>
-
-          <Row>
-            <Col md={3}>
-              <h2 className="green">Design Details</h2>
-            </Col>
-          </Row>
-
-          <Row>
-            <Col md={3}>
-              <FormControl type="text" placeholder="Plan Type" className="required" onChange={(e) => {
-                this.setState({
-                  plan_type: e.target.value
-                });
-              }} />
-
-              <FormControl type="text" placeholder="Elevation" className="required" onChange={(e) => {
-                this.setState({
-                  elevation: e.target.value
-                });
-              }} />
-
-              <InputGroup>
-                <InputGroup.Addon>Masonry</InputGroup.Addon>
-                <FormControl componentClass="select" placeholder="None" className="required" onChange={(e) => {
-                  this.setState({
-                    masonry: e.target.value
-                  });
-                }}>
-                    <option value="0">None</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                </FormControl>
-              </InputGroup>
-            </Col>
-
-            <Col md={3}>
-
-              <FormControl type="text" placeholder="Garage Type" onChange={(e) => {
-                this.setState({
-                  garage_type: e.target.value
-                });
-              }} />
-
-              <InputGroup>
-                <InputGroup.Addon>Entry</InputGroup.Addon>
-                <FormControl componentClass="select" placeholder="Front" onChange={(e) => {
-                  this.setState({
-                    garage_entry: e.target.value
-                  });
-                }}>
-                    <option value="Front">Front</option>
-                    <option value="Side">Side</option>
-                    <option value="Rear">Rear</option>
-                </FormControl>
-              </InputGroup>
-
-              <InputGroup>
-                <InputGroup.Addon>Swing</InputGroup.Addon>
-                <FormControl componentClass="select" placeholder="Left" onChange={(e) => {
-                  this.setState({
-                    garage_swing: e.target.value
-                  });
-                }}>
-                    <option value="Left">Left</option>
-                    <option value="Right">Right</option>
-                </FormControl>
-              </InputGroup>
-
-              <FormControl type="number" placeholder="Garage Drop (in)" onChange={(e) => {
-                this.setState({
-                  garage_drop: e.target.value
-                });
-              }} />
-
-              <FormControl type="number" placeholder="Garage Extension (ft)" onChange={(e) => {
-                this.setState({
-                  garage_extension: e.target.value
-                });
-              }} />
-            </Col>
-
-            <Col md={3}>
-              <InputGroup>
-                <InputGroup.Addon>Covered Patio?</InputGroup.Addon>
-                <FormControl componentClass="select" placeholder="No" onChange={(e) => {
-                  this.setState({
-                    covered_patio: e.target.value
-                  });
-                }}>
-                    <option value="No">No</option>
-                    <option value="Yes">Yes</option>
-                </FormControl>
-              </InputGroup>
-
-              <InputGroup>
-                <InputGroup.Addon>Bay Window?</InputGroup.Addon>
-                <FormControl componentClass="select" placeholder="No" onChange={(e) => {
-                  this.setState({
-                    bay_window: e.target.value
-                  });
-                }}>
-                    <option value="No">No</option>
-                    <option value="Yes">Yes</option>
-                </FormControl>
-              </InputGroup>
-
-              <InputGroup>
-                <InputGroup.Addon>Drop Shower?</InputGroup.Addon>
-                <InputGroup.Addon>Master</InputGroup.Addon>
-                <FormControl componentClass="select" placeholder="No" onChange={(e) => {
-                  this.setState({
-                    master_shower_drop: e.target.value
-                  });
-                }}>
-                    <option value="No">No</option>
-                    <option value="Yes">Yes</option>
-                </FormControl>
-              </InputGroup>
-
-              <InputGroup>
-                <InputGroup.Addon>Drop Shower?</InputGroup.Addon>
-                <InputGroup.Addon>Bath 1</InputGroup.Addon>
-                <FormControl componentClass="select" placeholder="No" onChange={(e) => {
-                  this.setState({
-                    bath1_shower_drop: e.target.value
-                  });
-                }}>
-                    <option value="No">No</option>
-                    <option value="Yes">Yes</option>
-                </FormControl>
-              </InputGroup>
-
-              <InputGroup>
-                <InputGroup.Addon>Drop Shower?</InputGroup.Addon>
-                <InputGroup.Addon>Bath 2</InputGroup.Addon>
-                <FormControl componentClass="select" placeholder="No" onChange={(e) => {
-                  this.setState({
-                    bath2_shower_drop: e.target.value
-                  });
-                }}>
-                    <option value="No">No</option>
-                    <option value="Yes">Yes</option>
-                </FormControl>
-              </InputGroup>
-
-              <InputGroup>
-                <InputGroup.Addon>Drop Shower?</InputGroup.Addon>
-                <InputGroup.Addon>Bath 3</InputGroup.Addon>
-                <FormControl componentClass="select" placeholder="No" onChange={(e) => {
-                  this.setState({
-                    bath3_shower_drop: e.target.value
-                  });
-                }}>
-                    <option value="No">No</option>
-                    <option value="Yes">Yes</option>
-                </FormControl>
-              </InputGroup>
-
-            </Col>
-
-            <Col md={3}>
-              <FormControl rows="4" componentClass="textarea" placeholder="Additional Options" onChange={(e) => {
-                this.setState({
-                  additional_options: e.target.value
-                });
-              }} />
-
-              <FormControl rows="4" componentClass="textarea" placeholder="Notes / Comments" onChange={(e) => {
-                this.setState({
-                  comments: e.target.value
-                });
-              }} />
-
-            </Col>
-          </Row>
-
-          <Row>
-            <Button type="submit" bsStyle="primary" bsSize="large" block className="ce-top-margin-20">Create!</Button>
-          </Row>
-
-        </form>
-
-      </Grid>
+      <div className={classes.root}>
+        <AppBar position="static" color="default">
+          <Tabs
+            value={value}
+            onChange={this.handleChange}
+            scrollable
+            scrollButtons="on"
+            indicatorColor="primary"
+            textColor="primary"
+          >
+            <Tab label="Item One" icon={<PhoneIcon />} />
+            <Tab label="Item Two" icon={<FavoriteIcon />} />
+            <Tab label="Item Three" icon={<PersonPinIcon />} />
+            <Tab label="Item Four" icon={<HelpIcon />} />
+            <Tab label="Item Five" icon={<ShoppingBasket />} />
+            <Tab label="Item Six" icon={<ThumbDown />} />
+            <Tab label="Item Seven" icon={<ThumbUp />} />
+          </Tabs>
+        </AppBar>
+        {value === 0 && <TabContainer>Item One</TabContainer>}
+        {value === 1 && <TabContainer>Item Two</TabContainer>}
+        {value === 2 && <TabContainer>Item Three</TabContainer>}
+        {value === 3 && <TabContainer>Item Four</TabContainer>}
+        {value === 4 && <TabContainer>Item Five</TabContainer>}
+        {value === 5 && <TabContainer>Item Six</TabContainer>}
+        {value === 6 && <TabContainer>Item Seven</TabContainer>}
+      </div>
     );
   }
 

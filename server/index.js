@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 import express from "express";
 // import mongoose from "mongoose";
 import { TEST_MODE, PROD_MODE, connect } from "./mysqldb";
@@ -9,6 +11,7 @@ import CityRoutes from "./routes/CityRoutes";
 import SubdivisionRoutes from "./routes/SubdivisionRoutes";
 import JobNumberSeqRoutes from "./routes/JobNumberSeqRoutes";
 import LookupRoutes from "./routes/LookupRoutes";
+import ContactRoutes from "./routes/ContactRoutes";
 import UserRoutes from "./routes/UserRoutes";
 import bodyParser from "body-parser";
 import path from "path";
@@ -43,7 +46,7 @@ app.use("/", express.static(wwwPath));
 app.use(SessionRoutes);
 app.use(StartRoutes);
 app.use(ClientRoutes);
-// app.use(ContactRoutes);
+app.use(ContactRoutes);
 app.use(CityRoutes);
 app.use(SubdivisionRoutes);
 app.use(JobNumberSeqRoutes);

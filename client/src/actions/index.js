@@ -1,3 +1,6 @@
+import AlertDialog from "../components/AlertDialog";
+import { STATUS_CODES } from "http";
+
 /* SESSION ACTION */
 // Loading the list of addresses
 export function loadSession(username) {
@@ -325,6 +328,12 @@ function lookupLoaded(lookupList, type) {
       value: lookupList
     };
   }
+  if (type === 'ROLE') {
+    return {
+      type: "ROLELOOKUP_LOADED",
+      value: lookupList
+    };
+  }
 }
 
 // Action to create the Account
@@ -334,7 +343,35 @@ export function signUp(user) {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(user)
-    }).then(() => dispatch(loadSession(user.email)));
+    }).then( response => {
+      console.log("converting response", response);
+      if ( !response.ok ) {
+        dispatch(loadMessage(response, "ERROR"));
+      }
+      else {
+        const res = response.json();
+        console.log("signUp.then else part", res);
+        dispatch(sessionLoaded({
+          user_id: res.user_id,
+          username: res.username,
+          auth_key: res.auth_key,
+          authenticated: true,
+          token: res.token,
+          contact_id: null,
+          full_name: "",
+          role: "",
+          client_id: null,
+          client_name: ""
+        }));
+      }
+    }).catch( err => {
+      console.log("signUp.catch", err);
+      dispatch(loadMessage(
+        { ok:false,
+          status: 401,
+          statusText: "Caught unknown authorization error"
+        }, "ERROR"));
+    });
   };
 }
 
@@ -347,6 +384,61 @@ export function signIn(user) {
       body: JSON.stringify(user)
     }).then(() => dispatch(loadSession(user.email)));
   };
+}
+
+export function loadMessage(message, type) {
+  console.log("In loadMessage", message);
+  if (type === 'ERROR') {
+    return {
+      type: "MESSAGE_LOADED",
+      value: {
+        ok: message.ok,
+        type: type,
+        status: message.status,
+        title: `${type[0]+type.slice(1).toLowerCase()}: ${message.status}`,
+        content: message.statusText
+      }
+    };
+  }
+  if (type === 'WARN') {
+    return {
+      type: "MESSAGE_LOADED",
+      value: {
+        ok: message.ok,
+        type: type,
+        status: message.status,
+        title: `${type[0]+type.slice(1).toLowerCase()}: ${message.status}`,
+        content: message.statusText
+      }
+    };
+  }
+  if (type === 'INFO') {
+    return {
+      type: "MESSAGE_LOADED",
+      value: {
+        ok: message.ok,
+        type: type,
+        status: message.status,
+        title: `${type[0]+type.slice(1).toLowerCase()}: ${message.status}`,
+        content: message.statusText
+      }
+    };
+  }
+}
+
+export function ackMessage() {
+  console.log("In ackMessage");
+  return {
+    type: "MESSAGE_LOADED",
+    value: {
+      ok: true,
+      type: "",
+      status: null,
+      title: "",
+      content: ""
+    }
+  };
+
 }
 // Action to select the Account
 // export function signIn(user) {

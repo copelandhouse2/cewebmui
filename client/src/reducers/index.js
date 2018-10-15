@@ -7,6 +7,13 @@ function session(state = {}, action) {
   return state;
 }
 
+function message(state = {}, action) {
+  if (action.type === "MESSAGE_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
 function addresses(state = [], action) {
   if (action.type === "ADDRESSES_LOADED") {
     return action.value;
@@ -69,8 +76,16 @@ function countryLookup(state = [], action) {
   }
   return state;
 }
+
+function roleLookup(state = [], action) {
+  if (action.type === "ROLELOOKUP_LOADED") {
+    return action.value;
+  }
+  return state;
+}
 const rootReducer = combineReducers({
-  session, addresses, address, clients, contacts, cities
+  session, message, addresses, address, clients, contacts, cities
   , subdivisions, jobnumberseqs, stateLookup, countryLookup
+  , roleLookup
 });
 export default rootReducer;

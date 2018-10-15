@@ -1,5 +1,5 @@
 export const env = {
-  SECRET: "abc123",
+  SECRET: "job311",  //Job 31:1
   PORT: "3001",
   HOST: "127.0.0.1",
   DBUSER: "ceadmin",
