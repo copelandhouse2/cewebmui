@@ -3,7 +3,7 @@ import "./App.css";
 // import Main from "./components/Main";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 // import StartsContainer from "./containers/StartsContainer";
-// import Navbar from "./components/Navbar";
+import Navbar from "./components/Navbar";
 import CreateStartContainer from "./containers/CreateStartContainer";
 // import ClientContainer from "./containers/ClientContainer";
 // import CitySubContainer from "./containers/CitySubContainer";
@@ -11,7 +11,19 @@ import CreateStartContainer from "./containers/CreateStartContainer";
 // import GetNextJobNumberContainer from "./containers/GetNextJobNumberContainer";
 import SignUpSignInContainer from "./containers/SignUpSignInContainer";
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import { withStyles } from '@material-ui/core/styles';
 
+
+const styles = {
+  canvas: {
+    backgroundColor: "#303030",
+  },
+  root: {
+    width:"80%",
+    margin: "auto",
+  },
+}
 
 class App extends Component {
 
@@ -27,15 +39,20 @@ class App extends Component {
 
   renderSignUpSignIn() {
     return (
+      // <div>
+      //   <Navbar />
+      //   <CreateStartContainer />
+      // </div>
       <SignUpSignInContainer />
       // <h1>I am not authenticated</h1>
     );
   }
 
-  renderApp() {
+  renderApp(classes) {
     return (
       <BrowserRouter>
-        <div>
+        <div className={classes.root}>
+          <Navbar />
           <Switch>
             <Route path="/create-start" component={CreateStartContainer} />
             <Route path="/" render={() => <h1>I am protected!</h1>} />
@@ -48,6 +65,7 @@ class App extends Component {
   }
 
   render() {
+    const { classes } = this.props;
 
     const theme = createMuiTheme({
       palette: {
@@ -73,17 +91,21 @@ class App extends Component {
     });
 
     let whatToRender = "";
-    if (this.props.session.authenticated) {
-      whatToRender = this.renderApp();
+    // if (this.props.session.authenticated) {
+    if (true) {
+        whatToRender = this.renderApp(classes);
 
     } else { // IF statement
       whatToRender = this.renderSignUpSignIn();
     }
 
     return (
-      <MuiThemeProvider theme={theme}>
-        {whatToRender}
-      </MuiThemeProvider>
+      <div className={classes.canvas}>
+        <CssBaseline />
+        <MuiThemeProvider theme={theme}>
+          {whatToRender}
+        </MuiThemeProvider>
+      </div>
     );
 
   }
@@ -105,4 +127,4 @@ class App extends Component {
   // }
 
 }
-export default (App);
+export default withStyles(styles)(App);

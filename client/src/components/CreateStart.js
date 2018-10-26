@@ -3,28 +3,52 @@ import React, { Component } from "react";
 // import { Typeahead } from 'react-bootstrap-typeahead';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import AppBar from '@material-ui/core/AppBar';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import PhoneIcon from '@material-ui/icons/Phone';
-import FavoriteIcon from '@material-ui/icons/Favorite';
-import PersonPinIcon from '@material-ui/icons/PersonPin';
-import HelpIcon from '@material-ui/icons/Help';
-import ShoppingBasket from '@material-ui/icons/ShoppingBasket';
-import ThumbDown from '@material-ui/icons/ThumbDown';
-import ThumbUp from '@material-ui/icons/ThumbUp';
+import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import grey from '@material-ui/core/colors/grey';
+import Grid from '@material-ui/core/Grid';
 
-import { loadJobNumberSeqs } from "../actions";
 
-function TabContainer(props) {
-  return (
-    <Typography component="div" style={{ padding: 8 * 3 }}>
-      {props.children}
-    </Typography>
-  );
-}
+const styles = theme => ({
+  canvas: {
+    width: "100%",
+    height: "100vh",
+    backgroundColor: grey[200],
+    // display: "grid",
+    // gridTemplateColumns: "10% 10% 10% 10% 10% 10% 10% 10% 10% 10%",
+    // gridTemplateRows: "10% 10% 10% 10% 10% 10% 10% 10% 10% 10%",
 
+    // marginTop: "-24",
+    // marginLeft: "-24",
+    // flexGrow: 1
+
+  },
+  margin: {
+    width: "100%",
+    height: "1vh",
+    backgroundColor: grey[200],
+
+    // marginTop: theme.spacing.unit * 3,
+
+  },
+  paper: {
+    // flexGrow: 1,
+    // width: '50%',
+    // backgroundColor: grey[200],
+    backgroundColor: "white",
+    // margin: "auto",
+    // color: "green",
+    ...theme.mixins.gutters(),
+    // margin: auto,
+    // marginTop: theme.spacing.unit * 40,
+    // paddingTop: theme.spacing.unit * 2,
+    // paddingBottom: theme.spacing.unit * 2,
+    gridColumnStart: "2",
+    gridColumnEnd: "5",
+    // gridRow: "2 span 1",
+    gridRowStart: "2",
+  },
+});
 
 class CreateStart extends Component {
   constructor() {
@@ -37,8 +61,8 @@ class CreateStart extends Component {
       owner: "",
       city_id: null,
       city: "",
-      subdivision_id: null,
-      subdivision: "",
+      subPaperision_id: null,
+      subPaperision: "",
       address1: "",
       address2: "",
       phase: "",
@@ -79,15 +103,6 @@ class CreateStart extends Component {
 
   }
 
-  styles = theme => ({
-    root: {
-      flexGrow: 1,
-      width: '100%',
-      backgroundColor: theme.palette.background.paper,
-    },
-  });
-
-
   pad(n, width, z) {
     z = z || "0";
     n = !n? "0": n + "";
@@ -105,8 +120,8 @@ class CreateStart extends Component {
     // Generating the client component: 3 digits
     const client = this.pad(this.state.client_id,3);
 
-    // Generating the subdivision component: 3 digits
-    const sub = this.pad(this.state.subdivision_id,3);
+    // Generating the subPaperision component: 3 digits
+    const sub = this.pad(this.state.subPaperision_id,3);
 
     // Generating the counter: 3 digits
     const prefix = year2D + city + client + sub;
@@ -138,7 +153,6 @@ class CreateStart extends Component {
 
   render() {
     const { classes } = this.props;
-    const { value } = this.state;
     // const clientList = [
     //   {id: 1, label: "Chesmar"},
     //   {id: 2, label: "Lennar"},
@@ -160,44 +174,75 @@ class CreateStart extends Component {
     console.log("state", this.state);
     console.log("jobNumber:", this.getJobNumber());
 
-    return (
+    const paperStyle = {
+      // margin: auto,
+      // color: "blue"
+    }
 
-      <div className={classes.root}>
-        <AppBar position="static" color="default">
-          <Tabs
-            value={value}
-            onChange={this.handleChange}
-            scrollable
-            scrollButtons="on"
-            indicatorColor="primary"
-            textColor="primary"
-          >
-            <Tab label="Item One" icon={<PhoneIcon />} />
-            <Tab label="Item Two" icon={<FavoriteIcon />} />
-            <Tab label="Item Three" icon={<PersonPinIcon />} />
-            <Tab label="Item Four" icon={<HelpIcon />} />
-            <Tab label="Item Five" icon={<ShoppingBasket />} />
-            <Tab label="Item Six" icon={<ThumbDown />} />
-            <Tab label="Item Seven" icon={<ThumbUp />} />
-          </Tabs>
-        </AppBar>
-        {value === 0 && <TabContainer>Item One</TabContainer>}
-        {value === 1 && <TabContainer>Item Two</TabContainer>}
-        {value === 2 && <TabContainer>Item Three</TabContainer>}
-        {value === 3 && <TabContainer>Item Four</TabContainer>}
-        {value === 4 && <TabContainer>Item Five</TabContainer>}
-        {value === 5 && <TabContainer>Item Six</TabContainer>}
-        {value === 6 && <TabContainer>Item Seven</TabContainer>}
-      </div>
+    const gridStyle = {
+      flexGrow: 1,
+    }
+
+    const itemStyle = {
+      // padding: "16",
+      textAlign: 'center',
+      // color: theme.palette.text.secondary,
+    }
+
+    return (
+          <Grid container className={classes.canvas} justify="flex-start">
+            <Grid item xs={3} spacing={16}>
+              <Paper elevation={10}>
+                <Typography variant="h5" component="h3">
+                  This is a sheet of paper.
+                </Typography>
+                <Typography component="p">
+                  Paper can be used to build surface or other elements for your application.
+                </Typography>
+              </Paper>
+            </Grid>
+          </Grid>
+
     );
   }
 
 }
-export default (CreateStart);
+
+CreateStart.propTypes = {
+  classes: PropTypes.object.isRequired,
+};
+
+export default withStyles(styles)(CreateStart);
 
 
-/* <FormControl type="number" placeholder="Job Number" className="required" onChange={(e) => {
-  this.setState({
-    job_number: e.target.value
-  });
-}} /> */
+
+// return (
+//   <div>
+
+//       <Grid container spacing={24} className={gridStyle} justify="center">
+//         <Grid item xs={6}>
+//           <Paper className={itemStyle} elevation={10}>
+//             <Typography variant="h5" component="h3">
+//               This is a sheet of paper.
+//             </Typography>
+//             <Typography component="p">
+//               Paper can be used to build surface or other elements for your application.
+//             </Typography>
+//           </Paper>
+//         </Grid>
+//       </Grid>
+
+
+//   <div className={classes.canvas}>
+//     <Paper style={paperStyle} className={classes.paper} elevation={10}>
+//       <Typography variant="h5" component="h3">
+//         This is a sheet of paper.
+//       </Typography>
+//       <Typography component="p">
+//         Paper can be used to build surface or other elements for your application.
+//       </Typography>
+//     </Paper>
+//   </div>
+
+//   </div>
+// );
