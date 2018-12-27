@@ -1,7 +1,6 @@
-import App from "./App";
-import "./App.css";
+import App from "../components/App";
 import { connect } from "react-redux";
-import { loadAddresses, loadSession, loadCities, loadClients, loadSubdivisions, loadJobNumberSeqs } from "./actions";
+import { loadAddresses, loadSession, loadCities, loadClients, loadSubdivisions, loadJobNumberSeqs } from "../actions";
 
 function mapStateToProps(state) {
   return {

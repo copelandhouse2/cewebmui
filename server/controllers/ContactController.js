@@ -6,11 +6,11 @@ export const list = (request, response) => {
   // Listing from MySql;
   ContactModel.getContacts(function(err, rows, fields) {
     if (!err) {
-      console.log('Data retrieved... lookup: ', request.params.type);
+      console.log('Data retrieved... Contacts: ', request.params.type);
       return response.json(rows);
     }
     else {
-      console.log('Error while performing Query.');
+      console.log('Contacts: Error while performing Query.');
       return response.json(err);
     }
   });
@@ -22,11 +22,11 @@ export const show = (request, response) => {
   // Listing from MySql;
   ContactModel.getContactByID(request.params.id, function(err, rows, fields) {
     if (!err) {
-      console.log('Data retrieved... contact: ');
+      console.log('Data retrieved... Contact by ID');
       return response.json(rows[0]);
     }
     else {
-      console.log('Error while performing Query.');
+      console.log('Contact: Error while performing Query.');
       return response.json(err);
     }
   });

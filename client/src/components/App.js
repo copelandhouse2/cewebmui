@@ -1,39 +1,53 @@
-import React, { Component } from "react";
-import "./App.css";
+import React, { Component, Fragment } from "react";
+import "../css/App.css";
 // import Main from "./components/Main";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 // import StartsContainer from "./containers/StartsContainer";
-import Navbar from "./components/Navbar";
-import CreateStartContainer from "./containers/CreateStartContainer";
+import Navbar from "./Navbar";
+import CreateStartContainer from "../containers/CreateStartContainer";
 // import ClientContainer from "./containers/ClientContainer";
 // import CitySubContainer from "./containers/CitySubContainer";
 // import JobNumberSeqContainer from "./containers/JobNumberSeqContainer";
 // import GetNextJobNumberContainer from "./containers/GetNextJobNumberContainer";
-import SignUpSignInContainer from "./containers/SignUpSignInContainer";
+import SignUpSignInContainer from "../containers/SignUpSignInContainer";
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { withStyles } from '@material-ui/core/styles';
+import Header from "./Header";
+import Footer from "./Footer";
+// import Body from "./Body";
+import { Grid } from "@material-ui/core";
+
 
 
 const styles = {
   canvas: {
-    backgroundColor: "#303030",
+    // backgroundColor: "#303030",
   },
   root: {
-    width:"80%",
+    // width:"75%",
     margin: "auto",
   },
+  appBody: {
+    width: "85%",
+    margin: "auto"
+  },
+  appHeight: {
+    height: "100%"
+  },
+  Paper: { padding: 20, marginTop: 10, marginBottom: 10 },
 }
 
 class App extends Component {
 
   componentDidMount() {
-    // this.props.loadSession('cmcopeland@copeland-eng.com');
-    // this.props.loadAddresses();
-    // this.props.loadCities();
-    // this.props.loadClients();
-    // this.props.loadSubdivisions();
-    // this.props.loadJobNumberSeqs();
+    this.props.loadSession('cmcopeland@copeland-eng.com');
+    this.props.loadAddresses();
+    this.props.loadCities();
+    this.props.loadClients();
+    this.props.loadSubdivisions();
+    this.props.loadJobNumberSeqs();
+    
 
   }
 
@@ -52,13 +66,20 @@ class App extends Component {
     return (
       <BrowserRouter>
         <div className={classes.root}>
-          <Navbar />
-          <Switch>
-            <Route path="/create-start" component={CreateStartContainer} />
-            <Route path="/" render={() => <h1>I am protected!</h1>} />
-            <Route render={() => <h1>NOT FOUND!</h1>} />
-          </Switch>
-          <h1>Here I am</h1>
+          <Header />
+          <Grid container className={classes.appBody}>
+            <Grid item>
+              <Navbar />
+            </Grid>
+            <Grid item xs={12} sm>
+              <Switch>
+                <Route path="/create-start" component={CreateStartContainer} />
+                <Route path="/" render={() => <h1>I am protected!</h1>} />
+                <Route render={() => <h1>NOT FOUND!</h1>} />
+              </Switch>
+            </Grid>
+          </Grid>
+          <Footer />
         </div>
       </BrowserRouter>
     );

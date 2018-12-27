@@ -6,11 +6,11 @@ export const list = (request, response) => {
   // Listing from MySql;
   LookupModel.getLookupByType(request.params.type, function(err, rows, fields) {
     if (!err) {
-      console.log('Data retrieved... lookup: ', request.params.type);
+      console.log('Data retrieved... Lookups', request.params.type);
       return response.json(rows);
     }
     else {
-      console.log('Error while performing Query.');
+      console.log('Lookups: Error while performing Query.');
       return response.json(err);
     }
   });
@@ -26,7 +26,7 @@ export const show = (request, response) => {
       return response.json(rows[0]);
     }
     else {
-      console.log('Error while performing Query.');
+      console.log('Lookup: Error while performing Query.');
       return response.json(err);
     }
   });

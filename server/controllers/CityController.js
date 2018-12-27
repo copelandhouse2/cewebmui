@@ -5,11 +5,11 @@ export const list = (request, response) => {
 
   CityModel.getCities(function(err, rows, fields) {
     if (!err) {
-      console.log('Data retrieved... cities');
+      console.log('Data retrieved... Cities');
       return response.json(rows);
     }
     else {
-      console.log('Error while performing Query.');
+      console.log('Cities: Error while performing Query.');
       return response.json(err);
     }
   });
@@ -20,11 +20,11 @@ export const show = (request, response) => {
 
   CityModel.getCityByID(request.params.id, function(err, rows, fields) {
     if (!err) {
-      console.log('Data retrieved... yeah!');
+      console.log('Data retrieved... City by ID!');
       return response.json(rows[0]);
     }
     else {
-      console.log('Error while performing Query.');
+      console.log('City: Error while performing Query.');
       return response.json(err);
     }
   });

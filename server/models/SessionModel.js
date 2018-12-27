@@ -4,10 +4,10 @@ const SessionModel = {
  
 getSession: function(username, callback) {
 
-  const SQLstmt = 'select u.id, u.username, u.auth_key, true, u.contact_id, co.full_name, co.role, u.client_id, cl.name'
+  const SQLstmt = 'select u.id, u.username, u.auth_key, true, co.id contact_id, co.full_name, co.role, cl.id client_id, cl.name'
     + ' from users u, contacts co, clients cl'
-    + ' where u.contact_id = co.id'
-    + ' and u.client_id = cl.id'
+    + ' where co.client_id = cl.id'
+    + ' and u.id = co.user_id'
     + ' and u.username = ?';
 
   // console.log("query", SQLstmt);

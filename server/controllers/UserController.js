@@ -10,11 +10,11 @@ export const list = (request, response) => {
 
   UserModel.getUsers(function(err, rows, fields) {
     if (!err) {
-      console.log('Data retrieved... clients');
+      console.log('Data retrieved... Users');
       return response.json(rows);
     }
     else {
-      console.log('Error while performing Query.');
+      console.log('Users: Error while performing Query.');
       return response.json(err);
     }
   });
@@ -25,11 +25,11 @@ export const show = (request, response) => {
 
   UserModel.getUserByID(request.params.id, function(err, rows, fields) {
     if (!err) {
-      console.log('Data retrieved... yeah!');
+      console.log('Data retrieved... User by ID!');
       return response.json(rows[0]);
     }
     else {
-      console.log('Error while performing Query.');
+      console.log('User: Error while performing Query.');
       return response.json(err);
     }
   });
@@ -40,11 +40,11 @@ export const showByName = (request, response) => {
 
   UserModel.getUserByName(request.params.username, function(err, rows, fields) {
     if (!err) {
-      console.log('Data retrieved... yeah!');
+      console.log('Data retrieved... User by Name!');
       return response.json(rows[0]);
     }
     else {
-      console.log('Error while performing Query.');
+      console.log('USer: Error while performing Query.');
       return response.json(err);
     }
   });

@@ -22,7 +22,7 @@ export const list = (request, response) => {
       return response.json(rows);
     }
     else {
-      console.log('Error while performing Query.');
+      console.log('Starts: Error while performing Query.');
       return response.json(err);
     }
   });
@@ -40,11 +40,11 @@ export const show = (request, response) => {
 
   StartModel.getStartByID(request.params.id, function (err, rows, fields) {
     if (!err) {
-      console.log('Data retrieved... yeah!');
+      console.log('Data retrieved... Start by ID!');
       return response.json(rows[0]);
     }
     else {
-      console.log('Error while performing Query.');
+      console.log('Start: Error while performing Query.');
       return response.json(err);
     }
   });

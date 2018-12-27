@@ -5,11 +5,11 @@ export const list = (request, response) => {
 
   ClientModel.getClients(function(err, rows, fields) {
     if (!err) {
-      console.log('Data retrieved... clients');
+      console.log('Data retrieved... Clients');
       return response.json(rows);
     }
     else {
-      console.log('Error while performing Query.');
+      console.log('Clients: Error while performing Query.');
       return response.json(err);
     }
   });
@@ -20,11 +20,11 @@ export const show = (request, response) => {
 
   ClientModel.getClientByID(request.params.id, function(err, rows, fields) {
     if (!err) {
-      console.log('Data retrieved... yeah!');
+      console.log('Data retrieved... Client by ID!');
       return response.json(rows[0]);
     }
     else {
-      console.log('Error while performing Query.');
+      console.log('Client: Error while performing Query.');
       return response.json(err);
     }
   });

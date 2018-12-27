@@ -6,11 +6,11 @@ export const show = (request, response) => {
   // Listing from MySql;
   SessionModel.getSession(request.params.username, function(err, rows, fields) {
     if (!err) {
-      console.log('Data retrieved... session info');
+      console.log('Data retrieved... Session Info');
       return response.json(rows[0]);
     }
     else {
-      console.log('Error while performing Query.');
+      console.log('Session: Error while performing Query.');
       return response.json(err);
     }
   });
