@@ -1,7 +1,7 @@
 import UserModel from "../models/UserModel";
 import ContactModel from "../models/ContactModel";
 import tokenForUser from "../services/token";
-import  { hash } from "../services/hash";
+import  { hash, compare } from "../services/hash";
 // const tokenForUser = require("../services/token").tokenForUser;
 // const hash = require("../services/hash").hash;
 
@@ -88,7 +88,7 @@ export const signUp = (request, response) => {
             id: null,
             user_id: result.insertId,
             client_id: null,
-            first_name: request.body.firstName, 
+            first_name: request.body.firstName,
             last_name: request.body.lastName,
             email: request.body.email,
             mobile: request.body.mobile,
@@ -123,25 +123,38 @@ export const signUp = (request, response) => {
 
 export const signIn = (request, response) => {
 
-  console.log("In signin");
+  console.group("In server controller signin");
   // const { email, password } = request.body;
 
   console.log("Looking for a user with the username");
   UserModel.getUserByUsername(request.body.email, function(err, rows, fields) {
-    // console.log(err, rows, fields);
+    console.log('pulled from db', err, rows);
     if (err) return response.json(err);
-    if (rows.length == 0) {
+    console.log('after error check before if, length', rows.length);
+    if (rows.length === 1) {
+      console.log('inside if, before compare', request.body.password, rows[0].auth_key);
+      compare(request.body.password, rows[0].auth_key, function(err1, res1) {
+        console.log('inside callback compare', err1, res1);
+        if (res1) {
+          console.log("Found match!");
+          response.writeHead(200, "Found match");
+          response.end();
+          return response;
+        } else {  // passwords do no match
+          response.writeHead(401, "Passwords do not match");
+          response.end();
+          return response;
+        }
+      });
+    } else {  // could not find email
       console.log("Could not find email");
-      response.writeHead(401, "Could not find email account.");
+      response.writeHead(404, "Could not find email account.");
       response.end();
       return response;
     }
-    if (rows.length == 1) {
-      console.log("Found match!");
-      response.writeHead(200, "Found match");
-      response.end();
-      return response;
-    }
+
+    console.groupEnd();
+
   });
 
   // UserModel.getUserByUsername(request.params.username, function(err, rows, fields) {

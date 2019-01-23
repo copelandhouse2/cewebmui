@@ -10,13 +10,14 @@ import {
   MenuItem
 } from "@material-ui/core";
 import { AccountCircle } from "@material-ui/icons";
-import { Link } from "react-router-dom"
 
 const styles = {
   root: {},
+  AppBar: {marginBottom: 10,},
   grow: {flexGrow: 1,},
   icon: { fontSize:"1.5em" },
 }
+
 class Header extends React.Component {
 
   state = {
@@ -43,21 +44,28 @@ class Header extends React.Component {
     const open = Boolean(anchorEl);
 
     return (
-      <AppBar position="static">
+      <AppBar className={classes.AppBar} position="static">
         <Toolbar>
           <Typography
-            variant="headline"
+            variant="h5"
             color="secondary"
             className={classes.grow}
           >
             Copeland Engineering Webtools
           </Typography>
-          <IconButton 
+          <Typography
+            variant="body2"
+            color="secondary"
+          >
+            Welcome {this.props.session.first_name}
+          </Typography>
+          <IconButton
             aria-owns={open ? 'menu-navbar' : undefined}
             aria-haspopup="true"
             onClick={this.handleMenu}
             color="secondary"
           >
+
             <AccountCircle className={classes.icon}/>
           </IconButton>
           <Menu

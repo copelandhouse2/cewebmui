@@ -1,20 +1,20 @@
 import { sql } from "../mysqldb";
 
-const SessionModel = { 
- 
+const SessionModel = {
+
 getSession: function(username, callback) {
 
-  const SQLstmt = 'select u.id, u.username, u.auth_key, true, co.id contact_id, co.full_name, co.role, cl.id client_id, cl.name'
-    + ' from users u, contacts co, clients cl'
-    + ' where co.client_id = cl.id'
-    + ' and u.id = co.user_id'
+  const SQLstmt = 'select u.id, u.username, u.auth_key, true authenticated, co.id contact_id, co.first_name, co.full_name, co.role, cl.id client_id, cl.name'
+    + ' from users u'
+    + ' left join contacts co on co.user_id = u.id'
+    + ' left join clients cl on co.client_id = cl.id'
     + ' and u.username = ?';
 
   // console.log("query", SQLstmt);
 
   return sql().query(SQLstmt, [username], callback);
 }
- 
+
 };
 
 export default SessionModel;

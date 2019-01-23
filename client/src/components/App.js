@@ -13,14 +13,14 @@ import SignUpSignInContainer from "../containers/SignUpSignInContainer";
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { withStyles } from '@material-ui/core/styles';
-import Header from "./Header";
+import HeaderContainer from "../containers/HeaderContainer";
 import Footer from "./Footer";
 // import Body from "./Body";
 import { Grid } from "@material-ui/core";
 
 
 
-const styles = {
+const styles = theme => ({
   canvas: {
     // backgroundColor: "#303030",
   },
@@ -36,18 +36,24 @@ const styles = {
     height: "100%"
   },
   Paper: { padding: 20, marginTop: 10, marginBottom: 10 },
-}
+  navWidth: {
+    [theme.breakpoints.up("xs")]: {
+      width: "100%",
+    },
+    [theme.breakpoints.up("md")]: {
+      width: "60px",
+    }
+  }
+});
 
 class App extends Component {
 
   componentDidMount() {
     this.props.loadSession('cmcopeland@copeland-eng.com');
-    this.props.loadAddresses();
     this.props.loadCities();
     this.props.loadClients();
     this.props.loadSubdivisions();
-    this.props.loadJobNumberSeqs();
-    
+    // this.props.loadJobNumberSeqs();
 
   }
 
@@ -66,15 +72,21 @@ class App extends Component {
     return (
       <BrowserRouter>
         <div className={classes.root}>
-          <Header />
+          <HeaderContainer />
           <Grid container className={classes.appBody}>
-            <Grid item>
+            <Grid item className={classes.navWidth}>
               <Navbar />
             </Grid>
-            <Grid item xs={12} sm>
+            <Grid item xs={12} md={11}>
               <Switch>
                 <Route path="/create-start" component={CreateStartContainer} />
-                <Route path="/" render={() => <h1>I am protected!</h1>} />
+                <Route path="/" render={() =>
+                  <Grid container justify='center' alignItems='center'>
+                    <Grid item>
+                      <h1>The Dashboard</h1>
+                    </Grid>
+                  </Grid>
+                } />
                 <Route render={() => <h1>NOT FOUND!</h1>} />
               </Switch>
             </Grid>
@@ -89,6 +101,9 @@ class App extends Component {
     const { classes } = this.props;
 
     const theme = createMuiTheme({
+      typography: {
+        useNextVariants: true,
+      },
       palette: {
         primary: {
           light: '#484848',
@@ -108,6 +123,17 @@ class App extends Component {
         dark: "#d32f2f",
         contrastText: "#fff",
         },
+      },
+      overrides: {
+        // MuiButtonBase: { minWidth: 80 },
+        MuiTab: {
+          root: {
+            // minWidth: 80,
+            '@media (min-width: 960px)': {
+              minWidth: 80
+            }
+          },
+        }
       },
     });
 
@@ -131,6 +157,16 @@ class App extends Component {
 
   }
 
+  // <Route path="/" render={() => {
+  //   <div>
+  //   <Grid container justify='center' alignItems='center'>
+  //     <Grid item>
+  //       <h1>Dashboard</h1>
+  //     </Grid>
+  //   </Grid>
+  //   </div>
+  //   }
+  // } />
   // render() {
 
   //   return (
@@ -146,6 +182,7 @@ class App extends Component {
   //   );
 
   // }
+
 
 }
 export default withStyles(styles)(App);

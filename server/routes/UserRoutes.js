@@ -19,7 +19,7 @@ router.post("/users", create);
 router.post("/signUp", signUp);
 
 //posting new entries to the database
-router.post("/signIn/:username", signIn);
+router.post("/signIn", signIn);
 
 //putting update entries to the database
 router.put("/users/:id", update);

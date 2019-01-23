@@ -14,11 +14,27 @@ export const list = (request, response) => {
   //   return response.json(addresses);
   // });
 
-  // Listing from MySql;
-  // sql().query('SELECT id, job_number, client_id, user_id, city, subdivision, address1, address2 from starts', function(err, rows, fields) {
   StartModel.getStarts(function (err, rows, fields) {
     if (!err) {
       console.log('Data retrieved... Starts');
+      return response.json(rows);
+    }
+    else {
+      console.log('Starts: Error while performing Query.');
+      return response.json(err);
+    }
+  });
+}
+
+// function to get the list of addresses.
+export const listPending = (request, response) => {
+
+  StartModel.getPendingStarts(request.params.userID, function (err, rows, fields) {
+    console.log('Pending Starts: err', err);
+    console.log('Pending Starts: rows', rows);
+    // console.log('Pending Starts: fields', fields);
+    if (!err) {
+      console.log('Data retrieved... Pending rows');
       return response.json(rows);
     }
     else {
@@ -53,66 +69,118 @@ export const show = (request, response) => {
 
 // function to create a address
 export const create = (request, response) => {
+  StartModel.addStart(request.body, function(err, result) {
+    console.log('Controller callback: err', err);
+    console.log('Controller callback: result', result);
+    if (err) return response.json(err);  // If there is an error.
+    const insertID = response.json(result);
+    return insertID;
 
-  // inserting into mongoDB
-  // const address = new AddressModel(request.body);
-  // address.save()
-  // .then(c => {
-  //   return response.json(c);
-  // });
+  });  // end of callback function and addStart
+}
 
-  // console.log("Start Controller.create request", request.body);
+// function to create a address
+export const commit = (request, response) => {
+
+  console.log("Start Controller.commit request", request.body);
 
   // console.log("query", SQLstmt);
 
   // sql().query(SQLstmt, values, function (err, result) {
-  StartModel.addStart(request.body, function(err, result) {
+  StartModel.commitStart(parseInt(request.params.userID), function(err, result) {
+    console.log('commit: err', err);
+    console.log('commit: result', result);
     if (err) return response.json(err);  // If there is an error.
 
-    const insertID = response.json(result.insertId);
+    const updateID = response.json(result);
+
+    console.log('commitStart starts before loop', request.body);
     // console.log(insertID);
+    for (let i = 0, len = request.body.length; i < len; i++) {
+      // Get the variables.
+      let { job_number, client_id, client, requestor_id, requestor, city, subdivision, address1, address2, phase, section, lot, block
+        , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation, masonry, garage_type
+        , garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window, master_shower_drop
+        , bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num, geo_report_date
+        , geo_pi, em_center, em_edge, ym_center, ym_edge, additional_options, comments, status, created_by, last_updated_by
+        , sequence_id, prefix, sequence, year, city_id, subdivision_id }
+        = request.body[i];
 
-    // Get the variables.
-    const { job_number, client_id, client, owner_id, city, subdivision, address1, address2, phase, section, lot, block
-      , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation, masonry, garage_type
-      , garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window, master_shower_drop
-      , bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, additional_options, comments, created_by, last_updated_by
-      , sequence_id, prefix, sequence, year, city_id, subdivision_id } = request.body;
+      // Trello card Create
+      let cardName = subdivision !== '' ?
+        job_number + ' - ' + address1 + ' - ' + subdivision + ' - ' + city + ' - ' + client
+          :
+        job_number + ' - ' + address1 + ' - ' + city + ' - ' + client;
 
-    // Insert into Job Number Sequences now.
-    const seqObj = {
-      id: sequence_id,
-      prefix: prefix,
-      sequence: sequence,
-      year: year,
-      city_id: city_id,
-      client_id: client_id,
-      subdivision_id: subdivision_id,
-      current_value: job_number,
-      created_by: created_by,
-      last_updated_by: last_updated_by
-    };
+      let dueDate = new Date();
+      dueDate.setDate(dueDate.getDate()+3);
 
-    JobNumberSeqModel.addJobNumberSeq(seqObj, function(err, result) {
-      if (err) return response.json(err);
-      console.log("addStart: Job number created / updated");
-    });
+      let card = {
+        idList: process.env.TRELLO_LIST_VOL,
+        name: cardName,
+        desc: `${phase} - ${section} - ${lot} - ${block}`,
+        due: dueDate,
+        pos: 'bottom',
+        idMembers: [
+          "58b59960d7577cb345109019",
+          "5924a3ec925ff977c3dfed10",
+          "5a2e951406cbac46270c660a",
+          "5a8afb044f2a4b4734e91714",
+          "57f3d91f12d06b6f73a208ca"
+        ],
+        idLabels:[
+          "584875b284e677fd36a93486",
+          "5a46babfd2c5d12039d522d1",
+        ],
+        idChecklists: [
+          "5c2e871eaf87548a254b000a",
+          "5c2e871eaf87548a254b000f"
+        ]
+      };
 
-    // Trello card Create
-    const card = {
-      idList: "58224c17dec8267fc73d049f",
-      name: job_number + "-" + address1 + "-" + subdivision + "-" + client,
-      desc: "",
-      pos: "top"
-    }
+      trello.post('1/cards/', card,
+        function (error, response, body) {
+          console.log('trello: error', error);
+          console.log('trello: resp', response);
+          // console.log('trello: body', body);
+          if (error) throw new Error(error);
 
-    trello.post("1/cards/", card, function (error, response, body) {
-        if (error) throw new Error(error);
-        console.log("Trello card created");
-      }
-    );
+          const idDesignPI = '5bb79c4462f900256a83e41b';
+          const customValue = {
+            value: {'text': geo_pi.toString()}
+          };
+          const tUrl = `1/cards/${response.id}/customField/${idDesignPI}/item`;
+          console.log('url for custom field', tUrl);
+          trello.put(tUrl, customValue,
+            function(error1, response1, body1) {
+              console.log('trello: error1', error1);
+              console.log('trello: resp1', response1);
+              // console.log('trello: body', body);
+              if (error1) throw new Error(error1);
+              console.log("Custom value added");
 
-    return insertID;
+            } // 2nd callback function
+          ); // 2nd Trello call
+
+          console.log("Trello card created");
+        } // 1st callback function
+      ); // 1st Trello call
+
+      // trello.post("1/cards/", card)
+      // .then( (response) => {
+      //   console.log('trello: resp', response);
+      //   // return response.json();
+      //   console.log("Trello card created");
+      // })
+      // .catch( (error) => {
+      //   console.log('trello: error', error);
+      //   // return error.json();
+      //   throw new Error(error);
+      // });
+
+    }  // end of the for loop.
+
+    return updateID;
     // return response.json(result.insertId);
 
   });  // end of callback function and addStart
@@ -129,14 +197,38 @@ export const update = (request, response) => {
 
 export const remove = (request, response) => {
 
-  // AddressModel.remove({_id: request.params.id})
-  // .then(addresses => {
-  //   return response.json("address deleted");
-  // });
-
-  StartModel().deleteStart(request.params.id, function (err, result) {
+  StartModel.deleteStart(request.params.id, function (err, result) {
     if (err) return response.json(err);
     return response.json("start deleted");
     // return response.json(result.insertId);
   });
 }
+
+
+
+  // inserting into mongoDB
+  // const address = new AddressModel(request.body);
+  // address.save()
+  // .then(c => {
+  //   return response.json(c);
+  // });
+
+    // Insert into Job Number Sequences now.
+    // const seqObj = {
+    //   id: sequence_id,
+    //   prefix: prefix,
+    //   sequence: sequence,
+    //   year: year,
+    //   city_id: city_id,
+    //   client_id: client_id,
+    //   subdivision_id: subdivision_id,
+    //   current_value: job_number,
+    //   created_by: created_by,
+    //   last_updated_by: last_updated_by
+    // };
+    //
+    // JobNumberSeqModel.addJobNumberSeq(seqObj, function(err, result) {
+    //   if (err) return response.json(err);
+    //   console.log("addStart: Job number created / updated");
+    // });
+    //

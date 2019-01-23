@@ -3,7 +3,7 @@ import { Paper, withStyles, Grid, Typography, withWidth, IconButton } from "@mat
 import { Copyright } from "@material-ui/icons";
 
 const styles = {
-  Paper: { padding: 10, backgroundColor: "#212121"},
+  Paper: { padding: 10, marginTop: 10, backgroundColor: "#212121"},
 }
 
 function Footer(props) {

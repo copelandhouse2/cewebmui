@@ -83,9 +83,39 @@ function roleLookup(state = [], action) {
   }
   return state;
 }
+
+function showClientDialog(state = false, action) {
+  if (action.type === "SHOW_CLIENT_DIALOG") {
+    return !state;
+  }
+  return state;
+}
+
+function showContactDialog(state = false, action) {
+  if (action.type === "SHOW_CONTACT_DIALOG") {
+    return !state;
+  }
+  return state;
+}
+
+function showSubdivisionDialog(state = false, action) {
+  if (action.type === "SHOW_SUB_DIALOG") {
+    return !state;
+  }
+  return state;
+}
+
+function showCityDialog(state = false, action) {
+  if (action.type === "SHOW_CITY_DIALOG") {
+    return !state;
+  }
+  return state;
+}
+
 const rootReducer = combineReducers({
   session, message, addresses, address, clients, contacts, cities
   , subdivisions, jobnumberseqs, stateLookup, countryLookup
-  , roleLookup
+  , roleLookup, showClientDialog, showSubdivisionDialog, showCityDialog
+  , showContactDialog
 });
 export default rootReducer;

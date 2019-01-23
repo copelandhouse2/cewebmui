@@ -4,12 +4,15 @@ import { STATUS_CODES } from "http";
 /* SESSION ACTION */
 // Loading the list of addresses
 export function loadSession(username) {
+  console.log('loadSession', username);
   return function (dispatch) {
     fetch(`/session/${username}`)
     .then( (response) => {
+      console.log('response', response);
       return response.json();
     }).then((session) => {
       dispatch(sessionLoaded(session));
+      dispatch(loadPending(session.id));
     });
   };
 }
@@ -32,6 +35,18 @@ export function loadAddresses() {
     });
   };
 }
+
+export function loadPending(userID) {
+  return function (dispatch) {
+    fetch(`/pending/${userID}`)
+    .then( (response) => {
+      return response.json();
+    }).then((addresses) => {
+      dispatch(addressesLoaded(addresses));
+    });
+  };
+}
+
 function addressesLoaded(addresses) {
   return {
     type: "ADDRESSES_LOADED",
@@ -40,13 +55,37 @@ function addressesLoaded(addresses) {
 }
 
 // Action to create the Address
-export function createAddress(c) {
+export function createAddress(c, userID, loadType) {
+  console.log('Just in createAddress', c, userID, loadType)
   return function (dispatch) {
+    console.log('in function',userID, loadType)
     fetch("/starts", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(c)
-    }).then(() => dispatch(loadAddresses()));
+    }).then((response) => {
+      return response.json();  // need to do this extra .then to convert json response into object to read.
+    }).then((response) => {
+      console.log('.then create Address', response);  // now has insertId
+      loadType === 'PENDING' ? dispatch(loadPending(userID)) : dispatch(loadAddresses());
+    });
+  };
+}
+
+// Action to create the Address
+export function commitAddresses(c, userID, loadType) {
+  return function (dispatch) {
+    console.log('in commitAddress function', c, userID, loadType);
+    fetch(`/commits/${userID}`, {
+      method: "PUT",
+      headers: {"Content-Type": "application/json"}
+      , body: JSON.stringify(c)
+    }).then((response) => {
+      return response.json();  // need to do this extra .then to convert json response into object to read.
+    }).then((response) => {
+      console.log('.then create Address', response);
+      loadType === 'PENDING' ? dispatch(loadPending(userID)) : dispatch(loadAddresses());
+    });
   };
 }
 
@@ -69,11 +108,13 @@ function getAddressDone(address) {
 }
 
 // Action to create the Address
-export function deleteAddress(id) {
+export function deleteAddress(id, userID, loadType) {
+  console.log('deleteAddress',id)
   return function (dispatch) {
     fetch(`/starts/${id}`, {
       method: "DELETE"
-    }).then(() => dispatch(loadAddresses()));
+    }).then(() =>
+      loadType === 'PENDING' ? dispatch(loadPending(userID)) : dispatch(loadAddresses()));
   };
 }
 
@@ -103,27 +144,16 @@ export function createClient(c) {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(c)
-    }).then(() => dispatch(loadClients()));
+    }).then((response) => {
+      return response.json();  // need to do this extra .then to convert json response into object to read.
+    }).then((response) => {
+      // console.log('createClient response', response);
+      dispatch(loadClients())
+      // console.log('after dispatch load clients', response);
+      // return response;
+    });
   };
 }
-
-// Adding the calls to fetch 1 entity.
-// export function getClient(id) {
-//   return function (dispatch) {
-//     fetch(`/clients/${id}`)
-//     .then( (response) => {
-//       return response.json();
-//     }).then((address) => {
-//       dispatch(getAddressDone(address));
-//     });
-//   };
-// }
-// function getAddressDone(address) {
-//   return {
-//     type: "GET_ADDRESS_DONE",
-//     value: address
-//   };
-// }
 
 // Action to delete the Client
 export function deleteClient(id) {
@@ -134,7 +164,11 @@ export function deleteClient(id) {
   };
 }
 
-
+export function showHideClientDialog() {
+  return {
+    type: 'SHOW_CLIENT_DIALOG'
+  };
+}
 /* CONTACTS ACTIONS */
 // Loading the list of contacts
 export function loadContacts() {
@@ -174,6 +208,11 @@ export function deleteContact(id) {
   };
 }
 
+export function showHideContactDialog() {
+  return {
+    type: 'SHOW_CONTACT_DIALOG'
+  };
+}
 
 /* CITIES ACTIONS */
 // Loading the list of cities
@@ -224,6 +263,12 @@ export function deleteCity(id) {
   };
 }
 
+export function showHideCityDialog() {
+  return {
+    type: 'SHOW_CITY_DIALOG'
+  };
+}
+
 /* SUBDIVISIONS ACTIONS */
 // Loading the list of subdivisions
 export function loadSubdivisions() {
@@ -263,6 +308,11 @@ export function deleteSubdivision(id) {
   };
 }
 
+export function showHideSubdivisionDialog() {
+  return {
+    type: 'SHOW_SUB_DIALOG'
+  };
+}
 
 /* JOB NUMBER SEQUENCE ACTIONS */
 // Loading the list of job number sequences
@@ -344,7 +394,7 @@ export function signUp(user) {
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(user)
     }).then( response => {
-      console.log("converting response", response);
+      console.log("signUp response", response);
       if ( !response.ok ) {
         dispatch(loadMessage(response, "ERROR"));
       }
@@ -382,9 +432,38 @@ export function signIn(user) {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(user)
-    }).then(() => dispatch(loadSession(user.email)));
+    }).then( response => {
+      console.log("signIn response", response);
+      if ( !response.ok ) {
+        dispatch(loadMessage(response, "ERROR"));
+      }
+      else {
+        // const res = response.json();
+        console.log('signIn pass', user.email);
+        dispatch(loadSession(user.email));
+      }
+    }).catch( err => {
+      console.log("signIn.catch", err);
+      dispatch(loadMessage(
+        { ok:false,
+          status: 401,
+          statusText: "Caught unknown authorization error"
+        }, "ERROR"));
+    });
   };
 }
+
+// export function loadSession(username) {
+//   return function (dispatch) {
+//     fetch(`/session/${username}`)
+//     .then( (response) => {
+//       return response.json();
+//     }).then((session) => {
+//       dispatch(sessionLoaded(session));
+//       dispatch(loadPending(session.id));
+//     });
+//   };
+// }
 
 export function loadMessage(message, type) {
   console.log("In loadMessage", message);
@@ -490,4 +569,3 @@ export function ackMessage() {
 //     value: address
 //   };
 // }
-

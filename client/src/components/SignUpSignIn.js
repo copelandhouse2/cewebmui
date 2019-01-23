@@ -47,7 +47,7 @@ const styles = theme => ({
     // borderRadius: 10,
     // textShadow: 5,
     // width: 100,
-    marginTop: theme.spacing.unit, 
+    marginTop: theme.spacing.unit,
     // marginRight: theme.spacing.unit,
   },
 });
@@ -81,8 +81,8 @@ class SignUpSignIn extends Component {
     this.props.getLookup("ROLE");
   }
 
-  handleSubmit = () => {
-    console.log("In the handleSubmit");
+  handleSignUp = () => {
+    console.log("In the handleSignUp");
 
     // if statement contains syntax validations for login info:
     //   a) must contain email and password
@@ -134,6 +134,11 @@ class SignUpSignIn extends Component {
       // }
 
     }
+  }
+
+  handleSignIn = () => {
+    console.log("In the handleSignIn", this.state);
+    this.props.signIn(this.state);
   }
 
   onMessageAck = () => {
@@ -282,7 +287,7 @@ class SignUpSignIn extends Component {
 
         <DialogActions>
           <Button
-            onClick = {this.handleSubmit}
+            onClick = {this.handleSignUp}
             variant = "contained" color="secondary"
           >
             Login
@@ -332,7 +337,8 @@ class SignUpSignIn extends Component {
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={this.handleSubmit} variant="contained" color="secondary">
+          <Button onClick={this.handleSignIn}
+            variant="contained" color="secondary">
             Login
           </Button>
         </DialogActions>
@@ -359,8 +365,8 @@ class SignUpSignIn extends Component {
     const { classes } = this.props;
 
     return (
-      <Dialog 
-        open 
+      <Dialog
+        open
         onRequestClose={this.props.toggleLogin}
         fullScreen={this.props.fullScreen}
       >
@@ -421,7 +427,7 @@ class SignUpSignIn extends Component {
           //     }
           //   />
           // </FormControl>
-          
+
   //         <Button onClick={this.props.toggleLogin} variant="contained" color="secondary">
   //           Login
   //         </Button>

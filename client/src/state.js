@@ -15,6 +15,7 @@ export default {
     authenticated: false,
     token: "",
     contact_id: null,
+    first_name: "",
     full_name: "",
     role: "",
     client_id: null,
@@ -26,5 +27,9 @@ export default {
     status: null,
     title: "",
     content: ""
-  }
+  },
+  showClientDialog: false,
+  showContactDialog: false,
+  showSubdivisionDialog: false,
+  showCityDialog: false,
 };
