@@ -1,14 +1,8 @@
-import React, { Component, Fragment } from "react";
+import React, { Component } from "react";
 import "../css/App.css";
-// import Main from "./components/Main";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
-// import StartsContainer from "./containers/StartsContainer";
 import Navbar from "./Navbar";
 import CreateStartContainer from "../containers/CreateStartContainer";
-// import ClientContainer from "./containers/ClientContainer";
-// import CitySubContainer from "./containers/CitySubContainer";
-// import JobNumberSeqContainer from "./containers/JobNumberSeqContainer";
-// import GetNextJobNumberContainer from "./containers/GetNextJobNumberContainer";
 import SignUpSignInContainer from "../containers/SignUpSignInContainer";
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -17,8 +11,10 @@ import HeaderContainer from "../containers/HeaderContainer";
 import Footer from "./Footer";
 // import Body from "./Body";
 import { Grid } from "@material-ui/core";
-
-
+import AlertDialogContainer from "../containers/AlertDialogContainer";
+// import StartsContainer from "./containers/StartsContainer";
+// import ClientContainer from "./containers/ClientContainer";
+// import CitySubContainer from "./containers/CitySubContainer";
 
 const styles = theme => ({
   canvas: {
@@ -47,14 +43,27 @@ const styles = theme => ({
 });
 
 class App extends Component {
+  constructor() {
+    super();
+    this.state = {
+      authenticated: localStorage.getItem('token') || false
+    };
+  }
 
   componentDidMount() {
-    this.props.loadSession('cmcopeland@copeland-eng.com');
-    this.props.loadCities();
+    // this.props.loadSession('cmcopeland@copeland-eng.com');
     this.props.loadClients();
+    this.props.loadCities();
     this.props.loadSubdivisions();
     // this.props.loadJobNumberSeqs();
 
+  }
+
+  handleSignOut = () => {
+    localStorage.removeItem('token');
+    this.setState({
+      authenticated: false
+    });
   }
 
   renderSignUpSignIn() {
@@ -75,7 +84,7 @@ class App extends Component {
           <HeaderContainer />
           <Grid container className={classes.appBody}>
             <Grid item className={classes.navWidth}>
-              <Navbar />
+              <Navbar handleSignOut = {this.handleSignOut}/>
             </Grid>
             <Grid item xs={12} md={11}>
               <Switch>
@@ -137,12 +146,21 @@ class App extends Component {
       },
     });
 
-    let whatToRender = "";
-    // if (this.props.session.authenticated) {
-    if (true) {
-        whatToRender = this.renderApp(classes);
 
-    } else { // IF statement
+    let whatToRender = '';
+    // localStorage.removeItem('token');
+
+    const theToken = localStorage.getItem('token');
+    // console.log('App Start', this.props.session);
+    // console.log('App Start token', localStorage.getItem('token'));
+
+    if (this.props.session.authenticated) {
+      whatToRender = this.renderApp(classes);
+    }
+    else if (theToken !== null) {
+      this.props.authenticate();
+    }
+    else {
       whatToRender = this.renderSignUpSignIn();
     }
 
@@ -151,6 +169,7 @@ class App extends Component {
         <CssBaseline />
         <MuiThemeProvider theme={theme}>
           {whatToRender}
+          <AlertDialogContainer />
         </MuiThemeProvider>
       </div>
     );

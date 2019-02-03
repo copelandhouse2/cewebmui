@@ -9,7 +9,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 // import Typography from '@material-ui/core/Typography';
 import AlertDialogContainer from '../containers/AlertDialogContainer';
-import { resolve } from 'url';
+// import { resolve } from 'url';
 import Grid from '@material-ui/core/Grid';
 import Select from 'react-select';
 

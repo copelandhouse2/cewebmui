@@ -6,7 +6,8 @@ export const show = (request, response) => {
   // Listing from MySql;
   SessionModel.getSession(request.params.username, function(err, rows, fields) {
     if (!err) {
-      console.log('Data retrieved... Session Info', rows[0]);
+      console.log('Data retrieved... Session Info');
+      // console.log('Data retrieved... Session Info', rows[0]);
       return response.json(rows[0]);
     }
     else {

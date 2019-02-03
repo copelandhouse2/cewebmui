@@ -8,6 +8,8 @@
 
 # production
 /build
+/dist
+/www
 
 # misc
 .DS_Store
@@ -17,7 +19,10 @@
 .env.production.local
 .env
 /server/envVars.js
+/client/src/envVars.js
+/envVars.js
 
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*.zip

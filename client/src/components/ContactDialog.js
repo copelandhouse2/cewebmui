@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
@@ -7,11 +6,10 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-// import Typography from '@material-ui/core/Typography';
 import AlertDialogContainer from '../containers/AlertDialogContainer';
-import { resolve } from 'url';
 import Grid from '@material-ui/core/Grid';
-import { white } from '@material-ui/core/colors';
+// import PropTypes from 'prop-types';
+// import { resolve } from 'url';
 
 
 const styles = theme => ({

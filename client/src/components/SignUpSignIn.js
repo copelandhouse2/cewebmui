@@ -1,34 +1,26 @@
 import React, { Component } from "react";
-import PropTypes from 'prop-types';
+// import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import classNames from 'classnames';
+// import classNames from 'classnames';
 import MenuItem from '@material-ui/core/MenuItem';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
-import Card from '@material-ui/core/Card';
-import CardHeader from '@material-ui/core/CardHeader';
-import CardMedia from '@material-ui/core/CardMedia';
-import CardContent from '@material-ui/core/CardContent';
-import CardActions from '@material-ui/core/CardActions';
 import IconButton from '@material-ui/core/IconButton';
 import Input from '@material-ui/core/Input';
 import InputLabel from '@material-ui/core/InputLabel';
 import InputAdornment from '@material-ui/core/InputAdornment';
-import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import Typography from '@material-ui/core/Typography';
 import AlertDialogContainer from "../containers/AlertDialogContainer";
-import { resolve } from "url";
+// import { resolve } from "url";
 import Grid from '@material-ui/core/Grid';
 
 
@@ -60,7 +52,6 @@ class SignUpSignIn extends Component {
       firstName: "",
       lastName: "",
       mobile: "",
-      role: "",
       password: "",
       password_confirm: "",
       showPassword: false,
@@ -82,7 +73,7 @@ class SignUpSignIn extends Component {
   }
 
   handleSignUp = () => {
-    console.log("In the handleSignUp");
+    // console.log("In the handleSignUp");
 
     // if statement contains syntax validations for login info:
     //   a) must contain email and password
@@ -101,7 +92,7 @@ class SignUpSignIn extends Component {
           status: 401,
           statusText: "Confirmation password does not match.  Please correct"
         }, "ERROR");
-    } else if ( this.state.email.lastIndexOf(".") == -1 || this.state.email.lastIndexOf("@") == -1 ) {
+    } else if ( this.state.email.lastIndexOf(".") === -1 || this.state.email.lastIndexOf("@") === -1 ) {
       this.props.loadMessage(
         { ok:false,
           status: 401,
@@ -361,20 +352,19 @@ class SignUpSignIn extends Component {
   render() {
 
     // console.log("state", this.state);
-    console.log("message", this.props.message);
+    // console.log("message", this.props.message);
     const { classes } = this.props;
 
     return (
       <Dialog
         open
-        onRequestClose={this.props.toggleLogin}
         fullScreen={this.props.fullScreen}
       >
         <DialogTitle>Copeland Engineering Web Tools</DialogTitle>
 
         <div className={classes.root}>
           <AppBar position="static">
-            <Tabs value={this.state.tab} onChange={this.handleTab} fullWidth>
+            <Tabs value={this.state.tab} onChange={this.handleTab} variant='fullWidth'>
               <Tab label="Sign In" />
               <Tab label="Sign Up" href="#basic-tabs" />
             </Tabs>

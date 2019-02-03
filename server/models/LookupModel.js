@@ -1,7 +1,7 @@
 import { sql } from "../mysqldb";
 
-const LookupModel = { 
- 
+const LookupModel = {
+
 getLookupByType: function(lookupType, callback) {
 
   const SQLstmt = 'select id, type, code, name, description, \`key\`, attribute1, attribute2, attribute3'
@@ -9,7 +9,7 @@ getLookupByType: function(lookupType, callback) {
     + ' from lookups'
     + ' where type = ?';
 
-  console.log("query", SQLstmt);
+  // console.log("query", SQLstmt);
 
   return sql().query(SQLstmt, [lookupType], callback);
 },

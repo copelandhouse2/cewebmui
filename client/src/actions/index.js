@@ -1,14 +1,14 @@
-import AlertDialog from "../components/AlertDialog";
-import { STATUS_CODES } from "http";
+// import AlertDialog from "../components/AlertDialog";
+// import { STATUS_CODES } from "http";
 
 /* SESSION ACTION */
 // Loading the list of addresses
 export function loadSession(username) {
-  console.log('loadSession', username);
+  // console.log('loadSession', username);
   return function (dispatch) {
     fetch(`/session/${username}`)
     .then( (response) => {
-      console.log('response', response);
+      // console.log('response', response);
       return response.json();
     }).then((session) => {
       dispatch(sessionLoaded(session));
@@ -56,9 +56,9 @@ function addressesLoaded(addresses) {
 
 // Action to create the Address
 export function createAddress(c, userID, loadType) {
-  console.log('Just in createAddress', c, userID, loadType)
+  // console.log('Just in createAddress', c, userID, loadType)
   return function (dispatch) {
-    console.log('in function',userID, loadType)
+    // console.log('in function',userID, loadType)
     fetch("/starts", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
@@ -66,7 +66,7 @@ export function createAddress(c, userID, loadType) {
     }).then((response) => {
       return response.json();  // need to do this extra .then to convert json response into object to read.
     }).then((response) => {
-      console.log('.then create Address', response);  // now has insertId
+      // console.log('.then create Address', response);  // now has insertId
       loadType === 'PENDING' ? dispatch(loadPending(userID)) : dispatch(loadAddresses());
     });
   };
@@ -75,7 +75,7 @@ export function createAddress(c, userID, loadType) {
 // Action to create the Address
 export function commitAddresses(c, userID, loadType) {
   return function (dispatch) {
-    console.log('in commitAddress function', c, userID, loadType);
+    // console.log('in commitAddress function', c, userID, loadType);
     fetch(`/commits/${userID}`, {
       method: "PUT",
       headers: {"Content-Type": "application/json"}
@@ -83,7 +83,7 @@ export function commitAddresses(c, userID, loadType) {
     }).then((response) => {
       return response.json();  // need to do this extra .then to convert json response into object to read.
     }).then((response) => {
-      console.log('.then create Address', response);
+      // console.log('.then create Address', response);
       loadType === 'PENDING' ? dispatch(loadPending(userID)) : dispatch(loadAddresses());
     });
   };
@@ -109,7 +109,7 @@ function getAddressDone(address) {
 
 // Action to create the Address
 export function deleteAddress(id, userID, loadType) {
-  console.log('deleteAddress',id)
+  // console.log('deleteAddress',id)
   return function (dispatch) {
     fetch(`/starts/${id}`, {
       method: "DELETE"
@@ -232,7 +232,7 @@ export function loadCities() {
     }).then((cities) => {
       dispatch(citiesLoaded(cities));
     }).catch((err) => {
-        console.log("Error loading cities", err.status, err.statusText)
+        // console.log("Error loading cities", err.status, err.statusText)
     });
   };
 }
@@ -384,6 +384,49 @@ function lookupLoaded(lookupList, type) {
       value: lookupList
     };
   }
+  if (type === 'TRELLO_LIST') {
+    return {
+      type: "TRELLOLISTLOOKUP_LOADED",
+      value: lookupList
+    };
+  }
+}
+
+// Action to create the Account
+export function authenticate() {
+
+  // localStorage.removeItem('token');
+  const authToken = localStorage.getItem('token');
+  // console.log('authenticate: token', authToken);
+
+  if (authToken == null) {
+  // if (true) {
+    // console.log('token is undefined');
+    // return {false}
+  }
+  else {
+    // console.log('authenticate: In the else');
+    return function (dispatch) {
+    fetch(`/authenticate/${authToken}`)
+      .then( (response) => {
+        // console.log('authenticate response', response);
+        return response.json();
+    }).then((user) => {
+        // console.log('authenticate response.json', user);
+        dispatch(loadSession(user.username));
+        // return true;
+    }).catch( err => {
+        // console.log("authenticate.catch", err);
+        dispatch(loadMessage(
+          { ok:false,
+            status: 401,
+            statusText: "Caught unknown authorization error"
+          }, "ERROR"));
+        // return false;
+      });
+    };
+  }  // else statement
+  // return false;
 }
 
 // Action to create the Account
@@ -394,13 +437,14 @@ export function signUp(user) {
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(user)
     }).then( response => {
-      console.log("signUp response", response);
+      // console.log("signUp response", response);
       if ( !response.ok ) {
         dispatch(loadMessage(response, "ERROR"));
       }
       else {
         const res = response.json();
-        console.log("signUp.then else part", res);
+        // console.log("signUp.then else part", res);
+        localStorage.setItem('token', res.token);
         dispatch(sessionLoaded({
           user_id: res.user_id,
           username: res.username,
@@ -415,7 +459,7 @@ export function signUp(user) {
         }));
       }
     }).catch( err => {
-      console.log("signUp.catch", err);
+      // console.log("signUp.catch", err);
       dispatch(loadMessage(
         { ok:false,
           status: 401,
@@ -433,17 +477,24 @@ export function signIn(user) {
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(user)
     }).then( response => {
-      console.log("signIn response", response);
+      // console.log("signIn response", response);
       if ( !response.ok ) {
         dispatch(loadMessage(response, "ERROR"));
+        return Promise.reject('failed');
       }
-      else {
-        // const res = response.json();
-        console.log('signIn pass', user.email);
-        dispatch(loadSession(user.email));
-      }
+      return response.json();
+      // else {
+      //   const res = response.json();
+      //   console.log('signIn.then else part.  Pass', res, user.email);
+      //   localStorage.setItem('token', res.token);
+      //   dispatch(loadSession(user.email));
+      // }
+    }).then( theUser => {
+      // console.log("signIn response", theUser);
+      localStorage.setItem('token', theUser.token);
+      dispatch(loadSession(user.email));
     }).catch( err => {
-      console.log("signIn.catch", err);
+      // console.log("signIn.catch", err);
       dispatch(loadMessage(
         { ok:false,
           status: 401,
@@ -453,6 +504,31 @@ export function signIn(user) {
   };
 }
 
+// Action to logout
+export function signOut() {
+
+  return function (dispatch) {
+    // console.log('signOut');
+    localStorage.removeItem('token');
+
+    dispatch(sessionLoaded(
+      {
+      user_id: null,
+      username: '',
+      auth_key: '',
+      authenticated: false,
+      token: '',
+      contact_id: null,
+      first_name: '',
+      full_name: '',
+      role: '',
+      client_id: null,
+      client_name: ''
+      }
+    ));
+  };
+
+}
 // export function loadSession(username) {
 //   return function (dispatch) {
 //     fetch(`/session/${username}`)
@@ -466,7 +542,7 @@ export function signIn(user) {
 // }
 
 export function loadMessage(message, type) {
-  console.log("In loadMessage", message);
+  // console.log("In loadMessage", message);
   if (type === 'ERROR') {
     return {
       type: "MESSAGE_LOADED",
@@ -506,7 +582,7 @@ export function loadMessage(message, type) {
 }
 
 export function ackMessage() {
-  console.log("In ackMessage");
+  // console.log("In ackMessage");
   return {
     type: "MESSAGE_LOADED",
     value: {

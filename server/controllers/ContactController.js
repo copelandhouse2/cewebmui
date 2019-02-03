@@ -6,7 +6,7 @@ export const list = (request, response) => {
   // Listing from MySql;
   ContactModel.getContacts(function(err, rows, fields) {
     if (!err) {
-      console.log('Data retrieved... Contacts: ', request.params.type);
+      console.log('Data retrieved... Contacts');
       return response.json(rows);
     }
     else {

@@ -1,6 +1,8 @@
 import App from "../components/App";
 import { connect } from "react-redux";
-import { loadAddresses, loadPending, loadSession, loadCities, loadClients, loadSubdivisions, loadJobNumberSeqs } from "../actions";
+import { loadAddresses, loadPending, loadSession, loadCities
+  , loadClients, loadSubdivisions, loadJobNumberSeqs, authenticate }
+  from "../actions";
 
 function mapStateToProps(state) {
   return {
@@ -35,6 +37,9 @@ function mapDispatchToProps(dispatch) {
     },
     loadJobNumberSeqs: function () {
       dispatch(loadJobNumberSeqs());
+    },
+    authenticate: function () {
+      dispatch(authenticate());
     }
   };
 }

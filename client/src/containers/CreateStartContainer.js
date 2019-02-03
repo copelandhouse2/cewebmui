@@ -2,7 +2,7 @@ import { connect } from "react-redux";
 import CreateStart from "../components/CreateStart";
 import { createAddress, deleteAddress, commitAddresses
   , showHideClientDialog, showHideContactDialog, showHideSubdivisionDialog
-  , showHideCityDialog } from "../actions";
+  , showHideCityDialog, loadContacts, getLookup } from "../actions";
 
 function mapStateToProps(state) {
   return {
@@ -11,6 +11,8 @@ function mapStateToProps(state) {
     cities: state.cities,
     subdivisions: state.subdivisions,
     addresses: state.addresses,
+    contacts: state.contacts,
+    trelloListLookup: state.trelloListLookup,
     showClientDialog: state.showClientDialog,
     showContactDialog: state.showContactDialog,
     showSubdivisionDialog: state.showSubdivisionDialog,
@@ -41,6 +43,12 @@ function mapDispatchToProps(dispatch) {
     },
     showHideCityDialog: () => {
       dispatch(showHideCityDialog());
+    },
+    loadContacts: function () {
+      dispatch(loadContacts());
+    },
+    getLookup: function (lookup) {
+      dispatch(getLookup(lookup));
     }
   };
 }

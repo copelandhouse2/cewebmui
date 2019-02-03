@@ -84,6 +84,13 @@ function roleLookup(state = [], action) {
   return state;
 }
 
+function trelloListLookup(state = [], action) {
+  if (action.type === "TRELLOLISTLOOKUP_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
 function showClientDialog(state = false, action) {
   if (action.type === "SHOW_CLIENT_DIALOG") {
     return !state;
@@ -115,7 +122,7 @@ function showCityDialog(state = false, action) {
 const rootReducer = combineReducers({
   session, message, addresses, address, clients, contacts, cities
   , subdivisions, jobnumberseqs, stateLookup, countryLookup
-  , roleLookup, showClientDialog, showSubdivisionDialog, showCityDialog
-  , showContactDialog
+  , roleLookup, trelloListLookup, showClientDialog, showSubdivisionDialog
+  , showCityDialog, showContactDialog
 });
 export default rootReducer;

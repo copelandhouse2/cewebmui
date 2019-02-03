@@ -8,7 +8,7 @@ getSession: function(username, callback) {
     + ' from users u'
     + ' left join contacts co on co.user_id = u.id'
     + ' left join clients cl on co.client_id = cl.id'
-    + ' and u.username = ?';
+    + ' where u.username = ?';
 
   // console.log("query", SQLstmt);
 

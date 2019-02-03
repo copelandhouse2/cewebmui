@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import {
   Paper,
   TextField,
-  Input,
   Typography,
   withStyles,
   Tabs,
@@ -13,24 +12,20 @@ import {
   TableRow,
   TableCell,
   AppBar,
-  MenuItem,
   IconButton,
-  Tooltip,
   TableBody,
   Fab,
   Button
 } from '@material-ui/core';
 import { Add, Delete, Edit, Save, Cancel } from '@material-ui/icons';
-import red from '@material-ui/core/colors/red';
 import Grid from '@material-ui/core/Grid';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/lib/Creatable';
-import MuiSelect from '@material-ui/core/Select';
-import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import ClientDialogContainer from '../containers/ClientDialogContainer';
 import ContactDialogContainer from '../containers/ContactDialogContainer';
 import CityDialogContainer from '../containers/CityDialogContainer';
 import SubdivisionDialogContainer from '../containers/SubdivisionDialogContainer';
+// import { TRELLO_PARAMS } from '../envVars'
 
 const styles = tabTheme => ({
   bodyPaper: { padding: 20, minHeight: '84vh'},
@@ -105,115 +100,151 @@ class CreateStart extends Component {
       status: '',
       editRow: this.NEW_ROW, // this is the address array id that is being edited.  If -1, new address.
       dialogValue: '',
-      clientDialog: false,
+      // Custom Project fields
+      project_status: '',
+      scope: '',
+      design_date: null,
+      start_date: null,
+      onboard_date: null,
+      orig_due_date: null,
+      main_contact: '',
+      billing_contact: '',
+      builder_contact: '',
+      foundation_type: '',
+      floor_type: '',
+      roof_type: '',
+      num_stories: null,
+      square_footage: null,
+      pita_factor: null,
+      // Trello and Box
+      box_folder: '',
+      trello_list_id: '',
+      trello_list: '',
     };
 
     this.tabs = [
       {name: 'pre_key', fields: [
-        {label: '', name: 'edit', id: '', width: '3%', isDisabled: false},
-        {label: '', name: 'delete', id: '', width: '3%', isDisabled: false},
-        {label: 'Job Number', name: 'job_number', id: '', width: '10%', isDisabled: true},
-        {label: 'Address', name: 'address1', id: '', width: '14%', isDisabled: false},
+        {label: '', name: 'edit', id: '', type: 'text', width: '3%', isDisabled: false},
+        {label: '', name: 'delete', id: '', type: 'text', width: '3%', isDisabled: false},
+        {label: 'Job Number', name: 'job_number', id: '', type: 'number', width: '10%', isDisabled: true},
+        {label: 'Address', name: 'address1', id: '', type: 'text', width: '14%', isDisabled: false},
 
       ]},
       {name: 'main', fields: [
-        {label: 'Address 2', name: 'address2', id: '', width: '10%', isDisabled: false},
-        {label: 'Client', name: 'client', id: 'client_id', width: '10%', isDisabled: true},
-        {label: 'Requestor', name: 'requestor', id: 'requestor_id', width: '10%', isDisabled: true},
-        {label: 'Subdivision', name: 'subdivision', id: 'subdivision_id', width: '10%', isDisabled: true},
-        {label: 'City', name: 'city', id: 'city_id', width: '10%', isDisabled: true},
-        {label: '', name: 'overflow', id: '', width: '10%', isDisabled: false},
+        {label: 'Address 2', name: 'address2', id: '', type: 'text', width: '10%', isDisabled: false},
+        {label: 'Client', name: 'client', id: 'client_id', type: 'text', width: '10%', isDisabled: true},
+        {label: 'Requestor', name: 'requestor', id: 'requestor_id', type: 'text', width: '10%', isDisabled: true},
+        {label: 'Subdivision', name: 'subdivision', id: 'subdivision_id', type: 'text', width: '10%', isDisabled: true},
+        {label: 'City', name: 'city', id: 'city_id', type: 'text', width: '10%', isDisabled: true},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '10%', isDisabled: false},
       ]},
       {name: 'project', fields: [
-        {label: 'Prj Status', name: 'proj_status', id: '', width: '10%', isDisabled: false},
-        {label: 'Scope', name: 'scope', id: '', width: '10%', isDisabled: false},
-        {label: 'Design Date', name: 'design_date', id: '', width: '10%', isDisabled: false},
-        {label: 'Start Date', name: 'start_date', id: '', width: '10%', isDisabled: false},
-        {label: 'On-Board Date', name: 'onboard_date', id: '', width: '10%', isDisabled: false},
-        {label: 'Orig Due Date', name: 'orig_due_date', id: '', width: '10%', isDisabled: false},
-        {label: '', name: 'overflow', id: '', width: '0%', isDisabled: false},
+        {label: 'Proj Status', name: 'project_status', id: '', type: 'text', width: '10%', isDisabled: false},
+        {label: 'Scope', name: 'scope', id: '', width: '10%', type: 'text', isDisabled: false},
+        {label: 'Design Date', name: 'design_date', id: '', type: 'date', width: '10%', isDisabled: false},
+        {label: 'Start Date', name: 'start_date', id: '', type: 'date', width: '10%', isDisabled: false},
+        {label: 'On-Board Date', name: 'onboard_date', id: '', type: 'date', width: '10%', isDisabled: false},
+        {label: 'Orig Due Date', name: 'orig_due_date', id: '', type: 'date', width: '10%', isDisabled: false},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '0%', isDisabled: false},
       ]},
       {name: 'communication', fields: [
-        {label: 'Main Contact', name: 'job_contact', id: '', width: '10%', isDisabled: false},
-        {label: 'Billing', name: 'billing_contact', id: '', width: '10%', isDisabled: false},
-        {label: 'Builder', name: 'builder_contact', id: '', width: '10%', isDisabled: false},
-        {label: 'Box Folder', name: 'box_folder', id: '', width: '15%', isDisabled: false},
-        {label: '', name: 'overflow', id: '', width: '15%', isDisabled: false},
+        {label: 'Main Contact', name: 'job_contact', id: '', type: 'text', width: '10%', isDisabled: false},
+        {label: 'Billing', name: 'billing_contact', id: '', type: 'text', width: '10%', isDisabled: false},
+        {label: 'Builder', name: 'builder_contact', id: '', type: 'text', width: '10%', isDisabled: false},
+        {label: 'Box Folder', name: 'box_folder', id: '', type: 'text', width: '15%', isDisabled: false},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '15%', isDisabled: false},
       ]},
       {name: 'lot', fields: [
-        {label: 'Phase', name: 'phase', id: '', width: '5%', isDisabled: false},
-        {label: 'Section', name: 'section', id: '', width: '5%', isDisabled: false},
-        {label: 'Lot', name: 'lot', id: '', width: '5%', isDisabled: false},
-        {label: 'Block', name: 'block', id: '', width: '5%', isDisabled: false},
-        {label: '', name: 'overflow', id: '', width: '40%', isDisabled: false},
+        {label: 'Phase', name: 'phase', id: '', type: 'text', width: '5%', isDisabled: false},
+        {label: 'Section', name: 'section', id: '', type: 'text', width: '5%', isDisabled: false},
+        {label: 'Lot', name: 'lot', id: '', type: 'text', width: '5%', isDisabled: false},
+        {label: 'Block', name: 'block', id: '', type: 'text', width: '5%', isDisabled: false},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '40%', isDisabled: false},
       ]},
       {name: 'design', fields: [
-        {label: 'Plan Type', name: 'plan_type', id: '', width: '8%', isDisabled: false},
-        {label: 'Elevation', name: 'elevation', id: '', width: '8%', isDisabled: false},
-        {label: 'Masonry', name: 'masonry', id: '', width: '8%', isDisabled: false},
-        {label: 'Covered Patio', name: 'covered_patio', id: '', width: '8%', isDisabled: false},
-        {label: 'Bay Window', name: 'bay_window', id: '', width: '8%', isDisabled: false},
-        {label: 'FND Type', name: 'fnd_type', id: '', width: '8%', isDisabled: false},
-        {label: '', name: 'overflow', id: '', width: '12%', isDisabled: false},
+        {label: 'Plan Type', name: 'plan_type', id: '', type: 'text', width: '8%', isDisabled: false},
+        {label: 'Elevation', name: 'elevation', id: '', type: 'text', width: '8%', isDisabled: false},
+        {label: 'Masonry', name: 'masonry', id: '', type: 'text', width: '8%', isDisabled: false},
+        {label: 'Covered Patio', name: 'covered_patio', id: '', type: 'text', width: '8%', isDisabled: false},
+        {label: 'Bay Window', name: 'bay_window', id: '', type: 'text', width: '8%', isDisabled: false},
+        {label: 'FND Type', name: 'fnd_type', id: '', type: 'text', width: '8%', isDisabled: false},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '12%', isDisabled: false},
       ]},
       {name: 'garage', fields: [
-        {label: 'Garage Type', name: 'garage_type', id: '', width: '8%', isDisabled: false},
-        {label: 'Garage Entry', name: 'garage_entry', id: '', width: '8%', isDisabled: false},
-        {label: 'Garage Swing', name: 'garage_swing', id: '', width: '8%', isDisabled: false},
-        {label: 'Garage Drop', name: 'garage_drop', id: '', width: '8%', isDisabled: false},
-        {label: 'Garage Ext', name: 'garage_extension', id: '', width: '8%', isDisabled: false},
-        {label: '', name: 'overflow', id: '', width: '20%', isDisabled: false},
+        {label: 'Garage Type', name: 'garage_type', id: '', type: 'text', width: '8%', isDisabled: false},
+        {label: 'Garage Entry', name: 'garage_entry', id: '', type: 'text', width: '8%', isDisabled: false},
+        {label: 'Garage Swing', name: 'garage_swing', id: '', type: 'text', width: '8%', isDisabled: false},
+        {label: 'Garage Drop', name: 'garage_drop', id: '', type: 'number', width: '8%', isDisabled: false},
+        {label: 'Garage Ext', name: 'garage_extension', id: '', type: 'number', width: '8%', isDisabled: false},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '20%', isDisabled: false},
       ]},
       {name: 'drop', fields: [
-        {label: 'Master', name: 'master_shower_drop', id: '', width: '8%', isDisabled: false},
-        {label: 'Bath 1', name: 'bath1_shower_drop', id: '', width: '8%', isDisabled: false},
-        {label: 'Bath 2', name: 'bath2_shower_drop', id: '', width: '8%', isDisabled: false},
-        {label: 'Bath 3', name: 'bath3_shower_drop', id: '', width: '8%', isDisabled: false, isDisabled: false},
-        {label: '', name: 'overflow', id: '', width: '28%', isDisabled: false},
+        {label: 'Master', name: 'master_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false},
+        {label: 'Bath 1', name: 'bath1_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false},
+        {label: 'Bath 2', name: 'bath2_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false},
+        {label: 'Bath 3', name: 'bath3_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '28%', isDisabled: false},
       ]},
       {name: 'soil', fields: [
-        {label: 'Lab', name: 'geo_lab', id: '', width: '10%', isDisabled: false},
-        {label: 'Report #', name: 'geo_report_num', id: '', width: '10%', isDisabled: false},
-        {label: 'Report Date', name: 'geo_report_date', id: '', width: '10%', isDisabled: false},
-        {label: 'PI', name: 'geo_pi', id: '', width: '5%', isDisabled: false},
-        {label: 'EmC', name: 'em_center', id: '', width: '5%', isDisabled: false},
-        {label: 'EmE', name: 'em_edge', id: '', width: '5%', isDisabled: false},
-        {label: 'YmC', name: 'ym_center', id: '', width: '5%', isDisabled: false},
-        {label: 'YmE', name: 'ym_edge', id: '', width: '5%', isDisabled: false},
-        {label: '', name: 'overflow', id: '', width: '5%', isDisabled: false},
+        {label: 'Lab', name: 'geo_lab', id: '', type: 'text', width: '10%', isDisabled: false},
+        {label: 'Report #', name: 'geo_report_num', id: '', type: 'text', width: '10%', isDisabled: false},
+        {label: 'Report Date', name: 'geo_report_date', id: '', type: 'date', width: '10%', isDisabled: false},
+        {label: 'PI', name: 'geo_pi', id: '', type: 'text', width: '5%', isDisabled: false},
+        {label: 'EmC', name: 'em_center', id: '', type: 'number', width: '5%', isDisabled: false},
+        {label: 'EmE', name: 'em_edge', id: '', type: 'number', width: '5%', isDisabled: false},
+        {label: 'YmC', name: 'ym_center', id: '', type: 'number', width: '5%', isDisabled: false},
+        {label: 'YmE', name: 'ym_edge', id: '', type: 'number', width: '5%', isDisabled: false},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '5%', isDisabled: false},
       ]},
       {name: 'form', fields: [
-        {label: 'Front RT', name: 'fnd_height_fr', id: '', width: '8%', isDisabled: false},
-        {label: 'Front LT', name: 'fnd_height_fl', id: '', width: '8%', isDisabled: false},
-        {label: 'Rear RT', name: 'fnd_height_rr', id: '', width: '8%', isDisabled: false},
-        {label: 'Rear LT', name: 'fnd_height_rl', id: '', width: '8%', isDisabled: false},
-        {label: '', name: 'overflow', id: '', width: '28%', isDisabled: false},
+        {label: 'Front RT', name: 'fnd_height_fr', id: '', type: 'number', width: '8%', isDisabled: false},
+        {label: 'Front LT', name: 'fnd_height_fl', id: '', type: 'number', width: '8%', isDisabled: false},
+        {label: 'Rear RT', name: 'fnd_height_rr', id: '', type: 'number', width: '8%', isDisabled: false},
+        {label: 'Rear LT', name: 'fnd_height_rl', id: '', type: 'number', width: '8%', isDisabled: false},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '28%', isDisabled: false},
       ]},
       {name: 'framing', fields: [
-        {label: 'FND Type', name: 'fnd_type', id: '', width: '8%', isDisabled: false},
-        {label: 'Floor Type', name: 'floor_type', id: '', width: '8%', isDisabled: false},
-        {label: 'Roof Type', name: 'roof_type', id: '', width: '8%', isDisabled: false},
-        {label: 'Stories', name: 'num_stories', id: '', width: '5%', isDisabled: false},
-        {label: 'SQFT', name: 'square_footage', id: '', width: '5%', isDisabled: false},
-        {label: 'PITA', name: 'pita_factor', id: '', width: '6%', isDisabled: false},
-        {label: '', name: 'overflow', id: '', width: '20%', isDisabled: false},
+        {label: 'FND Type', name: 'foundation_type', id: '', type: 'text', width: '8%', isDisabled: false},
+        {label: 'Floor Type', name: 'floor_type', id: '', type: 'text', width: '8%', isDisabled: false},
+        {label: 'Roof Type', name: 'roof_type', id: '', type: 'text', width: '8%', isDisabled: false},
+        {label: 'Stories', name: 'num_stories', id: '', type: 'number', width: '5%', isDisabled: false},
+        {label: 'SQFT', name: 'square_footage', id: '', type: 'number', width: '5%', isDisabled: false},
+        {label: 'PITA', name: 'pita_factor', id: '', type: 'number', width: '6%', isDisabled: false},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '20%', isDisabled: false},
       ]},
       {name: 'notes', fields: [
-        {label: 'Addl Options', name: 'additional_options', id: '', width: '25%', isDisabled: false},
-        {label: 'Notes', name: 'comments', id: '', width: '25%', isDisabled: false},
-        {label: '', name: 'overflow', id: '', width: '10%', isDisabled: false},
+        {label: 'Addl Options', name: 'additional_options', id: '', type: 'text', width: '25%', isDisabled: false},
+        {label: 'Notes', name: 'comments', id: '', type: 'text', width: '25%', isDisabled: false},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '10%', isDisabled: false},
+      ]},
+      {name: 'trello', fields: [
+        {label: 'Default List', name: 'trello_list', id: 'trello_list_id', type: 'text', width: '25%', isDisabled: false},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '35%', isDisabled: false},
       ]},
       {name: 'post_key', fields: [
-        {label: 'Status', name: 'status', id: '', width: '4%', isDisabled: false},
-        {label: '', name: 'cancel', id: '', width: '3%', isDisabled: false},
-        {label: '', name: 'add', id: '', width: '3%', isDisabled: false},
+        {label: 'Status', name: 'status', id: '', type: 'text', width: '4%', isDisabled: false},
+        {label: '', name: 'cancel', id: '', type: 'text', width: '3%', isDisabled: false},
+        {label: '', name: 'add', id: '', type: 'text', width: '3%', isDisabled: false},
       ]},
     ]
 
   }
 
   componentDidMount = () => {
+    this.props.loadContacts();
+    this.props.getLookup('TRELLO_LIST');
+  }
 
+  formatDate = date => {
+      var d = new Date(date),
+          month = '' + (d.getMonth() + 1),
+          day = '' + d.getDate(),
+          year = d.getFullYear();
+
+      if (month.length < 2) month = '0' + month;
+      if (day.length < 2) day = '0' + day;
+
+      return [year, month, day].join('-');
   }
 
   initState = () => {
@@ -262,6 +293,27 @@ class CreateStart extends Component {
       year: null,
       status: '',
       editRow: this.NEW_ROW, // this is the address array id that is being edited.  If -1, new address.
+      dialogValue: '',
+      // Custom Project fields
+      project_status: '',
+      scope: '',
+      design_date: null,
+      start_date: null,
+      onboard_date: null,
+      orig_due_date: null,
+      main_contact: '',
+      billing_contact: '',
+      builder_contact: '',
+      foundation_type: '',
+      floor_type: '',
+      roof_type: '',
+      num_stories: null,
+      square_footage: null,
+      pita_factor: null,
+      box_folder: '',
+      // Trello List
+      // trello_list_id: '',
+      // trello_list: ''
     } );
 
   };
@@ -272,7 +324,7 @@ class CreateStart extends Component {
   };
 
   handleChange = name => event => {
-    console.log('field name: ', name);
+    // console.log('field name: ', name);
     this.setState({ [name]: event.target.value, });
   };
 
@@ -284,7 +336,7 @@ class CreateStart extends Component {
       last_updated_by: this.props.session.id,
       status: 'PENDING'
     }, ()=> {
-        console.log('In Save Start',this.props.session.id);
+        // console.log('In Save Start',this.props.session.id);
         // Passing...
         //    state - we are inserting / updating the job
         //    session id - this is the current user.  This is a filter for our pending rows
@@ -293,7 +345,7 @@ class CreateStart extends Component {
         this.initState();
       }
     );
-    console.log("staged starts", this.stagedStarts);
+    // console.log("staged starts", this.stagedStarts);
   };
 
   updateStart = () => {
@@ -302,7 +354,7 @@ class CreateStart extends Component {
       owner: this.props.session.full_name,
       last_updated_by: this.props.session.id,
     }, ()=> {
-        console.log('In update Start',this.props.session.id);
+        // console.log('In update Start',this.props.session.id);
         // Passing...
         //    state - we are inserting / updating the job
         //    session id - this is the current user.  This is a filter for our pending rows
@@ -311,11 +363,11 @@ class CreateStart extends Component {
         this.initState();
       }
     );
-    console.log("staged starts", this.stagedStarts);
+    // console.log("staged starts", this.stagedStarts);
   };
 
   commitPendingAddresses = () => {
-    console.log('In Commit Start',this.props.session.id);
+    // console.log('In Commit Start',this.props.session.id);
     this.props.commitAddresses(this.props.addresses, this.props.session.id, 'PENDING');
     // this.initState();
   };
@@ -368,6 +420,27 @@ class CreateStart extends Component {
       ym_edge: this.props.addresses[id].ym_edge,
       additional_options: this.props.addresses[id].additional_options,
       comments: this.props.addresses[id].comments,
+      // Custom Project fields
+      project_status: this.props.addresses[id].project_status,
+      scope: this.props.addresses[id].scope,
+      design_date: this.props.addresses[id].design_date,
+      start_date: this.props.addresses[id].start_date,
+      onboard_date: this.props.addresses[id].onboard_date,
+      orig_due_date: this.props.addresses[id].orig_due_date,
+      main_contact: this.props.addresses[id].main_contact,
+      billing_contact: this.props.addresses[id].billing_contact,
+      builder_contact: this.props.addresses[id].builder_contact,
+      foundation_type: this.props.addresses[id].foundation_type,
+      floor_type: this.props.addresses[id].floor_type,
+      roof_type: this.props.addresses[id].roof_type,
+      num_stories: this.props.addresses[id].num_stories,
+      square_footage: this.props.addresses[id].square_footage,
+      pita_factor: this.props.addresses[id].pita_factor,
+      // Trello and Box
+      box_folder: this.props.addresses[id].box_folder,
+      trello_list_id: this.props.addresses[id].trello_list_id,
+      trello_list: this.props.addresses[id].trello_list,
+
       created_by: this.props.addresses[id].created_by,
       last_updated_by: this.props.addresses[id].last_updated_by,
       status: this.props.addresses[id].status,
@@ -376,9 +449,9 @@ class CreateStart extends Component {
   };
 
   deleteStart = (id) => {
-    console.log("staged starts", id, this.stagedStarts);
+    // console.log("staged starts", id, this.stagedStarts);
     this.props.deleteAddress(id, this.props.session.id, 'PENDING');
-    console.log("staged starts", id, this.stagedStarts);
+    // console.log("staged starts", id, this.stagedStarts);
   };
 
   cancelStart = () => {
@@ -395,25 +468,25 @@ class CreateStart extends Component {
   // };
 
   createClient = (newValue) => {
-    console.log('create Client', newValue);
+    // console.log('create Client', newValue);
     this.setState({ dialogValue: newValue });
     this.props.showHideClientDialog();
   };
 
   createContact = (newValue) => {
-    console.log('create Contact', newValue);
+    // console.log('create Contact', newValue);
     this.setState({ dialogValue: newValue });
     this.props.showHideContactDialog();
   };
 
   createCity = (newValue) => {
-    console.log('create City', newValue);
+    // console.log('create City', newValue);
     this.setState({ dialogValue: newValue });
     this.props.showHideCityDialog();
   };
 
   createSubdivision = (newValue) => {
-    console.log('create Subdivision', newValue);
+    // console.log('create Subdivision', newValue);
     this.setState({ dialogValue: newValue });
     this.props.showHideSubdivisionDialog();
   };
@@ -427,9 +500,9 @@ class CreateStart extends Component {
   getTableHeader = () => {
 
     const fields = [].concat(
-      this.tabs.find(tab => tab.name == 'pre_key').fields,
-      this.tabs.find(tab => tab.name == this.state.currentTab).fields,
-      this.tabs.find(tab => tab.name == 'post_key').fields,
+      this.tabs.find(tab => tab.name === 'pre_key').fields,
+      this.tabs.find(tab => tab.name === this.state.currentTab).fields,
+      this.tabs.find(tab => tab.name === 'post_key').fields,
 
     );
 
@@ -474,9 +547,9 @@ class CreateStart extends Component {
     const { classes } = this.props;
 
     const fields = [].concat(
-      this.tabs.find(tab => tab.name == 'pre_key').fields,
-      this.tabs.find(tab => tab.name == this.state.currentTab).fields,
-      this.tabs.find(tab => tab.name == 'post_key').fields,
+      this.tabs.find(tab => tab.name === 'pre_key').fields,
+      this.tabs.find(tab => tab.name === this.state.currentTab).fields,
+      this.tabs.find(tab => tab.name === 'post_key').fields,
 
     );
 
@@ -508,7 +581,7 @@ class CreateStart extends Component {
             return (
               <TableCell key={id} padding='none' />
             );
-          break;
+          // break;  // unreachable code.  Commenting out.  I removed the others.
         case 'delete':
           if (currentRow !== this.state.editRow)
             return (
@@ -530,12 +603,10 @@ class CreateStart extends Component {
             return (
               <TableCell key={id} padding='none' />
             )
-          break;
         case 'overflow':
           return (
             <TableCell key={id} padding='none' />
           )
-          break;
         case 'job_number':  // For job number, show it unless it is the add row.
           if (currentRow !== this.NEW_ROW)
             return (
@@ -547,7 +618,6 @@ class CreateStart extends Component {
             return (
               <TableCell key={id} padding='none' />
             )
-          break;
         case 'status':
           if (currentRow !== this.state.editRow)
             return (
@@ -559,7 +629,6 @@ class CreateStart extends Component {
             return (
               <TableCell key={id} padding='none' />
             )
-          break;
         case 'cancel':
           if (currentRow !== this.state.editRow || currentRow === this.NEW_ROW)
             return (
@@ -581,7 +650,6 @@ class CreateStart extends Component {
                 </IconButton>
               </TableCell>
             );
-          break;
         case 'add':
           if (currentRow !== this.state.editRow)
             return (
@@ -626,7 +694,6 @@ class CreateStart extends Component {
                 </IconButton>
               </TableCell>
             )
-          break;
         default:
           if (this.state.editRow !== currentRow)
             return (
@@ -642,12 +709,14 @@ class CreateStart extends Component {
                   id={field.name}
                   // label={field.label}
                   // className={}
+                  // value={field.type !== 'date'? eval(`theState.${field.name}`)||'' : this.formatDate(eval(`theState.${field.name}`))||''}
+                  // value={field.type !== 'date'? eval(`theState.${field.name}`)||'' : eval(`theState.${field.name}`).toISOString.split('T')[0]||''}
                   value={eval(`theState.${field.name}`)||''}
                   fullWidth = {true}
                   variant='outlined'
                   onChange={this.handleChange(field.name)}
                   // width='20px'
-                  type='text'
+                  type={field.type}
                   // root = {{fontSize: '8px'}}
                   InputProps={{
                     classes: {
@@ -659,7 +728,6 @@ class CreateStart extends Component {
                 />
               </TableCell>
             )
-          break;
       }
     });
 
@@ -699,14 +767,9 @@ class CreateStart extends Component {
 
     // console.log('session', this.props.session);
     // console.log('Create Start Render: state', this.state);
-    // console.log('clients', this.props.clients);
+    // console.log('starts', this.props.addresses);
+    // console.log('trelloList', this.props.trelloListLookup);
 
-    const requestorList = [
-      {id: 1, name: 'Chris'},
-      {id: 2, name: 'Craig'},
-      {id: 3, name: 'Merideth'},
-      {id: 4, name: 'Ralph'}
-    ];
     // console.log('client: ', this.state.client, this.state.client_id);
     // console.log('owner: ', this.state.owner, this.state.owner_id);
     // console.log('job number', this.state.job_number);
@@ -749,20 +812,20 @@ class CreateStart extends Component {
                 onCreateOption={this.createClient}
               />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid item xs={12} md={2}>
               <Select
                 id='requestor'
                 isClearable
                 isSearchable
-                options={requestorList}
-                getOptionLabel={({name}) => name}
+                options={this.props.contacts}
+                getOptionLabel={({full_name}) => full_name}
                 getOptionValue={({id}) => id}
-                placeholder='Select Requestor...'
+                placeholder='Requestor...'
                 onChange={
                   (selected) => {
                     this.setState( {
                       requestor_id: selected?selected.id:null,
-                      requestor: selected?selected.name:null
+                      requestor: selected?selected.full_name:null
                     } )
                   }
                 }
@@ -791,7 +854,7 @@ class CreateStart extends Component {
                 onCreateOption={this.createSubdivision}
               />
             </Grid>
-            <Grid item xs={12} md={3}>
+            <Grid item xs={12} md={2}>
               <CreatableSelect
                 isClearable
                 placeholder='Select City...'
@@ -812,6 +875,25 @@ class CreateStart extends Component {
                   })
                 }
                 onCreateOption={this.createCity}
+              />
+            </Grid>
+            <Grid item xs={12} md={2}>
+              <Select
+                id='trelloList'
+                isClearable
+                isSearchable
+                options={this.props.trelloListLookup}
+                getOptionLabel={({name}) => name}
+                getOptionValue={({code}) => code}
+                placeholder='Trello List...'
+                onChange={
+                  (selected) => {
+                    this.setState( {
+                      trello_list_id: selected?selected.code:null,
+                      trello_list: selected?selected.name:null
+                    } )
+                  }
+                }
               />
             </Grid>
           </Grid>
@@ -860,6 +942,9 @@ class CreateStart extends Component {
                       classes={{ labelContainer: classes.tabContainerProps, }}
                     />
                     <Tab value='notes' label='Notes'
+                      classes={{ labelContainer: classes.tabContainerProps, }}
+                    />
+                    <Tab value='trello' label='Trello'
                       classes={{ labelContainer: classes.tabContainerProps, }}
                     />
                 </Tabs>
@@ -953,3 +1038,5 @@ export default withStyles(styles)(CreateStart);
         //   }
         //   onCreateOption={this.createClient}
         // />
+
+        // {field.type !== 'date'? eval(`theState.${field.name}`)||'' : this.formatDate(eval(`theState.${field.name}`))||''}

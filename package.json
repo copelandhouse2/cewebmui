@@ -62,6 +62,8 @@
     "start": "nf start",
     "run-script": "node scripts/start.js",
     "build": "node scripts/build.js",
+    "buildReact": "react-scripts build",
+    "buildSrv": "babel server -s -D -d dist --presets env,stage-0",
     "test": "node scripts/test.js --env=jsdom",
     "dev": "nodemon --exec babel-node server/index"
   },

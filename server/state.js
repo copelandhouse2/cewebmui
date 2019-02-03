@@ -8,6 +8,7 @@ export default {
   stateLookup: [],
   countryLookup: [],
   roleLookup: [],
+  trelloListLookup: [],
   session: {
     user_id: null,
     username: "",

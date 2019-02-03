@@ -1,6 +1,9 @@
 import express from "express";
 // import { list, show, create, update, delete } from "../controllers/AddressController";
-import { list, show, showByName, create, signUp, signIn, update, remove } from "../controllers/UserController";
+import { list, show, showByName, create, signUp, signIn
+  , authenticate, update, remove }
+  from "../controllers/UserController";
+
 const router = express.Router();
 
 //Getting the data... the entire list
@@ -20,6 +23,9 @@ router.post("/signUp", signUp);
 
 //posting new entries to the database
 router.post("/signIn", signIn);
+
+//posting new entries to the database
+router.get("/authenticate/:authToken", authenticate);
 
 //putting update entries to the database
 router.put("/users/:id", update);

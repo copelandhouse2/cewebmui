@@ -1,5 +1,6 @@
-import Header from "../components/Header";
 import { connect } from "react-redux";
+import Header from "../components/Header";
+import { signOut } from "../actions";
 
 function mapStateToProps(state) {
   return {
@@ -9,7 +10,9 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    
+    signOut: function () {
+      dispatch(signOut());
+    }
   };
 }
 

@@ -1,4 +1,5 @@
-require("dotenv").config();
+// require("dotenv").config({path: __dirname+'./../.env'});
+// require("dotenv").config();
 
 import express from "express";
 // import mongoose from "mongoose";
@@ -23,7 +24,7 @@ import path from "path";
 
 connect(TEST_MODE, function(err) {
   if(!err) {
-    console.log("Database is connected ... \n\n");  
+    console.log("Database is connected ... \n\n");
   } else {
     console.log("Error connecting database ... \n\n");
   }
@@ -31,7 +32,7 @@ connect(TEST_MODE, function(err) {
 
 tconnect(TEST, function(err) {
   if(!err) {
-    console.log("Trello is connected ... \n\n");  
+    console.log("Trello is connected ... \n\n");
   } else {
     console.log("Error connecting database ... \n\n");
   }
@@ -40,6 +41,7 @@ tconnect(TEST, function(err) {
 const app = express();
 app.use(bodyParser.json());
 
+// console.log('dir', __dirname);
 const wwwPath = path.join(__dirname, "www");
 app.use("/", express.static(wwwPath));
 
@@ -53,7 +55,7 @@ app.use(JobNumberSeqRoutes);
 app.use(LookupRoutes);
 app.use(UserRoutes);
 
-const port = process.env.PORT || 3001;
+const port = process.env.REACT_APP_PORT || 3001;
 app.listen(port, () => {
   console.log(`Listening on port:${port}`);
 });

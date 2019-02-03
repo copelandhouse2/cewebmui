@@ -1,7 +1,16 @@
 import React from "react";
-import { Paper, withStyles, IconButton, Toolbar, Divider, Tooltip, Grid } from "@material-ui/core";
-import { Home, Person, Contacts, Dashboard, Settings, LocationCity, PermContactCalendar,
-SupervisorAccount, BusinessCenter } from "@material-ui/icons";
+import { Paper, withStyles, IconButton, Tooltip, Grid } from "@material-ui/core";
+import {
+  Home
+  // , Person
+  // , Contacts
+  // , Dashboard
+  , Settings
+  , LocationCity
+  , PermContactCalendar
+  // , SupervisorAccount
+  , BusinessCenter
+} from "@material-ui/icons";
 import { Link } from "react-router-dom"
 
 // alignItems="center"

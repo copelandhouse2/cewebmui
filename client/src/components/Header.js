@@ -40,7 +40,7 @@ class Header extends React.Component {
   render() {
 
     const { classes } = this.props;
-    const { auth, anchorEl } = this.state;
+    const { anchorEl } = this.state;
     const open = Boolean(anchorEl);
 
     return (
@@ -83,7 +83,7 @@ class Header extends React.Component {
             onClose={this.handleClose}
           >
             <MenuItem>Profile</MenuItem>
-            <MenuItem>Log Out</MenuItem>
+            <MenuItem onClick={this.props.signOut}>Log Out</MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>
