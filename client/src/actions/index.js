@@ -390,6 +390,72 @@ function lookupLoaded(lookupList, type) {
       value: lookupList
     };
   }
+  if (type === 'RECORD_STATUS') {
+    return {
+      type: "RECORDSTATUSLOOKUP_LOADED",
+      value: lookupList
+    };
+  }
+  if (type === 'PROJECT_STATUS') {
+    return {
+      type: "PROJECTSTATUSLOOKUP_LOADED",
+      value: lookupList
+    };
+  }
+  if (type === 'SCOPE') {
+    return {
+      type: "SCOPELOOKUP_LOADED",
+      value: lookupList
+    };
+  }
+  if (type === 'MASONRY') {
+    return {
+      type: "MASONRYLOOKUP_LOADED",
+      value: lookupList
+    };
+  }
+  if (type === 'YN') {
+    return {
+      type: "YNLOOKUP_LOADED",
+      value: lookupList
+    };
+  }
+  if (type === 'FND_TYPE') {
+    return {
+      type: "FNDTYPELOOKUP_LOADED",
+      value: lookupList
+    };
+  }
+  if (type === 'GARAGE_TYPE') {
+    return {
+      type: "GARAGETYPELOOKUP_LOADED",
+      value: lookupList
+    };
+  }
+  if (type === 'GARAGE_ENTRY') {
+    return {
+      type: "GARAGEENTRYLOOKUP_LOADED",
+      value: lookupList
+    };
+  }
+  if (type === 'GARAGE_SWING') {
+    return {
+      type: "GARAGESWINGLOOKUP_LOADED",
+      value: lookupList
+    };
+  }
+  if (type === 'FLOOR_TYPE') {
+    return {
+      type: "FLOORTYPELOOKUP_LOADED",
+      value: lookupList
+    };
+  }
+  if (type === 'ROOF_TYPE') {
+    return {
+      type: "ROOFTYPELOOKUP_LOADED",
+      value: lookupList
+    };
+  }
 }
 
 // Action to create the Account

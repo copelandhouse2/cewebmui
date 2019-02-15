@@ -1,5 +1,6 @@
 // require("dotenv").config({path: __dirname+'./../.env'});
 // require("dotenv").config();
+import { env } from "./envVars";
 
 import express from "express";
 // import mongoose from "mongoose";
@@ -55,7 +56,7 @@ app.use(JobNumberSeqRoutes);
 app.use(LookupRoutes);
 app.use(UserRoutes);
 
-const port = process.env.REACT_APP_PORT || 3001;
+const port = env.REACT_APP_PORT || 3001;
 app.listen(port, () => {
   console.log(`Listening on port:${port}`);
 });

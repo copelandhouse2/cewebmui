@@ -39,9 +39,9 @@ const StartModel = {
       + ' left join contacts co on s.contact_id = co.id' // allowing contact_id to be null
       + ' left join lookups l on s.trello_list_id = l.code'
       + ' where s.user_id = ?'  // make sure you have where after left joins.  Not doing so returns all rows (Cartesian join?)
-      + ' and s.status = "PENDING"';
+      + ' and s.status = "PENDING"'
       + ' and l.type = "TRELLO_LIST"'
-      + ' order by 1'
+      + ' order by s.job_number';
 
     // console.log('StartModel: userID, SQL', userID, SQLstmt);
     return sql().query(SQLstmt, [userID], callback);

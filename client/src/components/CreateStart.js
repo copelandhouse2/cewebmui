@@ -1,23 +1,31 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import {
+  AppBar,
+  Button,
+  Checkbox,
+  ExpansionPanel,
+  ExpansionPanelDetails,
+  ExpansionPanelSummary,
+  Fab,
+  FormControl,
+  IconButton,
+  Input,
+  InputLabel,
+  MenuItem,
   Paper,
+  Tab,
+  Tabs,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   TextField,
   Typography,
   withStyles,
-  Tabs,
-  Tab,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  AppBar,
-  IconButton,
-  TableBody,
-  Fab,
-  Button
 } from '@material-ui/core';
-import { Add, Delete, Edit, Save, Cancel } from '@material-ui/icons';
+import { Add, Delete, Edit, Save, Cancel, ExpandMore } from '@material-ui/icons';
 import Grid from '@material-ui/core/Grid';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/lib/Creatable';
@@ -25,21 +33,39 @@ import ClientDialogContainer from '../containers/ClientDialogContainer';
 import ContactDialogContainer from '../containers/ContactDialogContainer';
 import CityDialogContainer from '../containers/CityDialogContainer';
 import SubdivisionDialogContainer from '../containers/SubdivisionDialogContainer';
+import AlertDialogContainer from '../containers/AlertDialogContainer';
+
 // import { TRELLO_PARAMS } from '../envVars'
 
-const styles = tabTheme => ({
+const styles = theme => ({
   bodyPaper: { padding: 20, minHeight: '84vh'},
   Paper: { padding: 20, marginTop: 10, marginBottom: 10 },
   grow: { flexGrow: 0, },
   // rightJust: { textAlign: 'right', },
   tableWidth: { width: '100%' },  // removes the table width css style.  Now control table size by column width.
-  inputProps: { fontSize: 12, padding: 8, fontColor: 'black' },
+  inputLabelProps: { fontSize: 12 },
+  speedInputProps: { fontSize: 12, padding: 4, fontColor: 'black', height: 15 },
+  inputProps: { fontSize: 12, padding: 8, fontColor: 'black', minHeight: 19 },
   tabContainerProps: {paddingLeft: 16, paddingRight: 16},
+  tableCellEntryProps: {borderLeftWidth: 1, borderLeftStyle: 'solid', borderLeftColor: 'lightgray'},
+  tableCellProps: {borderLeftWidth: 1, borderLeftStyle: 'solid', borderLeftColor: 'lightgray', paddingLeft: 5},
+  formControl: { margin: theme.spacing.unit, minWidth: 120, },
+  panelSummaryProps: {backgroundColor: theme.palette.primary.main, color: theme.palette.secondary.main},
 });
 
+// object property to handle the react-select control.  Had to pull it outside MUI styles function.
+// Wasn't working when embedded there.
+const createSelectProps = {
+  option: (provided) => ({ ...provided, fontSize: 12, }),
+  input: (provided) => ({ ...provided, color: 'white' }),
+  singleValue: (provided) => ({ ...provided, color: 'white', }),
+  placeholder: (provided) => ({ ...provided, color: 'white', }),
+  control: (provided) => ({ ...provided, minHeight: 10, height: 25, color: 'white', backgroundColor: '#484848', fontSize: 12, marginBottom: 10 }),
+};
+
 class CreateStart extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.NEW_ROW = -1;
 
@@ -68,7 +94,7 @@ class CreateStart extends Component {
       fnd_height_rl: null,
       plan_type: '',
       elevation: '',
-      masonry: null,
+      masonry: '',
       garage_type: '',
       garage_entry: '',
       garage_swing: '',
@@ -120,111 +146,114 @@ class CreateStart extends Component {
       box_folder: '',
       trello_list_id: '',
       trello_list: '',
+      createTrelloCard: false,
+      rememberData: false,
+
     };
 
     this.tabs = [
       {name: 'pre_key', fields: [
-        {label: '', name: 'edit', id: '', type: 'text', width: '3%', isDisabled: false},
-        {label: '', name: 'delete', id: '', type: 'text', width: '3%', isDisabled: false},
-        {label: 'Job Number', name: 'job_number', id: '', type: 'number', width: '10%', isDisabled: true},
-        {label: 'Address', name: 'address1', id: '', type: 'text', width: '14%', isDisabled: false},
-
+        {label: '', name: 'edit', id: '', type: 'text', width: '3%', isDisabled: false, required: false, list: []},
+        {label: '', name: 'delete', id: '', type: 'text', width: '3%', isDisabled: false, required: false, list: []},
+        {label: 'Job Number', name: 'job_number', id: '', type: 'number', width: '10%', isDisabled: true, required: false, list: []},
+        {label: 'Address', name: 'address1', id: '', type: 'text', width: '14%', isDisabled: false, required: true, list: []},
       ]},
       {name: 'main', fields: [
-        {label: 'Address 2', name: 'address2', id: '', type: 'text', width: '10%', isDisabled: false},
-        {label: 'Client', name: 'client', id: 'client_id', type: 'text', width: '10%', isDisabled: true},
-        {label: 'Requestor', name: 'requestor', id: 'requestor_id', type: 'text', width: '10%', isDisabled: true},
-        {label: 'Subdivision', name: 'subdivision', id: 'subdivision_id', type: 'text', width: '10%', isDisabled: true},
-        {label: 'City', name: 'city', id: 'city_id', type: 'text', width: '10%', isDisabled: true},
-        {label: '', name: 'overflow', id: '', type: 'text', width: '10%', isDisabled: false},
+        {label: 'Address 2', name: 'address2', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
+        {label: 'Client', name: 'client', id: 'client_id', type: 'text', width: '10%', isDisabled: true, required: true, list: []},
+        {label: 'Requestor', name: 'requestor', id: 'requestor_id', type: 'text', width: '10%', isDisabled: true, required: false, list: []},
+        {label: 'Subdivision', name: 'subdivision', id: 'subdivision_id', type: 'text', width: '10%', isDisabled: true, required: false, list: []},
+        {label: 'City', name: 'city', id: 'city_id', type: 'text', width: '10%', isDisabled: true, required: false, list: []},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'project', fields: [
-        {label: 'Proj Status', name: 'project_status', id: '', type: 'text', width: '10%', isDisabled: false},
-        {label: 'Scope', name: 'scope', id: '', width: '10%', type: 'text', isDisabled: false},
-        {label: 'Design Date', name: 'design_date', id: '', type: 'date', width: '10%', isDisabled: false},
-        {label: 'Start Date', name: 'start_date', id: '', type: 'date', width: '10%', isDisabled: false},
-        {label: 'On-Board Date', name: 'onboard_date', id: '', type: 'date', width: '10%', isDisabled: false},
-        {label: 'Orig Due Date', name: 'orig_due_date', id: '', type: 'date', width: '10%', isDisabled: false},
-        {label: '', name: 'overflow', id: '', type: 'text', width: '0%', isDisabled: false},
+        {label: 'Proj Status', name: 'project_status', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
+        {label: 'Scope', name: 'scope', id: '', width: '10%', type: 'text', isDisabled: false, required: false, list: []},
+        {label: 'Design Date', name: 'design_date', id: '', type: 'date', width: '10%', isDisabled: false, required: false, list: []},
+        {label: 'Start Date', name: 'start_date', id: '', type: 'date', width: '10%', isDisabled: false, required: false, list: []},
+        {label: 'On-Board Date', name: 'onboard_date', id: '', type: 'date', width: '10%', isDisabled: false, required: false, list: []},
+        {label: 'Orig Due Date', name: 'orig_due_date', id: '', type: 'date', width: '10%', isDisabled: false, required: false, list: []},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '0%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'communication', fields: [
-        {label: 'Main Contact', name: 'job_contact', id: '', type: 'text', width: '10%', isDisabled: false},
-        {label: 'Billing', name: 'billing_contact', id: '', type: 'text', width: '10%', isDisabled: false},
-        {label: 'Builder', name: 'builder_contact', id: '', type: 'text', width: '10%', isDisabled: false},
-        {label: 'Box Folder', name: 'box_folder', id: '', type: 'text', width: '15%', isDisabled: false},
-        {label: '', name: 'overflow', id: '', type: 'text', width: '15%', isDisabled: false},
+        {label: 'Main Contact', name: 'main_contact', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
+        {label: 'Billing', name: 'billing_contact', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
+        {label: 'Builder', name: 'builder_contact', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
+        {label: 'Box Folder', name: 'box_folder', id: '', type: 'text', width: '15%', isDisabled: false, required: false, list: []},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '15%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'lot', fields: [
-        {label: 'Phase', name: 'phase', id: '', type: 'text', width: '5%', isDisabled: false},
-        {label: 'Section', name: 'section', id: '', type: 'text', width: '5%', isDisabled: false},
-        {label: 'Lot', name: 'lot', id: '', type: 'text', width: '5%', isDisabled: false},
-        {label: 'Block', name: 'block', id: '', type: 'text', width: '5%', isDisabled: false},
-        {label: '', name: 'overflow', id: '', type: 'text', width: '40%', isDisabled: false},
+        {label: 'Phase', name: 'phase', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
+        {label: 'Section', name: 'section', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
+        {label: 'Lot', name: 'lot', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
+        {label: 'Block', name: 'block', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '40%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'design', fields: [
-        {label: 'Plan Type', name: 'plan_type', id: '', type: 'text', width: '8%', isDisabled: false},
-        {label: 'Elevation', name: 'elevation', id: '', type: 'text', width: '8%', isDisabled: false},
-        {label: 'Masonry', name: 'masonry', id: '', type: 'text', width: '8%', isDisabled: false},
-        {label: 'Covered Patio', name: 'covered_patio', id: '', type: 'text', width: '8%', isDisabled: false},
-        {label: 'Bay Window', name: 'bay_window', id: '', type: 'text', width: '8%', isDisabled: false},
-        {label: 'FND Type', name: 'fnd_type', id: '', type: 'text', width: '8%', isDisabled: false},
-        {label: '', name: 'overflow', id: '', type: 'text', width: '12%', isDisabled: false},
+        {label: 'Plan Type', name: 'plan_type', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Elevation', name: 'elevation', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Masonry', name: 'masonry', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Covered Patio', name: 'covered_patio', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Bay Window', name: 'bay_window', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'FND Type', name: 'foundation_type', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '12%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'garage', fields: [
-        {label: 'Garage Type', name: 'garage_type', id: '', type: 'text', width: '8%', isDisabled: false},
-        {label: 'Garage Entry', name: 'garage_entry', id: '', type: 'text', width: '8%', isDisabled: false},
-        {label: 'Garage Swing', name: 'garage_swing', id: '', type: 'text', width: '8%', isDisabled: false},
-        {label: 'Garage Drop', name: 'garage_drop', id: '', type: 'number', width: '8%', isDisabled: false},
-        {label: 'Garage Ext', name: 'garage_extension', id: '', type: 'number', width: '8%', isDisabled: false},
-        {label: '', name: 'overflow', id: '', type: 'text', width: '20%', isDisabled: false},
+        {label: 'Garage Type', name: 'garage_type', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Garage Entry', name: 'garage_entry', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Garage Swing', name: 'garage_swing', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Garage Drop', name: 'garage_drop', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Garage Ext', name: 'garage_extension', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '20%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'drop', fields: [
-        {label: 'Master', name: 'master_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false},
-        {label: 'Bath 1', name: 'bath1_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false},
-        {label: 'Bath 2', name: 'bath2_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false},
-        {label: 'Bath 3', name: 'bath3_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false},
-        {label: '', name: 'overflow', id: '', type: 'text', width: '28%', isDisabled: false},
+        {label: 'Master', name: 'master_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Bath 1', name: 'bath1_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Bath 2', name: 'bath2_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Bath 3', name: 'bath3_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '28%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'soil', fields: [
-        {label: 'Lab', name: 'geo_lab', id: '', type: 'text', width: '10%', isDisabled: false},
-        {label: 'Report #', name: 'geo_report_num', id: '', type: 'text', width: '10%', isDisabled: false},
-        {label: 'Report Date', name: 'geo_report_date', id: '', type: 'date', width: '10%', isDisabled: false},
-        {label: 'PI', name: 'geo_pi', id: '', type: 'text', width: '5%', isDisabled: false},
-        {label: 'EmC', name: 'em_center', id: '', type: 'number', width: '5%', isDisabled: false},
-        {label: 'EmE', name: 'em_edge', id: '', type: 'number', width: '5%', isDisabled: false},
-        {label: 'YmC', name: 'ym_center', id: '', type: 'number', width: '5%', isDisabled: false},
-        {label: 'YmE', name: 'ym_edge', id: '', type: 'number', width: '5%', isDisabled: false},
-        {label: '', name: 'overflow', id: '', type: 'text', width: '5%', isDisabled: false},
+        {label: 'Lab', name: 'geo_lab', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
+        {label: 'Report #', name: 'geo_report_num', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
+        {label: 'Report Date', name: 'geo_report_date', id: '', type: 'date', width: '10%', isDisabled: false, required: false, list: []},
+        {label: 'PI', name: 'geo_pi', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
+        {label: 'EmC', name: 'em_center', id: '', type: 'number', width: '5%', isDisabled: false, required: false, list: []},
+        {label: 'EmE', name: 'em_edge', id: '', type: 'number', width: '5%', isDisabled: false, required: false, list: []},
+        {label: 'YmC', name: 'ym_center', id: '', type: 'number', width: '5%', isDisabled: false, required: false, list: []},
+        {label: 'YmE', name: 'ym_edge', id: '', type: 'number', width: '5%', isDisabled: false, required: false, list: []},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'form', fields: [
-        {label: 'Front RT', name: 'fnd_height_fr', id: '', type: 'number', width: '8%', isDisabled: false},
-        {label: 'Front LT', name: 'fnd_height_fl', id: '', type: 'number', width: '8%', isDisabled: false},
-        {label: 'Rear RT', name: 'fnd_height_rr', id: '', type: 'number', width: '8%', isDisabled: false},
-        {label: 'Rear LT', name: 'fnd_height_rl', id: '', type: 'number', width: '8%', isDisabled: false},
-        {label: '', name: 'overflow', id: '', type: 'text', width: '28%', isDisabled: false},
+        {label: 'Front RT', name: 'fnd_height_fr', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Front LT', name: 'fnd_height_fl', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Rear RT', name: 'fnd_height_rr', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Rear LT', name: 'fnd_height_rl', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '28%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'framing', fields: [
-        {label: 'FND Type', name: 'foundation_type', id: '', type: 'text', width: '8%', isDisabled: false},
-        {label: 'Floor Type', name: 'floor_type', id: '', type: 'text', width: '8%', isDisabled: false},
-        {label: 'Roof Type', name: 'roof_type', id: '', type: 'text', width: '8%', isDisabled: false},
-        {label: 'Stories', name: 'num_stories', id: '', type: 'number', width: '5%', isDisabled: false},
-        {label: 'SQFT', name: 'square_footage', id: '', type: 'number', width: '5%', isDisabled: false},
-        {label: 'PITA', name: 'pita_factor', id: '', type: 'number', width: '6%', isDisabled: false},
-        {label: '', name: 'overflow', id: '', type: 'text', width: '20%', isDisabled: false},
+        {label: 'FND Type', name: 'foundation_type', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Floor Type', name: 'floor_type', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Roof Type', name: 'roof_type', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Stories', name: 'num_stories', id: '', type: 'number', width: '5%', isDisabled: false, required: false, list: []},
+        {label: 'SQFT', name: 'square_footage', id: '', type: 'number', width: '5%', isDisabled: false, required: false, list: []},
+        {label: 'PITA', name: 'pita_factor', id: '', type: 'number', width: '6%', isDisabled: false, required: false, list: []},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '20%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'notes', fields: [
-        {label: 'Addl Options', name: 'additional_options', id: '', type: 'text', width: '25%', isDisabled: false},
-        {label: 'Notes', name: 'comments', id: '', type: 'text', width: '25%', isDisabled: false},
-        {label: '', name: 'overflow', id: '', type: 'text', width: '10%', isDisabled: false},
+        {label: 'Addl Options', name: 'additional_options', id: '', type: 'text', width: '25%', isDisabled: false, required: false, list: []},
+        {label: 'Notes', name: 'comments', id: '', type: 'text', width: '25%', isDisabled: false, required: false, list: []},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'trello', fields: [
-        {label: 'Default List', name: 'trello_list', id: 'trello_list_id', type: 'text', width: '25%', isDisabled: false},
-        {label: '', name: 'overflow', id: '', type: 'text', width: '35%', isDisabled: false},
+        {label: 'Default List', name: 'trello_list', id: 'trello_list_id', type: 'text', width: '25%', isDisabled: false, required: false, list: []},
+        // {label: 'Create?', name: 'createTrelloCard', id: '', type: 'checkbox', width: '3%', isDisabled: false, required: false, list: []},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '32%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'post_key', fields: [
-        {label: 'Status', name: 'status', id: '', type: 'text', width: '4%', isDisabled: false},
-        {label: '', name: 'cancel', id: '', type: 'text', width: '3%', isDisabled: false},
-        {label: '', name: 'add', id: '', type: 'text', width: '3%', isDisabled: false},
+        {label: 'Status', name: 'status', id: '', type: 'text', width: '4%', isDisabled: false, required: false, list: []},
+        {label: '', name: 'cancel', id: '', type: 'text', width: '3%', isDisabled: false, required: false, list: []},
+        {label: '', name: 'add', id: '', type: 'text', width: '3%', isDisabled: false, required: false, list: []},
       ]},
     ]
 
@@ -233,88 +262,102 @@ class CreateStart extends Component {
   componentDidMount = () => {
     this.props.loadContacts();
     this.props.getLookup('TRELLO_LIST');
-  }
-
-  formatDate = date => {
-      var d = new Date(date),
-          month = '' + (d.getMonth() + 1),
-          day = '' + d.getDate(),
-          year = d.getFullYear();
-
-      if (month.length < 2) month = '0' + month;
-      if (day.length < 2) day = '0' + day;
-
-      return [year, month, day].join('-');
+    this.props.getLookup('PROJECT_STATUS');
+    this.props.getLookup('SCOPE');
+    this.props.getLookup('MASONRY');
+    this.props.getLookup('YN');
+    this.props.getLookup('FND_TYPE');
+    this.props.getLookup('GARAGE_TYPE');
+    this.props.getLookup('GARAGE_ENTRY');
+    this.props.getLookup('GARAGE_SWING');
+    this.props.getLookup('FLOOR_TYPE');
+    this.props.getLookup('ROOF_TYPE');
   }
 
   initState = () => {
-    this.setState( {
-      address_id: null,
-      job_number: null,
-      address1: '',
-      address2: '',
-      phase: '',
-      section: '',
-      lot: '',
-      block: '',
-      fnd_height_fr: null,
-      fnd_height_fl: null,
-      fnd_height_rr: null,
-      fnd_height_rl: null,
-      plan_type: '',
-      elevation: '',
-      masonry: null,
-      garage_type: '',
-      garage_entry: '',
-      garage_swing: '',
-      garage_drop: null,
-      garage_extension: null,
-      covered_patio: '',
-      bay_window: '',
-      master_shower_drop: '',
-      bath1_shower_drop: '',
-      bath2_shower_drop: '',
-      bath3_shower_drop: '',
-      geo_lab: '',
-      geo_report_num: '',
-      geo_report_date: null,
-      geo_pi: null,
-      em_center: null,
-      em_edge: null,
-      ym_center: null,
-      ym_edge: null,
-      additional_options: '',
-      comments: '',
-      created_by: null,
-      last_updated_by: null,
-      sequence_id: null,
-      prefix: '',
-      sequence: null,
-      year: null,
-      status: '',
-      editRow: this.NEW_ROW, // this is the address array id that is being edited.  If -1, new address.
-      dialogValue: '',
-      // Custom Project fields
-      project_status: '',
-      scope: '',
-      design_date: null,
-      start_date: null,
-      onboard_date: null,
-      orig_due_date: null,
-      main_contact: '',
-      billing_contact: '',
-      builder_contact: '',
-      foundation_type: '',
-      floor_type: '',
-      roof_type: '',
-      num_stories: null,
-      square_footage: null,
-      pita_factor: null,
-      box_folder: '',
-      // Trello List
-      // trello_list_id: '',
-      // trello_list: ''
-    } );
+
+    // rememberData toggle will assist volume entry by not erasing everything.  It will save all the values.
+    // this can be a little dangerous.  Obviously clearing out address_id, job_number and setting the edit row
+    // to be on the NEW ROW.
+    if (this.state.rememberData) {
+      this.setState( {
+        address_id: null,
+        job_number: null,
+        editRow: this.NEW_ROW, // this is the address array id that is being edited.  If -1, new address.
+      });
+    }
+    else {
+      this.setState( {
+        address_id: null,
+        job_number: null,
+        address1: '',
+        address2: '',
+        phase: '',
+        section: '',
+        lot: '',
+        block: '',
+        fnd_height_fr: null,
+        fnd_height_fl: null,
+        fnd_height_rr: null,
+        fnd_height_rl: null,
+        plan_type: '',
+        elevation: '',
+        masonry: '',
+        garage_type: '',
+        garage_entry: '',
+        garage_swing: '',
+        garage_drop: null,
+        garage_extension: null,
+        covered_patio: '',
+        bay_window: '',
+        master_shower_drop: '',
+        bath1_shower_drop: '',
+        bath2_shower_drop: '',
+        bath3_shower_drop: '',
+        geo_lab: '',
+        geo_report_num: '',
+        geo_report_date: null,
+        geo_pi: null,
+        em_center: null,
+        em_edge: null,
+        ym_center: null,
+        ym_edge: null,
+        additional_options: '',
+        comments: '',
+        created_by: null,
+        last_updated_by: null,
+        sequence_id: null,
+        prefix: '',
+        sequence: null,
+        year: null,
+        status: '',
+        editRow: this.NEW_ROW, // this is the address array id that is being edited.  If -1, new address.
+        dialogValue: '',
+        // Custom Project fields
+        project_status: '',
+        scope: '',
+        design_date: null,
+        start_date: null,
+        onboard_date: null,
+        orig_due_date: null,
+        main_contact: '',
+        billing_contact: '',
+        builder_contact: '',
+        foundation_type: '',
+        floor_type: '',
+        roof_type: '',
+        num_stories: null,
+        square_footage: null,
+        pita_factor: null,
+        box_folder: '',
+        // Trello List
+        // trello_list_id: '',
+        // trello_list: []
+        createTrelloCard: false,
+        rememberData: false,
+      } );
+    }
+
 
   };
 
@@ -324,27 +367,41 @@ class CreateStart extends Component {
   };
 
   handleChange = name => event => {
-    // console.log('field name: ', name);
+
+    name === 'garage_drop'? console.log('field name: ', name, event.target.type, 'value: ', event.target.value, 'checked: ',event.target.checked): ''
+
+    event.target.type === 'checkbox'? this.setState({ [name]: event.target.checked, }):
+    event.target.type === 'number' && event.target.value === ''? this.setState({ [name]: null, }):
     this.setState({ [name]: event.target.value, });
   };
 
   addStart = () => {
-    this.setState({
-      owner_id: this.props.session.id,
-      owner: this.props.session.full_name,
-      created_by: this.props.session.id,
-      last_updated_by: this.props.session.id,
-      status: 'PENDING'
-    }, ()=> {
-        // console.log('In Save Start',this.props.session.id);
-        // Passing...
-        //    state - we are inserting / updating the job
-        //    session id - this is the current user.  This is a filter for our pending rows
-        //    PENDING - this is the load type and the status of the row in the DB.
-        this.props.createAddress(this.state, this.props.session.id, 'PENDING');
-        this.initState();
-      }
-    );
+    if (this.state.address1 !== '' && this.state.client_id !== null) {
+
+      this.setState({
+        owner_id: this.props.session.id,
+        owner: this.props.session.full_name,
+        created_by: this.props.session.id,
+        last_updated_by: this.props.session.id,
+        status: 'PENDING'
+      }, ()=> {
+          // console.log('In Save Start',this.props.session.id);
+          // Passing...
+          //    state - we are inserting / updating the job
+          //    session id - this is the current user.  This is a filter for our pending rows
+          //    PENDING - this is the load type and the status of the row in the DB.
+          this.props.createAddress(this.state, this.props.session.id, 'PENDING');
+          this.initState();
+        }
+      );
+    }
+    else {
+      this.props.loadMessage(
+        { ok:false,
+          status: 'Missing Data',
+          statusText: "Missing Address or Client.  Please fill in"
+        }, "ERROR");
+    }
     // console.log("staged starts", this.stagedStarts);
   };
 
@@ -401,7 +458,7 @@ class CreateStart extends Component {
       masonry: this.props.addresses[id].masonry,
       garage_type: this.props.addresses[id].garage_type,
       garage_entry: this.props.addresses[id].garage_entry,
-      garage_swing: this.props.addresses[id].swing,
+      garage_swing: this.props.addresses[id].garage_swing,
       garage_drop: this.props.addresses[id].garage_drop,
       garage_extension: this.props.addresses[id].garage_extension,
       covered_patio: this.props.addresses[id].covered_patio,
@@ -445,6 +502,8 @@ class CreateStart extends Component {
       last_updated_by: this.props.addresses[id].last_updated_by,
       status: this.props.addresses[id].status,
       editRow: id, // this is the address array id that is being edited.  If -1, new address.
+      createTrelloCard: false,
+      rememberData: false,
     });
   };
 
@@ -499,6 +558,8 @@ class CreateStart extends Component {
   ****************************************/
   getTableHeader = () => {
 
+    const { classes } = this.props;
+
     const fields = [].concat(
       this.tabs.find(tab => tab.name === 'pre_key').fields,
       this.tabs.find(tab => tab.name === this.state.currentTab).fields,
@@ -511,11 +572,28 @@ class CreateStart extends Component {
     });
 
     const tableHeader = fields.map((field, id) => {
-        return (
-        <TableCell key={id} padding='none' >
-          {field.label}
-        </TableCell>
-        )
+
+      switch (field.name) {
+        case 'edit':
+        case 'delete':
+        // case 'overflow':
+        case 'cancel':
+        case 'save':
+        // case 'job_number':
+        case 'status':
+        case 'add':
+          return (
+            <TableCell key={id} padding='none' style={{fontWeight: 'bold', fontSize: 13}}>
+              {field.label}
+            </TableCell>
+          );
+        default:
+          return (
+            <TableCell key={id} padding='none' classes={{root: classes.tableCellProps}}  style={{fontWeight: 'bold', fontSize: 13}}>
+              {field.label}
+            </TableCell>
+          );
+      };
     });
 
     return (
@@ -558,6 +636,44 @@ class CreateStart extends Component {
 
       // console.log("local state", `theState.${field.name}`);
       // console.log("state value", eval(`theState.${field.name}`));
+
+      switch (field.name) {
+        case 'project_status':
+          field.list = this.props.projectStatusLookup;
+          break;
+        case 'scope':
+          field.list = this.props.scopeLookup;
+          break;
+        case 'masonry':
+          field.list = this.props.masonryLookup;
+          break;
+        case 'covered_patio':
+        case 'bay_window':
+        case 'master_shower_drop':
+        case 'bath1_shower_drop':
+        case 'bath2_shower_drop':
+        case 'bath3_shower_drop':
+          field.list = this.props.ynLookup;
+          break;
+        case 'garage_type':
+          field.list = this.props.garageTypeLookup;
+          break;
+        case 'garage_entry':
+          field.list = this.props.garageEntryLookup;
+          break;
+        case 'garage_swing':
+          field.list = this.props.garageSwingLookup;
+          break;
+        case 'foundation_type':
+          field.list = this.props.fndTypeLookup;
+          break;
+        case 'floor_type':
+          field.list = this.props.floorTypeLookup;
+          break;
+        case 'roof_type':
+          field.list = this.props.roofTypeLookup;
+          break;
+      };
 
       switch (field.name) {
         case 'edit':
@@ -605,18 +721,18 @@ class CreateStart extends Component {
             )
         case 'overflow':
           return (
-            <TableCell key={id} padding='none' />
+            <TableCell key={id} padding='none' classes={{root: classes.tableCellProps}}/>
           )
         case 'job_number':  // For job number, show it unless it is the add row.
           if (currentRow !== this.NEW_ROW)
             return (
-              <TableCell key={id} padding='none'>
+              <TableCell key={id} padding='none' classes={{root: classes.tableCellProps}}>
                 {eval(`theState.${field.name}`)||''}
               </TableCell>
             )
           else
             return (
-              <TableCell key={id} padding='none' />
+              <TableCell key={id} padding='none' classes={{root: classes.tableCellProps}}/>
             )
         case 'status':
           if (currentRow !== this.state.editRow)
@@ -627,7 +743,17 @@ class CreateStart extends Component {
             )
           else
             return (
-              <TableCell key={id} padding='none' />
+              <TableCell key={id} padding='none'>
+                <Grid container direction='column' justify='center' alignItems='center'>
+                  <Grid item>Remember?</Grid>
+                  <Grid item>
+                  <Checkbox
+                    onChange={this.handleChange('rememberData')}
+                    checked={this.state.rememberData}
+                  />
+                  </Grid>
+                </Grid>
+              </TableCell>
             )
         case 'cancel':
           if (currentRow !== this.state.editRow || currentRow === this.NEW_ROW)
@@ -694,28 +820,42 @@ class CreateStart extends Component {
                 </IconButton>
               </TableCell>
             )
+        case 'createTrelloCard':
+          if (this.state.editRow !== currentRow)
+            return (
+              <TableCell key={id} padding='none' classes={{root: classes.tableCellEntryProps}}>
+                <Checkbox
+                  checked={eval(`theState.${field.name}`)||false}
+                  disabled
+                />
+              </TableCell>
+            )
+          return (
+            <TableCell key={id} padding='none' classes={{root: classes.tableCellEntryProps}}>
+              <Checkbox
+                onChange={this.handleChange(field.name)}
+                checked={eval(`theState.${field.name}`)}
+              />
+            </TableCell>
+          )
         default:
           if (this.state.editRow !== currentRow)
             return (
-              <TableCell key={id} padding='none'>
+              <TableCell key={id} padding='none' classes={{root: classes.tableCellProps}}>
                 {eval(`theState.${field.name}`)||''}
               </TableCell>
             )
           else
             return (
-              <TableCell key={id} padding='none'>
+              <TableCell key={id} padding='none' classes={{root: classes.tableCellEntryProps}}>
                 <TextField
-                  // key={id}
+                  required={field.required}
+                  select={field.list.length !== 0? true: false}
                   id={field.name}
-                  // label={field.label}
-                  // className={}
-                  // value={field.type !== 'date'? eval(`theState.${field.name}`)||'' : this.formatDate(eval(`theState.${field.name}`))||''}
-                  // value={field.type !== 'date'? eval(`theState.${field.name}`)||'' : eval(`theState.${field.name}`).toISOString.split('T')[0]||''}
                   value={eval(`theState.${field.name}`)||''}
                   fullWidth = {true}
-                  variant='outlined'
+                  variant='filled'
                   onChange={this.handleChange(field.name)}
-                  // width='20px'
                   type={field.type}
                   // root = {{fontSize: '8px'}}
                   InputProps={{
@@ -724,8 +864,14 @@ class CreateStart extends Component {
                     },
                     readOnly: field.isDisabled,
                   }}
-
-                />
+                >
+                  <MenuItem key={''} value={null}>NA</MenuItem>
+                  {field.list.map(option => (
+                     <MenuItem key={option.code} value={option.code}>
+                       {option.name}
+                     </MenuItem>
+                   ))}
+                </TextField>
               </TableCell>
             )
       }
@@ -741,10 +887,9 @@ class CreateStart extends Component {
   Calls: getTableEntry
   ****************************************/
   displayRows = () => {
-    // this.forceUpdate();
-
     // console.log('displayPending', this.props.addresses);
     const pending = this.props.addresses.map((start,id) => {
+      // console.log(start.job_number, 'Swing: ', start.garage_swing? start.garage_swing === 'RIGHT'? 'R':'L' : '')
       if (id !== this.state.editRow)
         return (
           <TableRow key={id}>
@@ -775,215 +920,234 @@ class CreateStart extends Component {
     // console.log('job number', this.state.job_number);
     // console.log('state', this.state);
     // console.log('jobNumber:', this.getJobNumber());
-
+    // console.log('create Select props',createSelectProps, this.createSelectProps);
+    // console.log('project status', this.props.projectStatusLookup);
+    // console.log('scope', this.props.scopeLookup);
+    // console.log('masonry', this.props.masonryLookup);
+    // console.log('yn', this.props.ynLookup);
+    // console.log('fnd type', this.props.fndTypeLookup);
+    // console.log('garage type', this.props.garageTypeLookup);
+    // console.log('garage entry', this.props.garageEntryLookup);
+    // console.log('garage swing', this.props.garageSwingLookup);
+    // console.log('floor type', this.props.floorTypeLookup);
+    // console.log('roof type', this.props.roofTypeLookup);
 
     return (
       <Fragment>
+
       <Paper className={classes.bodyPaper}>
-        <Typography variant='h5'>Starts Entry</Typography>
+        <Typography variant='h5'>Project Management</Typography>
 
-        <Paper className={classes.Paper}>
-          <form>
-          <Grid container spacing={24}>
-            <Grid item xs={12} md={3}>
-              <CreatableSelect
-                isClearable
-                // isSearchable
-                // getOptionLabel={({name}) => name}
-                // getOptionValue={({id}) => id}
-                placeholder='Select Client...'
-                onChange={
-                  (selected) => {
-                    this.setState( {
-                      client_id: selected?selected.value:null,
-                      client: selected?selected.label:null
-                    } )
-                  }
-                }
-                // onInputChange={this.handleInputChange}
-                options={
-                  this.props.clients.map(client => {
-                    return {
-                      value: client.id.toString(),
-                      label: client.name
-                    }
-                  })
-                }
-                onCreateOption={this.createClient}
-              />
-            </Grid>
-            <Grid item xs={12} md={2}>
-              <Select
-                id='requestor'
-                isClearable
-                isSearchable
-                options={this.props.contacts}
-                getOptionLabel={({full_name}) => full_name}
-                getOptionValue={({id}) => id}
-                placeholder='Requestor...'
-                onChange={
-                  (selected) => {
-                    this.setState( {
-                      requestor_id: selected?selected.id:null,
-                      requestor: selected?selected.full_name:null
-                    } )
-                  }
-                }
-              />
-            </Grid>
-            <Grid item xs={12} md={3}>
-              <CreatableSelect
-                isClearable
-                placeholder='Select Subdivision...'
-                onChange={
-                  (selected) => {
-                    this.setState( {
-                      subdivision_id: selected?selected.value:null,
-                      subdivision: selected?selected.label:null
-                    } )
-                  }
-                }
-                options={
-                  this.props.subdivisions.map(sub => {
-                    return {
-                      value: sub.id.toString(),
-                      label: sub.subdivision
-                    }
-                  })
-                }
-                onCreateOption={this.createSubdivision}
-              />
-            </Grid>
-            <Grid item xs={12} md={2}>
-              <CreatableSelect
-                isClearable
-                placeholder='Select City...'
-                onChange={
-                  (selected) => {
-                    this.setState( {
-                      city_id: selected?selected.value:null,
-                      city: selected?selected.label:null
-                    } )
-                  }
-                }
-                options={
-                  this.props.cities.map(city => {
-                    return {
-                      value: city.id.toString(),
-                      label: city.city
-                    }
-                  })
-                }
-                onCreateOption={this.createCity}
-              />
-            </Grid>
-            <Grid item xs={12} md={2}>
-              <Select
-                id='trelloList'
-                isClearable
-                isSearchable
-                options={this.props.trelloListLookup}
-                getOptionLabel={({name}) => name}
-                getOptionValue={({code}) => code}
-                placeholder='Trello List...'
-                onChange={
-                  (selected) => {
-                    this.setState( {
-                      trello_list_id: selected?selected.code:null,
-                      trello_list: selected?selected.name:null
-                    } )
-                  }
-                }
-              />
-            </Grid>
-          </Grid>
-
-          </form>
-        </Paper>
-        <Paper className={classes.Paper}>
-          <AppBar position='static' color='secondary'>
+        <ExpansionPanel defaultExpanded={true} style={{marginTop: 10}}>
+          <ExpansionPanelSummary expandIcon={<ExpandMore />} classes={{root: classes.panelSummaryProps, expandIcon: classes.panelSummaryProps}}>
+            Project Entry
+          </ExpansionPanelSummary>
+          <ExpansionPanelDetails>
             <Grid container>
+              <Grid item  xs={12}>
+                <AppBar position='static' color='secondary'>
+                  <Grid container justify='space-around'>
+                    <Grid item xs={12}>
+                      <Tabs
+                        value = {this.state.currentTab}
+                        onChange={this.handleTabChange}
+                        indicatorColor='secondary'
+                        textColor='primary'
+                        variant='fullWidth'
+                      >
+                          <Tab value='main' label='Main Info'
+                            classes={{ labelContainer: classes.tabContainerProps, }}
+                          />
+                          <Tab value='project' label='Project Info'
+                            classes={{ labelContainer: classes.tabContainerProps, }}
+                          />
+                          <Tab value='communication' label='Comm'
+                            classes={{ labelContainer: classes.tabContainerProps, }}
+                          />
+                          <Tab value='lot' label='Lot Details'
+                            classes={{ labelContainer: classes.tabContainerProps, }}
+                          />
+                          <Tab value='design' label='Design Details'
+                            classes={{ labelContainer: classes.tabContainerProps, }}
+                          />
+                          <Tab value='garage' label='Garage Info'
+                            classes={{ labelContainer: classes.tabContainerProps, }}
+                          />
+                          <Tab value='drop' label='Shower Drops'
+                            classes={{ labelContainer: classes.tabContainerProps, }}
+                          />
+                          <Tab value='soil' label='Soil Details'
+                            classes={{ labelContainer: classes.tabContainerProps, }}
+                          />
+                          <Tab value='form' label='Form Heights'
+                            classes={{ labelContainer: classes.tabContainerProps, }}
+                          />
+                          <Tab value='framing' label='Framing'
+                            classes={{ labelContainer: classes.tabContainerProps, }}
+                          />
+                          <Tab value='notes' label='Notes'
+                            classes={{ labelContainer: classes.tabContainerProps, }}
+                          />
+                          <Tab value='trello' label='Trello'
+                            classes={{ labelContainer: classes.tabContainerProps, }}
+                          />
+                      </Tabs>
+                    </Grid>
+                    <Grid item xs={12}><Typography variant='button' align='center'>Auto-fill fields</Typography></Grid>
+                    <Grid item xs={12} md={2}>
+                      <CreatableSelect styles={createSelectProps}
+                        isClearable
+                        // isSearchable
+                        // getOptionLabel={({name}) => name}
+                        // getOptionValue={({id}) => id}
+                        placeholder='Client...'
+                        onChange={
+                          (selected) => {
+                            this.setState( {
+                              client_id: selected?selected.value:null,
+                              client: selected?selected.name:null
+                            } )
+                          }
+                        }
+                        // onInputChange={this.handleInputChange}
+                        options={
+                          this.props.clients.map(client => {
+                            return {
+                              value: client.id.toString(),
+                              label: `(${client.id}) ${client.name}`,
+                              name: client.name
+                            }
+                          })
+                        }
+                        onCreateOption={this.createClient}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={2}>
+                      <Select styles={createSelectProps}
+                        id='requestor'
+                        isClearable
+                        isSearchable
+                        options={this.props.contacts}
+                        getOptionLabel={({full_name}) => full_name}
+                        getOptionValue={({id}) => id}
+                        placeholder='Requestor...'
+                        onChange={
+                          (selected) => {
+                            this.setState( {
+                              requestor_id: selected?selected.id:null,
+                              requestor: selected?selected.full_name:null
+                            } )
+                          }
+                        }
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={2}>
+                      <CreatableSelect styles={createSelectProps}
+                        isClearable
+                        placeholder='Subdivision...'
+                        onChange={
+                          (selected) => {
+                            this.setState( {
+                              subdivision_id: selected?selected.value:null,
+                              subdivision: selected?selected.name:null
+                            } )
+                          }
+                        }
+                        options={
+                          this.props.subdivisions.map(sub => {
+                            return {
+                              value: sub.id.toString(),
+                              label: `(${sub.id}) ${sub.subdivision}`,
+                              name: sub.subdivision
+
+                            }
+                          })
+                        }
+                        onCreateOption={this.createSubdivision}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={2}>
+                      <CreatableSelect styles={createSelectProps}
+                        isClearable
+                        placeholder='City...'
+                        onChange={
+                          (selected) => {
+                            this.setState( {
+                              city_id: selected?selected.value:null,
+                              city: selected?selected.label:null
+                            } )
+                          }
+                        }
+                        options={
+                          this.props.cities.map(city => {
+                            return {
+                              value: city.id.toString(),
+                              label: city.city
+                            }
+                          })
+                        }
+                        onCreateOption={this.createCity}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={2}>
+                      <Select styles={createSelectProps}
+                        id='trelloList'
+                        isSearchable
+                        options={this.props.trelloListLookup}
+                        getOptionLabel={({name}) => name}
+                        getOptionValue={({code}) => code}
+                        placeholder='Trello List...'
+                        onChange={
+                          (selected) => {
+                            this.setState( {
+                              trello_list_id: selected?selected.code:null,
+                              trello_list: selected?selected.name:null
+                            } )
+                          }
+                        }
+                      />
+                    </Grid>
+                  </Grid>
+                </AppBar>
+              </Grid>
+
               <Grid item xs={12}>
-                <Tabs
-                  value = {this.state.currentTab}
-                  onChange={this.handleTabChange}
-                  indicatorColor='secondary'
-                  textColor='primary'
-                  variant='fullWidth'
-                >
-                    <Tab value='main' label='Main Info'
-                      classes={{ labelContainer: classes.tabContainerProps, }}
-                    />
-                    <Tab value='project' label='Project Info'
-                      classes={{ labelContainer: classes.tabContainerProps, }}
-                    />
-                    <Tab value='communication' label='Comm'
-                      classes={{ labelContainer: classes.tabContainerProps, }}
-                    />
-                    <Tab value='lot' label='Lot Details'
-                      classes={{ labelContainer: classes.tabContainerProps, }}
-                    />
-                    <Tab value='design' label='Design Details'
-                      classes={{ labelContainer: classes.tabContainerProps, }}
-                    />
-                    <Tab value='garage' label='Garage Info'
-                      classes={{ labelContainer: classes.tabContainerProps, }}
-                    />
-                    <Tab value='drop' label='Shower Drops'
-                      classes={{ labelContainer: classes.tabContainerProps, }}
-                    />
-                    <Tab value='soil' label='Soil Details'
-                      classes={{ labelContainer: classes.tabContainerProps, }}
-                    />
-                    <Tab value='form' label='Form Heights'
-                      classes={{ labelContainer: classes.tabContainerProps, }}
-                    />
-                    <Tab value='framing' label='Framing'
-                      classes={{ labelContainer: classes.tabContainerProps, }}
-                    />
-                    <Tab value='notes' label='Notes'
-                      classes={{ labelContainer: classes.tabContainerProps, }}
-                    />
-                    <Tab value='trello' label='Trello'
-                      classes={{ labelContainer: classes.tabContainerProps, }}
-                    />
-                </Tabs>
+                <Table className = {classes.tableWidth}>
+                {/* <Table fixedHeader={false} style={{ width: 'auto', tableLayout: 'auto' }}> */}
+                  {this.getTableHeader()}
+
+                  <TableBody>
+
+                    {this.state.editRow === this.NEW_ROW &&
+                      <TableRow>{this.getTableEntry(this.state)}</TableRow>
+                    }
+
+                    {this.displayRows(this.state)}
+
+                  </TableBody>
+                </Table>
+                <Grid container justify="flex-end" style={{marginTop: 10}}>
+                  <Grid item>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={(e) => this.commitPendingAddresses()}
+                    >
+                      Submit
+                    </Button>
+                  </Grid>
+                </Grid>
               </Grid>
             </Grid>
-          </AppBar>
+          </ExpansionPanelDetails>
+        </ExpansionPanel>
 
-          <Table className = {classes.tableWidth}>
-          {/* <Table fixedHeader={false} style={{ width: 'auto', tableLayout: 'auto' }}> */}
-            {this.getTableHeader()}
-
-            <TableBody>
-
-              {this.state.editRow === this.NEW_ROW &&
-                <TableRow>{this.getTableEntry(this.state)}</TableRow>
-              }
-
-              {this.displayRows(this.state)}
-
-            </TableBody>
-          </Table>
-
-        </Paper>
-          <Grid container justify="flex-end">
-            <Grid item>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={(e) => this.commitPendingAddresses()}
-              >
-                Submit
-              </Button>
-            </Grid>
-          </Grid>
       </Paper>
       {this.props.showClientDialog && <ClientDialogContainer newValue = {this.state.dialogValue} />}
       {this.props.showContactDialog && <ContactDialogContainer newValue = {this.state.dialogValue} />}
       {this.props.showCityDialog && <CityDialogContainer newValue = {this.state.dialogValue} />}
       {this.props.showSubdivisionDialog && <SubdivisionDialogContainer newValue = {this.state.dialogValue} />}
+      <AlertDialogContainer />
       </Fragment>
 
     );
@@ -997,46 +1161,131 @@ CreateStart.propTypes = {
 
 export default withStyles(styles)(CreateStart);
 
+// <ExpansionPanel>
+// <ExpansionPanelSummary expandIcon={<ExpandMore />} classes={{root: classes.panelSummaryProps, expandIcon: classes.panelSummaryProps}}>
+//   Project Search - NOT READY
+// </ExpansionPanelSummary>
+// <ExpansionPanelDetails>
+// <Paper className={classes.Paper}>
+//   <form>
+//   <Grid container spacing={24}>
+//     <Grid item xs={12} md={3}>
+//       <CreatableSelect
+//         isClearable
+//         // isSearchable
+//         // getOptionLabel={({name}) => name}
+//         // getOptionValue={({id}) => id}
+//         placeholder='Client...'
+//         onChange={
+//           (selected) => {
+//             this.setState( {
+//               client_id: selected?selected.value:null,
+//               client: selected?selected.name:null
+//             } )
+//           }
+//         }
+//         // onInputChange={this.handleInputChange}
+//         options={
+//           this.props.clients.map(client => {
+//             return {
+//               value: client.id.toString(),
+//               label: `(${client.id}) ${client.name}`,
+//               name: client.name
+//             }
+//           })
+//         }
+//         onCreateOption={this.createClient}
+//       />
+//     </Grid>
+//     <Grid item xs={12} md={2}>
+//       <Select
+//         id='requestor'
+//         isClearable
+//         isSearchable
+//         options={this.props.contacts}
+//         getOptionLabel={({full_name}) => full_name}
+//         getOptionValue={({id}) => id}
+//         placeholder='Requestor...'
+//         onChange={
+//           (selected) => {
+//             this.setState( {
+//               requestor_id: selected?selected.id:null,
+//               requestor: selected?selected.full_name:null
+//             } )
+//           }
+//         }
+//       />
+//     </Grid>
+//     <Grid item xs={12} md={3}>
+//       <CreatableSelect
+//         isClearable
+//         placeholder='Subdivision...'
+//         onChange={
+//           (selected) => {
+//             this.setState( {
+//               subdivision_id: selected?selected.value:null,
+//               subdivision: selected?selected.name:null
+//             } )
+//           }
+//         }
+//         options={
+//           this.props.subdivisions.map(sub => {
+//             return {
+//               value: sub.id.toString(),
+//               label: `(${sub.id}) ${sub.subdivision}`,
+//               name: sub.subdivision
 //
-// pad(n, width, z) {
-//   z = z || '0';
-//   n = !n? '0': n + '';
-//   return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
-// }
-
-
-        // <Paper className={classes.Paper}>
-        //   <Grid container>
-        //     <Grid item xs={12} md>
-        //       <Paper className={classes.Paper}>
-        //         Trello
-        //       </Paper>
-        //     </Grid>
-        //     <Grid item xs={12} md>
-        //       <Paper className={classes.Paper}>
-        //         Box
-        //       </Paper>
-        //     </Grid>
-        //   </Grid>
-        // </Paper>
-
-        // <Select
-        //   id='client'
-        //   // isClearable
-        //   // isSearchable
-        //   options={this.props.clients}
-        //   getOptionLabel={({name}) => name}
-        //   getOptionValue={({id}) => id}
-        //   placeholder='Select Client...'
-        //   onChange={
-        //     (selected) => {
-        //       this.setState( {
-        //         client_id: selected?selected.id:null,
-        //         client: selected?selected.name:null
-        //       } )
-        //     }
-        //   }
-        //   onCreateOption={this.createClient}
-        // />
-
-        // {field.type !== 'date'? eval(`theState.${field.name}`)||'' : this.formatDate(eval(`theState.${field.name}`))||''}
+//             }
+//           })
+//         }
+//         onCreateOption={this.createSubdivision}
+//       />
+//     </Grid>
+//     <Grid item xs={12} md={2}>
+//       <CreatableSelect
+//         isClearable
+//         placeholder='City...'
+//         onChange={
+//           (selected) => {
+//             this.setState( {
+//               city_id: selected?selected.value:null,
+//               city: selected?selected.label:null
+//             } )
+//           }
+//         }
+//         options={
+//           this.props.cities.map(city => {
+//             return {
+//               value: city.id.toString(),
+//               label: city.city
+//             }
+//           })
+//         }
+//         onCreateOption={this.createCity}
+//       />
+//     </Grid>
+//     <Grid item xs={12} md={2}>
+//       <Select
+//         id='trelloList'
+//         isClearable
+//         isSearchable
+//         options={this.props.trelloListLookup}
+//         getOptionLabel={({name}) => name}
+//         getOptionValue={({code}) => code}
+//         placeholder='Trello List...'
+//         onChange={
+//           (selected) => {
+//             this.setState( {
+//               trello_list_id: selected?selected.code:null,
+//               trello_list: selected?selected.name:null
+//             } )
+//           }
+//         }
+//       />
+//     </Grid>
+//   </Grid>
+//
+//   </form>
+// </Paper>
+// </ExpansionPanelDetails>
+// </ExpansionPanel>

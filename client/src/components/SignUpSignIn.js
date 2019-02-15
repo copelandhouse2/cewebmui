@@ -129,7 +129,21 @@ class SignUpSignIn extends Component {
 
   handleSignIn = () => {
     console.log("In the handleSignIn", this.state);
-    this.props.signIn(this.state);
+    if ( !this.state.email || !this.state.password ) {
+      this.props.loadMessage(
+        { ok:false,
+          status: 401,
+          statusText: "Username or password empty.  Please include"
+        }, "ERROR");
+    } else if ( this.state.email.lastIndexOf(".") === -1 || this.state.email.lastIndexOf("@") === -1 ) {
+      this.props.loadMessage(
+        { ok:false,
+          status: 401,
+          statusText: "Email not formatted correctly.  Please review."
+        }, "ERROR");
+    } else {
+      this.props.signIn(this.state);
+    }
   }
 
   onMessageAck = () => {

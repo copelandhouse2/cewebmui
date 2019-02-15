@@ -7,7 +7,8 @@ getLookupByType: function(lookupType, callback) {
   const SQLstmt = 'select id, type, code, name, description, \`key\`, attribute1, attribute2, attribute3'
     + ', attribute4, attribute5'
     + ' from lookups'
-    + ' where type = ?';
+    + ' where type = ?'
+    + ' order by name';
 
   // console.log("query", SQLstmt);
 

@@ -8,7 +8,7 @@
   "author": "Craig Copeland",
   "license": "ISC",
   "dependencies": {
-    "@material-ui/core": "^3.8.1",
+    "@material-ui/core": "3.9.2",
     "@material-ui/icons": "^3.0.1",
     "autoprefixer": "7.1.6",
     "bcrypt": "^2.0.1",

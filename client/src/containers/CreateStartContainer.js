@@ -2,7 +2,7 @@ import { connect } from "react-redux";
 import CreateStart from "../components/CreateStart";
 import { createAddress, deleteAddress, commitAddresses
   , showHideClientDialog, showHideContactDialog, showHideSubdivisionDialog
-  , showHideCityDialog, loadContacts, getLookup } from "../actions";
+  , showHideCityDialog, loadContacts, getLookup, loadMessage } from "../actions";
 
 function mapStateToProps(state) {
   return {
@@ -13,11 +13,21 @@ function mapStateToProps(state) {
     addresses: state.addresses,
     contacts: state.contacts,
     trelloListLookup: state.trelloListLookup,
+    projectStatusLookup: state.projectStatusLookup,
+    scopeLookup: state.scopeLookup,
+    masonryLookup: state.masonryLookup,
+    ynLookup: state.ynLookup,
+    fndTypeLookup: state.fndTypeLookup,
+    garageTypeLookup: state.garageTypeLookup,
+    garageEntryLookup: state.garageEntryLookup,
+    garageSwingLookup: state.garageSwingLookup,
+    floorTypeLookup: state.floorTypeLookup,
+    roofTypeLookup: state.roofTypeLookup,
     showClientDialog: state.showClientDialog,
     showContactDialog: state.showContactDialog,
     showSubdivisionDialog: state.showSubdivisionDialog,
     showCityDialog: state.showCityDialog,
-
+    message: state.message,
   };
 }
 
@@ -49,7 +59,10 @@ function mapDispatchToProps(dispatch) {
     },
     getLookup: function (lookup) {
       dispatch(getLookup(lookup));
-    }
+    },
+    loadMessage: function (message, type) {
+      dispatch(loadMessage(message, type));
+    },
   };
 }
 

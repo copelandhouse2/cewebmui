@@ -25,7 +25,7 @@ const styles = theme => ({
     margin: "auto",
   },
   appBody: {
-    width: "85%",
+    width: "95%",
     margin: "auto"
   },
   appHeight: {
@@ -55,7 +55,6 @@ class App extends Component {
     this.props.loadClients();
     this.props.loadCities();
     this.props.loadSubdivisions();
-    // this.props.loadJobNumberSeqs();
 
   }
 
