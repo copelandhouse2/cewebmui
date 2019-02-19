@@ -16,7 +16,7 @@ const StartModel = {
       + ' left join contacts co on s.contact_id = co.id';  // allowing contact_id to be null
       + ' left join lookups l on s.trello_list_id = l.code'
       + ' where l.type = "TRELLO_LIST"'
-      + ' order by job_number'
+      + ' order by job_number';
     // console.log('StartModel: SQL', SQLstmt);
     return sql().query(SQLstmt, callback);
   },

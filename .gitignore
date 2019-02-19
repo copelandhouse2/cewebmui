@@ -18,6 +18,7 @@
 .env.test.local
 .env.production.local
 .env
+/.env
 /server/envVars.js
 /client/src/envVars.js
 /envVars.js
