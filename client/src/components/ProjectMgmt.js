@@ -5,15 +5,15 @@ import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Button from '@material-ui/core/Button';
 import Checkbox from '@material-ui/core/Checkbox';
-import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+// import ExpansionPanel from '@material-ui/core/ExpansionPanel';
+// import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+// import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import Fab from '@material-ui/core/Fab';
-import FormControl from '@material-ui/core/FormControl';
+// import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
-import Input from '@material-ui/core/Input';
-import InputLabel from '@material-ui/core/InputLabel';
+// import Input from '@material-ui/core/Input';
+// import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import Tab from '@material-ui/core/Tab';
@@ -31,7 +31,7 @@ import Delete from '@material-ui/icons/Delete';
 import Edit from '@material-ui/icons/Edit';
 import Save from '@material-ui/icons/Save';
 import Cancel from '@material-ui/icons/Cancel';
-import ExpandMore from '@material-ui/icons/ExpandMore';
+// import ExpandMore from '@material-ui/icons/ExpandMore';
 
 import Select from 'react-select';
 import CreatableSelect from 'react-select/lib/Creatable';
@@ -624,13 +624,14 @@ class ProjectMgmt extends Component {
 
     const tableHeader = fields.map((field, id) => {
 
+      // case 'overflow':
+      // case 'job_number':
+
       switch (field.name) {
         case 'edit':
         case 'delete':
-        // case 'overflow':
         case 'cancel':
         case 'save':
-        // case 'job_number':
         case 'status':
         case 'add':
           return (
@@ -899,7 +900,7 @@ class ProjectMgmt extends Component {
           else if (field.list.length > 0) {
             let currentValue = theState[field.name]?
               field.list.find(option => option.code === theState[field.name]) :
-              currentValue = {code: '', name: ''};
+              {code: '', name: ''};
 
 
             // if (theState[field.name]) {

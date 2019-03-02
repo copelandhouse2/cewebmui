@@ -1,5 +1,11 @@
 import React from "react";
-import { AppBar, Paper, withStyles, Grid, Typography, withWidth, IconButton } from "@material-ui/core";
+import { withWidth } from "@material-ui/core";
+import { withStyles } from '@material-ui/core/styles';
+import AppBar from "@material-ui/core/AppBar";
+import Grid from "@material-ui/core/Grid";
+import IconButton from "@material-ui/core/IconButton";
+import Tooltip from "@material-ui/core/Tooltip";
+import Typography from "@material-ui/core/Typography";
 import { Copyright } from "@material-ui/icons";
 
 const styles = theme => ({

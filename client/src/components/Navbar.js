@@ -1,5 +1,9 @@
 import React from "react";
-import { Paper, withStyles, IconButton, Tooltip, Grid } from "@material-ui/core";
+import { withStyles } from '@material-ui/core/styles';
+import Grid from "@material-ui/core/Grid";
+import IconButton from "@material-ui/core/IconButton";
+import Tooltip from "@material-ui/core/Tooltip";
+
 import {
   Home
   // , Person
