@@ -1,24 +1,109 @@
 import { sql } from "../mysqldb";
 
 const StartModel = {
-  getStarts: function(callback) {
+  getStarts: function(params, callback) {
+
+    // Stripping the first character (:)
+    Object.keys(params).forEach(key => params[key] = params[key].slice(0,5) === ':null'? '' : params[key].slice(1));
+
+    // Pulling out the search parameters.  Initializing values array.
+    const { pending, dateRange, enteredBy, jobNumber, address, requestedBy, client, city, subdivision, status } = params;
+    let values = [];
+    // console.log('StartModel params', pending, dateRange, enteredBy, jobNumber, address, requestedBy, client, city, subdivision, status);
+
+    // Initiating the where clauses.
+    let pendingClause = '', enteredByClause = '', jobNumberClause = '', addressClause = '', requestedByClause = ''
+    , clientClause = '', cityClause = '', subdivisionClause = '', statusClause = '', dateRangeClause = '';
+
+    // Based on search parameter, set the where clauses.
+    if (enteredBy !== '' && enteredBy !== null) {
+      enteredByClause = ' and s.user_id = ?';
+      values.push(Number(enteredBy));
+    };
+
+    if (pending === 'true') {
+      pendingClause = ' and s.status = "PENDING"';
+    }
+    else {
+      if (jobNumber !== '' && jobNumber !== null) {
+        jobNumberClause = ' and s.job_number = ?';
+        values.push(Number(jobNumber));
+      };
+      if (address !== '' && address !== null) {
+        addressClause = ' and s.address1 like ?';
+        values.push(address+'%');
+      };
+      if (requestedBy !== '' && requestedBy !== null) {
+        requestedByClause = ' and s.contact_id = ?';
+        values.push(Number(requestedBy));
+      };
+      if (client !== '' && client !== null && client !== 'null') {
+        clientClause = ' and s.client_id = ?';
+        values.push(Number(client));
+      };
+      if (city !== '' && client !== null) {
+        cityClause = ' and s.city = ?';
+        values.push(city);
+      };
+      if (subdivision !== '' && client !== null) {
+        subdivisionClause = ' and s.subdivision = ?';
+        values.push(subdivision);
+      };
+      if (status !== '' && status !== null) {
+        statusClause = ' and s.project_status = ?'
+        values.push(status);
+      };
+      if (dateRange !== '' && dateRange !== null) {
+        const year = new Date().getFullYear();
+        switch (dateRange) {
+          case 'CURYEAR':
+            dateRangeClause = ' and s.last_updated_date BETWEEN "?-01-01" AND "?-12-31"';
+            values.push(Number(year));
+            values.push(Number(year));
+            break;
+          case 'LASTYEAR':
+            dateRangeClause = ' and s.last_updated_date BETWEEN "?-01-01" AND "?-12-31"';
+            values.push(Number(year)-1);
+            values.push(Number(year)-1);
+            break;
+          case 'ALLTIME':
+            break;
+          default:
+            dateRangeClause = ' and s.last_updated_date >= NOW() - INTERVAL ? DAY';
+            values.push(Number(dateRange));
+          break;
+        };
+      };
+    };
     let SQLstmt = `SELECT s.id, s.job_number, s.client_id, s.user_id, s.contact_id, s.city, s.subdivision, s.address1, s.address2, s.phase, s.section
-    , s.lot, s.block, s.fnd_height_fr, s.fnd_height_fl, s.fnd_height_rr, s.fnd_height_rl, s.plan_type, s.elevation, s.masonry, s.garage_type
-    , s.garage_entry, s.garage_swing, s.garage_drop, s.garage_extension, s.covered_patio, s.bay_window, s.master_shower_drop
-    , s.bath1_shower_drop, s.bath2_shower_drop, s.bath3_shower_drop, s.geo_lab, s.geo_report_num,  date_format(s.geo_report_date, '%y-%m-%d') geo_report_date
-    , s.geo_pi, s.em_center, s.em_edge, s.ym_center, s.ym_edge, s.additional_options, s.comments, s.status, s.project_status, s.scope, date_format(s.design_date, '%Y-%m-%d') design_date
-    , s.start_date, s.onboard_date, s.orig_due_date, s.main_contact, s.billing_contact, s.builder_contact, s.foundation_type, s.floor_type
-    , s.roof_type, s.num_stories, s.square_footage, s.pita_factor, s.trello_list_id, l.name trello_list, s.box_folder
-    , s.created_by, s.last_updated_by, s.creation_date, s.last_updated_date`
-      + ', cl.name client, co.full_name requestor'
-      + ' from starts s'
-      + ' left join clients cl on s.client_id = cl.id'  // allowing client_id to be null
-      + ' left join contacts co on s.contact_id = co.id';  // allowing contact_id to be null
-      + ' left join lookups l on s.trello_list_id = l.code'
-      + ' where l.type = "TRELLO_LIST"'
-      + ' order by job_number';
-    // console.log('StartModel: SQL', SQLstmt);
-    return sql().query(SQLstmt, callback);
+, s.lot, s.block, s.fnd_height_fr, s.fnd_height_fl, s.fnd_height_rr, s.fnd_height_rl, s.plan_type, s.elevation, s.masonry, s.garage_type
+, s.garage_entry, s.garage_swing, s.garage_drop, s.garage_extension, s.covered_patio, s.bay_window, s.master_shower_drop
+, s.bath1_shower_drop, s.bath2_shower_drop, s.bath3_shower_drop, s.geo_lab, s.geo_report_num, date_format(s.geo_report_date, '%y-%m-%d') geo_report_date
+, s.geo_pi, s.em_center, s.em_edge, s.ym_center, s.ym_edge, s.additional_options, s.comments, s.status, s.project_status, s.scope, date_format(s.design_date, '%Y-%m-%d') design_date
+, s.start_date, s.onboard_date, s.orig_due_date, s.main_contact, s.billing_contact, s.builder_contact, s.foundation_type, s.floor_type
+, s.roof_type, s.num_stories, s.square_footage, s.pita_factor, s.trello_list_id, l.name trello_list, s.box_folder
+, s.created_by, s.last_updated_by, s.creation_date, s.last_updated_date
+, cl.name client, co.full_name requestor`
+    + ' from starts s'
+    + ' left join clients cl on s.client_id = cl.id'  // allowing client_id to be null
+    + ' left join contacts co on s.contact_id = co.id'  // allowing contact_id to be null
+    + ' left join lookups l on IFNULL(s.trello_list_id, \'\') = l.code'
+    + ' where l.type = "TRELLO_LIST"'
+    + enteredByClause  // make sure you have where after left joins.  Not doing so returns all rows (Cartesian join?)
+    + pendingClause
+    + jobNumberClause
+    + addressClause
+    + requestedByClause
+    + clientClause
+    + cityClause
+    + subdivisionClause
+    + statusClause
+    + dateRangeClause
+    + ' order by job_number';
+
+    // console.log('StartModel: SQL', SQLstmt, values);
+
+    return sql().query(SQLstmt, values, callback);
   },
 
   getPendingStarts: function(userID, callback) {
@@ -32,12 +117,12 @@ const StartModel = {
     , s.geo_pi, s.em_center, s.em_edge, s.ym_center, s.ym_edge, s.additional_options, s.comments, s.status, s.project_status, s.scope, date_format(s.design_date, '%Y-%m-%d') design_date
     , date_format(s.start_date, '%Y-%m-%d') start_date, date_format(s.onboard_date, '%Y-%m-%d') onboard_date, date_format(s.orig_due_date, '%Y-%m-%d') orig_due_date, s.main_contact, s.billing_contact, s.builder_contact, s.foundation_type, s.floor_type
     , s.roof_type, s.num_stories, s.square_footage, s.pita_factor, s.trello_list_id, l.name trello_list, s.box_folder
-    , s.created_by, s.last_updated_by, s.creation_date, s.last_updated_date`
-      + ', cl.name client, co.full_name requestor'
+    , s.created_by, s.last_updated_by, s.creation_date, s.last_updated_date
+    , cl.name client, co.full_name requestor`
       + ' from starts s'
       + ' left join clients cl on s.client_id = cl.id' // allowing client_id to be null
       + ' left join contacts co on s.contact_id = co.id' // allowing contact_id to be null
-      + ' left join lookups l on s.trello_list_id = l.code'
+      + ' left join lookups l on IFNULL(s.trello_list_id, \'\') = l.code'
       + ' where s.user_id = ?'  // make sure you have where after left joins.  Not doing so returns all rows (Cartesian join?)
       + ' and s.status = "PENDING"'
       + ' and l.type = "TRELLO_LIST"'

@@ -87,7 +87,7 @@ class App extends Component {
             </Grid>
             <Grid item xs={12} md={11}>
               <Switch>
-                <Route path="/create-start" component={CreateStartContainer} />
+                <Route path="/projects" component={CreateStartContainer} />
                 <Route path="/" render={() =>
                   <Grid container justify='center' alignItems='center'>
                     <Grid item>

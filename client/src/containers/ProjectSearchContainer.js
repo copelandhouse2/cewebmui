@@ -1,5 +1,5 @@
 import { connect } from "react-redux";
-import CreateStart from "../components/CreateStart";
+import ProjectSearch from "../components/ProjectSearch";
 import { createAddress, deleteAddress, commitAddresses
   , showHideClientDialog, showHideContactDialog, showHideSubdivisionDialog
   , showHideCityDialog, loadContacts, getLookup, loadMessage } from "../actions";
@@ -66,4 +66,4 @@ function mapDispatchToProps(dispatch) {
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(CreateStart);
+export default connect(mapStateToProps, mapDispatchToProps)(ProjectSearch);

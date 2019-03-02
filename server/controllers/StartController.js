@@ -1,10 +1,10 @@
-// import addresses from "../addresses.js";
-// import AddressModel from "../models/AddressModel";
-import StartModel from "../models/StartModel";
-import JobNumberSeqModel from "../models/JobNumberSeqModel";
-import { sql } from "../mysqldb";
-import { trello } from "../trello";
-// import { TRELLO_PARAMS } from "../../envVars";
+// import addresses from '../addresses.js';
+// import AddressModel from '../models/AddressModel';
+import StartModel from '../models/StartModel';
+import JobNumberSeqModel from '../models/JobNumberSeqModel';
+import { sql } from '../mysqldb';
+import { trello } from '../trello';
+// import { TRELLO_PARAMS } from '../../envVars';
 
 
 // function to get the list of addresses.
@@ -16,13 +16,16 @@ export const list = (request, response) => {
   //   return response.json(addresses);
   // });
 
-  StartModel.getStarts(function (err, rows, fields) {
+  StartModel.getStarts(request.params, function (err, rows, fields) {
+    // console.log('getStarts', request.params);
+    // console.log('getStarts', rows);
+
     if (!err) {
       // console.log('Data retrieved... Starts');
       return response.json(rows);
     }
     else {
-      // console.log('Starts: Error while performing Query.');
+      // console.log('Starts: Error while performing Query.', err);
       return response.json(err);
     }
   });
@@ -84,9 +87,9 @@ export const create = (request, response) => {
 // function to create a address
 export const commit = (request, response) => {
 
-  // console.log("Start Controller.commit request", request.body);
+  // console.log('Start Controller.commit request', request.body);
 
-  // console.log("query", SQLstmt);
+  // console.log('query', SQLstmt);
 
   // sql().query(SQLstmt, values, function (err, result) {
   StartModel.commitStart(parseInt(request.params.userID), function(err, result) {
@@ -137,19 +140,19 @@ export const commit = (request, response) => {
           // due: dueDate,
           pos: 'bottom',
           // idMembers: [
-          //   "58b59960d7577cb345109019",
-          //   "5924a3ec925ff977c3dfed10",
-          //   "5a2e951406cbac46270c660a",
-          //   "5a8afb044f2a4b4734e91714",
-          //   "57f3d91f12d06b6f73a208ca"
+          //   '58b59960d7577cb345109019',
+          //   '5924a3ec925ff977c3dfed10',
+          //   '5a2e951406cbac46270c660a',
+          //   '5a8afb044f2a4b4734e91714',
+          //   '57f3d91f12d06b6f73a208ca'
           // ],
           // idLabels:[
-          //   "584875b284e677fd36a93486",
-          //   "5a46babfd2c5d12039d522d1",
+          //   '584875b284e677fd36a93486',
+          //   '5a46babfd2c5d12039d522d1',
           // ],
           // idChecklists: [
-          //   "5c2e871eaf87548a254b000a",
-          //   "5c2e871eaf87548a254b000f"
+          //   '5c2e871eaf87548a254b000a',
+          //   '5c2e871eaf87548a254b000f'
           // ]
         };
 
@@ -172,20 +175,20 @@ export const commit = (request, response) => {
             //     console.log('trello: resp1', response1);
             //     // console.log('trello: body', body);
             //     if (error1) throw new Error(error1);
-            //     console.log("Custom value added");
+            //     console.log('Custom value added');
             //
             //   } // 2nd callback function
             // ); // 2nd Trello call
 
-            // console.log("Trello card created");
+            // console.log('Trello card created');
           } // 1st callback function
         ); // 1st Trello call
 
-        // trello.post("1/cards/", card)
+        // trello.post('1/cards/', card)
         // .then( (response) => {
         //   console.log('trello: resp', response);
         //   // return response.json();
-        //   console.log("Trello card created");
+        //   console.log('Trello card created');
         // })
         // .catch( (error) => {
         //   console.log('trello: error', error);
@@ -215,7 +218,7 @@ export const remove = (request, response) => {
 
   StartModel.deleteStart(request.params.id, function (err, result) {
     if (err) return response.json(err);
-    return response.json("start deleted");
+    return response.json('start deleted');
     // return response.json(result.insertId);
   });
 }
@@ -245,6 +248,6 @@ export const remove = (request, response) => {
     //
     // JobNumberSeqModel.addJobNumberSeq(seqObj, function(err, result) {
     //   if (err) return response.json(err);
-    //   console.log("addStart: Job number created / updated");
+    //   console.log('addStart: Job number created / updated');
     // });
     //

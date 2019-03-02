@@ -1,32 +1,38 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import {
-  AppBar,
-  Button,
-  Checkbox,
-  ExpansionPanel,
-  ExpansionPanelDetails,
-  ExpansionPanelSummary,
-  Fab,
-  FormControl,
-  IconButton,
-  Input,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Tab,
-  Tabs,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  TextField,
-  Typography,
-  withStyles,
-} from '@material-ui/core';
-import { Add, Delete, Edit, Save, Cancel, ExpandMore } from '@material-ui/icons';
+import { withStyles } from '@material-ui/core/styles';
+
+import AppBar from '@material-ui/core/AppBar';
+import Button from '@material-ui/core/Button';
+import Checkbox from '@material-ui/core/Checkbox';
+import ExpansionPanel from '@material-ui/core/ExpansionPanel';
+import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+import Fab from '@material-ui/core/Fab';
+import FormControl from '@material-ui/core/FormControl';
 import Grid from '@material-ui/core/Grid';
+import IconButton from '@material-ui/core/IconButton';
+import Input from '@material-ui/core/Input';
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import Paper from '@material-ui/core/Paper';
+import Tab from '@material-ui/core/Tab';
+import Tabs from '@material-ui/core/Tabs';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import TextField from '@material-ui/core/TextField';
+import Typography from '@material-ui/core/Typography';
+
+import Add from '@material-ui/icons/Add';
+import Delete from '@material-ui/icons/Delete';
+import Edit from '@material-ui/icons/Edit';
+import Save from '@material-ui/icons/Save';
+import Cancel from '@material-ui/icons/Cancel';
+import ExpandMore from '@material-ui/icons/ExpandMore';
+
 import Select from 'react-select';
 import CreatableSelect from 'react-select/lib/Creatable';
 import ClientDialogContainer from '../containers/ClientDialogContainer';
@@ -35,10 +41,12 @@ import CityDialogContainer from '../containers/CityDialogContainer';
 import SubdivisionDialogContainer from '../containers/SubdivisionDialogContainer';
 import AlertDialogContainer from '../containers/AlertDialogContainer';
 
+// import ProjectSearchContainer from '../containers/ProjectSearchContainer'
 // import { TRELLO_PARAMS } from '../envVars'
 
 const styles = theme => ({
-  bodyPaper: { padding: 20, minHeight: '84vh'},
+  container: { marginBottom: 70 },
+  bodyPaper: { padding: 20, minHeight: '84vh' },
   Paper: { padding: 20, marginTop: 10, marginBottom: 10 },
   grow: { flexGrow: 0, },
   // rightJust: { textAlign: 'right', },
@@ -51,19 +59,31 @@ const styles = theme => ({
   tableCellProps: {borderLeftWidth: 1, borderLeftStyle: 'solid', borderLeftColor: 'lightgray', paddingLeft: 5},
   formControl: { margin: theme.spacing.unit, minWidth: 120, },
   panelSummaryProps: {backgroundColor: theme.palette.primary.main, color: theme.palette.secondary.main},
+
 });
 
 // object property to handle the react-select control.  Had to pull it outside MUI styles function.
 // Wasn't working when embedded there.
-const createSelectProps = {
+const createSelectAutoFillProps = {
   option: (provided) => ({ ...provided, fontSize: 12, }),
   input: (provided) => ({ ...provided, color: 'white' }),
   singleValue: (provided) => ({ ...provided, color: 'white', }),
-  placeholder: (provided) => ({ ...provided, color: 'white', }),
-  control: (provided) => ({ ...provided, minHeight: 10, height: 25, color: 'white', backgroundColor: '#484848', fontSize: 12, marginBottom: 10 }),
+  placeholder: (provided) => ({ ...provided, color: 'white' }),
+  control: (provided) => ({ ...provided, minHeight: 10, height: 35, color: 'white', backgroundColor: '#484848', fontSize: 12, marginBottom: 10 }),
 };
 
-class CreateStart extends Component {
+const createSelectProps = {
+  option: (provided) => ({ ...provided, fontSize: 12, }),
+  input: (provided) => ({ ...provided, color: 'black', }),
+  singleValue: (provided) => ({ ...provided, color: 'black', }),
+  placeholder: (provided) => ({ ...provided, color: 'black', }),
+  control: (provided, state) => ({ ...provided, minHeight: 10, height: 35, color: 'black', backgroundColor: '#e8e8e8', fontSize: 12, borderWidth: 0,
+    borderBottomWidth: state.isFocused? 2:1, borderBottomStyle: 'solid', borderBottomColor: 'black', borderBottomLeftRadius: 0, borderBottomRightRadius: 0,
+    ':hover': {borderBottomWidth: state.isFocused? 2:1, borderBottomStyle: 'solid', borderBottomColor: 'black', backgroundColor: '#dedede'},
+  }),
+};
+
+class ProjectMgmt extends Component {
   constructor(props) {
     super(props);
 
@@ -148,7 +168,18 @@ class CreateStart extends Component {
       trello_list: '',
       createTrelloCard: false,
       rememberData: false,
-
+      search: {
+        pendingOnly: true,
+        jobNumber: '',
+        address: '',
+        dateRange: 1,
+        enteredBy: this.props.session.id,
+        requestedBy: '',
+        client: '',
+        city: '',
+        subdivision: '',
+        status: '',
+      }
     };
 
     this.tabs = [
@@ -199,12 +230,12 @@ class CreateStart extends Component {
         {label: '', name: 'overflow', id: '', type: 'text', width: '12%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'garage', fields: [
-        {label: 'Garage Type', name: 'garage_type', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
-        {label: 'Garage Entry', name: 'garage_entry', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Garage Type', name: 'garage_type', id: '', type: 'text', width: '12%', isDisabled: false, required: false, list: []},
+        {label: 'Garage Entry', name: 'garage_entry', id: '', type: 'text', width: '12%', isDisabled: false, required: false, list: []},
         {label: 'Garage Swing', name: 'garage_swing', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
         {label: 'Garage Drop', name: 'garage_drop', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
         {label: 'Garage Ext', name: 'garage_extension', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
-        {label: '', name: 'overflow', id: '', type: 'text', width: '20%', isDisabled: false, required: false, list: []},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '12%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'drop', fields: [
         {label: 'Master', name: 'master_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
@@ -232,13 +263,13 @@ class CreateStart extends Component {
         {label: '', name: 'overflow', id: '', type: 'text', width: '28%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'framing', fields: [
-        {label: 'FND Type', name: 'foundation_type', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
-        {label: 'Floor Type', name: 'floor_type', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
-        {label: 'Roof Type', name: 'roof_type', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'FND Type', name: 'foundation_type', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
+        {label: 'Floor Type', name: 'floor_type', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
+        {label: 'Roof Type', name: 'roof_type', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
         {label: 'Stories', name: 'num_stories', id: '', type: 'number', width: '5%', isDisabled: false, required: false, list: []},
         {label: 'SQFT', name: 'square_footage', id: '', type: 'number', width: '5%', isDisabled: false, required: false, list: []},
         {label: 'PITA', name: 'pita_factor', id: '', type: 'number', width: '6%', isDisabled: false, required: false, list: []},
-        {label: '', name: 'overflow', id: '', type: 'text', width: '20%', isDisabled: false, required: false, list: []},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '14%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'notes', fields: [
         {label: 'Addl Options', name: 'additional_options', id: '', type: 'text', width: '25%', isDisabled: false, required: false, list: []},
@@ -368,11 +399,30 @@ class CreateStart extends Component {
 
   handleChange = name => event => {
 
-    name === 'garage_drop'? console.log('field name: ', name, event.target.type, 'value: ', event.target.value, 'checked: ',event.target.checked): ''
+    // name === 'garage_drop'? console.log('field name: ', name, event.target.type, 'value: ', event.target.value, 'checked: ',event.target.checked): ''
 
     event.target.type === 'checkbox'? this.setState({ [name]: event.target.checked, }):
     event.target.type === 'number' && event.target.value === ''? this.setState({ [name]: null, }):
     this.setState({ [name]: event.target.value, });
+  };
+
+  handleSearchChange = (name, value) => event => {
+
+    // console.log('handleSearchChange', name, value, event.target.value, event.target.checked)
+    const theSearch = {...this.state.search};
+
+    theSearch[name] = value? value :
+      event.target.type === 'checkbox'? event.target.checked :
+      event.target.value;
+
+    this.setState({ search: {...theSearch} }, () => {
+      this.state.search.pendingOnly? this.props.loadProjects(this.state.search) : null;
+    });
+
+  };
+
+  searchProjects = () => {
+    this.props.loadProjects(this.state.search);
   };
 
   addStart = () => {
@@ -390,7 +440,7 @@ class CreateStart extends Component {
           //    state - we are inserting / updating the job
           //    session id - this is the current user.  This is a filter for our pending rows
           //    PENDING - this is the load type and the status of the row in the DB.
-          this.props.createAddress(this.state, this.props.session.id, 'PENDING');
+          this.props.createAddress(this.state);
           this.initState();
         }
       );
@@ -410,13 +460,14 @@ class CreateStart extends Component {
       owner_id: this.props.session.id,
       owner: this.props.session.full_name,
       last_updated_by: this.props.session.id,
+      status: 'PENDING'
     }, ()=> {
         // console.log('In update Start',this.props.session.id);
         // Passing...
         //    state - we are inserting / updating the job
         //    session id - this is the current user.  This is a filter for our pending rows
         //    PENDING - this is the load type and the status of the row in the DB.
-        this.props.createAddress(this.state, this.props.session.id, 'PENDING');
+        this.props.createAddress(this.state);
         this.initState();
       }
     );
@@ -425,7 +476,7 @@ class CreateStart extends Component {
 
   commitPendingAddresses = () => {
     // console.log('In Commit Start',this.props.session.id);
-    this.props.commitAddresses(this.props.addresses, this.props.session.id, 'PENDING');
+    this.props.commitAddresses(this.props.session.id, this.props.addresses, this.state.search);
     // this.initState();
   };
 
@@ -509,7 +560,7 @@ class CreateStart extends Component {
 
   deleteStart = (id) => {
     // console.log("staged starts", id, this.stagedStarts);
-    this.props.deleteAddress(id, this.props.session.id, 'PENDING');
+    this.props.deleteAddress(id, this.state.search);
     // console.log("staged starts", id, this.stagedStarts);
   };
 
@@ -845,6 +896,40 @@ class CreateStart extends Component {
                 {eval(`theState.${field.name}`)||''}
               </TableCell>
             )
+          else if (field.list.length > 0) {
+            let currentValue = theState[field.name]?
+              field.list.find(option => option.code === theState[field.name]) :
+              currentValue = {code: '', name: ''};
+
+
+            // if (theState[field.name]) {
+            //   currentValue = field.list.find(option => option.code === theState[field.name]);
+            // }
+            // else {
+            //   currentValue = {code: '', name: ''};
+            // }
+            console.log('field: '+field.name, currentValue);
+            return (
+              <TableCell key={id} padding='none' classes={{root: classes.tableCellEntryProps}}>
+                <Select styles={createSelectProps}
+                  isClearable
+                  // isSearchable
+                  options={field.list}
+                  getOptionLabel={({name}) => name}
+                  getOptionValue={({code}) => code}
+                  // placeholder='Date Range...'
+                  value={ currentValue }
+                  // value={ {code: eval(`theState.${field.name}`)||'', name: curName} }
+                  onChange={
+                    (selected) => {
+                      selected? this.setState({ [field.name]: selected.code }) :
+                      this.setState({ [field.name]: null });
+                    }
+                  }
+                />
+              </TableCell>
+            )
+          }
           else
             return (
               <TableCell key={id} padding='none' classes={{root: classes.tableCellEntryProps}}>
@@ -932,18 +1017,238 @@ class CreateStart extends Component {
     // console.log('floor type', this.props.floorTypeLookup);
     // console.log('roof type', this.props.roofTypeLookup);
 
+    const dates = [
+      {value:  '1', name: 'Past 24 hours'},
+      {value:  '7', name: 'Past 7 days'},
+      {value: '30', name: 'Past 30 days'},
+      {value: '90', name: 'Past 90 days'},
+      {value: '180', name: 'Past 180 days'},
+      {value: 'CURYEAR', name: 'This Year'},
+      {value: 'LASTYEAR', name: 'Last Year'},
+      {value: 'ALLTIME', name: 'All Time'},
+    ];
+
     return (
       <Fragment>
 
       <Paper className={classes.bodyPaper}>
         <Typography variant='h5'>Project Management</Typography>
 
-        <ExpansionPanel defaultExpanded={true} style={{marginTop: 10}}>
-          <ExpansionPanelSummary expandIcon={<ExpandMore />} classes={{root: classes.panelSummaryProps, expandIcon: classes.panelSummaryProps}}>
-            Project Entry
-          </ExpansionPanelSummary>
-          <ExpansionPanelDetails>
-            <Grid container>
+
+            <Grid container className={classes.container}>
+              <Grid item xs={12}>
+                <Paper className={classes.Paper}>
+                  Search By
+                  <Grid container justify='space-around'>
+                    <Grid item xs={12} md={2}>
+                      <TextField
+                        id='jobNumber'
+                        fullWidth = {true}
+                        disabled={this.state.search.pendingOnly}
+                        variant='filled'
+                        onChange={this.handleSearchChange('jobNumber')}
+                        type='text'
+                        placeholder=''
+                        label={this.state.search.jobNumber? '': 'Job Number...'}
+                        // root = {{fontSize: '8px'}}
+                        InputProps={{
+                          classes: {
+                            input: classes.inputProps,
+                          },
+                          readOnly: false,
+                        }}
+                        InputLabelProps={{
+                          style: {
+                            color: 'black',
+                            fontSize: 12
+                          } }}
+                      />
+                      <TextField
+                        id='address'
+                        fullWidth = {true}
+                        disabled={this.state.search.pendingOnly}
+                        variant='filled'
+                        onChange={this.handleSearchChange('address')}
+                        type='text'
+                        placeholder=''
+                        label={this.state.search.address? '': 'Address...'}
+                        // root = {{fontSize: '8px'}}
+                        InputProps={{
+                          classes: {
+                            input: classes.inputProps,
+                          },
+                          readOnly: false,
+                        }}
+                        InputLabelProps={{
+                          style: {
+                            color: 'black',
+                            fontSize: 12
+                          } }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={2}>
+                      <Select styles={createSelectProps}
+                        isClearable
+                        // isSearchable
+                        isDisabled={this.state.search.pendingOnly}
+                        options={dates}
+                        getOptionLabel={({name}) => name}
+                        getOptionValue={({value}) => value}
+                        placeholder='Date Range...'
+                        defaultValue={ {value:  '1', name: 'Past 24 hours'} }
+                        onChange={
+                          (selected) => {
+                            const name = 'dateRange';
+                            const value = selected?selected.value:null;
+                            const theSearch = {...this.state.search};
+                            theSearch[name] = value;
+                            this.setState({ search: {...theSearch} });
+                          }
+                        }
+                      />
+                      <Select styles={createSelectProps}
+                        isClearable
+                        // isSearchable
+                        isDisabled={this.state.search.pendingOnly}
+                        options={this.props.projectStatusLookup}
+                        getOptionLabel={({name}) => name}
+                        getOptionValue={({code}) => code}
+                        placeholder='Status...'
+                        onChange={
+                          (selected) => {
+                            const name = 'status';
+                            const value = selected?selected.code:null;
+                            const theSearch = {...this.state.search};
+                            theSearch[name] = value;
+                            this.setState({ search: {...theSearch} });
+                          }
+                        }
+                        // onInputChange={this.handleInputChange}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={2}>
+                      <Select styles={createSelectProps}
+                        isClearable
+                        // isSearchable
+                        isDisabled={this.state.search.pendingOnly}
+                        options={this.props.clients}
+                        getOptionLabel={({name}) => name}
+                        getOptionValue={({id}) => id}
+                        placeholder='Client...'
+                        onChange={
+                          (selected) => {
+                            const name = 'client';
+                            const value = selected?selected.id:null;
+                            this.handleSearchChange('client', value);
+                            const theSearch = {...this.state.search};
+                            theSearch[name] = value;
+                            this.setState({ search: {...theSearch} });
+                          }
+                        }
+                        // onInputChange={this.handleInputChange}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={2}>
+                      <Select styles={createSelectProps}
+                        isClearable
+                        isDisabled={this.state.search.pendingOnly}
+                        options={this.props.cities}
+                        getOptionLabel={({city}) => city}
+                        getOptionValue={({id}) => id}
+                        placeholder='City...'
+                        onChange={
+                          (selected) => {
+                            const name = 'city';
+                            const value = selected?selected.city:null;
+                            const theSearch = {...this.state.search};
+                            theSearch[name] = value;
+                            this.setState({ search: {...theSearch} });
+                          }
+                        }
+                      />
+                      <Select styles={createSelectProps}
+                        isClearable
+                        isDisabled={this.state.search.pendingOnly}
+                        options={this.props.subdivisions}
+                        getOptionLabel={({subdivision}) => subdivision}
+                        getOptionValue={({id}) => id}
+                        placeholder='Subdivision...'
+                        onChange={
+                          (selected) => {
+                            const name = 'subdivision';
+                            const value = selected?selected.subdivision:null;
+                            const theSearch = {...this.state.search};
+                            theSearch[name] = value;
+                            this.setState({ search: {...theSearch} });
+                          }
+                        }
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={2}>
+                      <Select styles={createSelectProps}
+                        id='enteredBy'
+                        isClearable
+                        isSearchable
+                        isDisabled={ this.state.search.pendingOnly }
+                        defaultValue={ {user_id: this.props.session.id, full_name: this.props.session.full_name} }
+                        options={this.props.contacts}
+                        getOptionLabel={({full_name}) => full_name}
+                        getOptionValue={({user_id}) => user_id}
+                        placeholder='Entered By...'
+                        onChange={
+                          (selected) => {
+                            const name = 'enteredBy';
+                            const value = selected?selected.user_id:null;
+                            const theSearch = {...this.state.search};
+                            theSearch[name] = value;
+                            this.setState({ search: {...theSearch} });
+                          }
+                        }
+                      />
+                      <Select styles={createSelectProps}
+                        id='requestedBy'
+                        isClearable
+                        isSearchable
+                        isDisabled={this.state.search.pendingOnly}
+                        options={this.props.contacts}
+                        getOptionLabel={({full_name}) => full_name}
+                        getOptionValue={({id}) => id}
+                        placeholder='Requested By...'
+                        onChange={
+                          (selected) => {
+                            const name = 'requestedBy';
+                            const value = selected?selected.id:null;
+                            const theSearch = {...this.state.search};
+                            theSearch[name] = value;
+                            this.setState({ search: {...theSearch} });
+                          }
+                        }
+                      />
+                    </Grid>
+                    <Grid item>
+                      <Grid container direction='column' justify='center' alignItems='flex-end'>
+                        <Grid item>
+                          <Button
+                            variant="contained"
+                            color="secondary"
+                            disabled={this.state.search.pendingOnly}
+                            onClick={(e) => this.searchProjects()}
+                          >
+                            Search
+                          </Button>
+                        </Grid>
+                        <Grid item>
+                          <Checkbox
+                            onChange={this.handleSearchChange('pendingOnly')}
+                            checked={this.state.search.pendingOnly}
+                          />
+                          PENDING Only
+                        </Grid>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                </Paper>
+              </Grid>
               <Grid item  xs={12}>
                 <AppBar position='static' color='secondary'>
                   <Grid container justify='space-around'>
@@ -995,7 +1300,7 @@ class CreateStart extends Component {
                     </Grid>
                     <Grid item xs={12}><Typography variant='button' align='center'>Auto-fill fields</Typography></Grid>
                     <Grid item xs={12} md={2}>
-                      <CreatableSelect styles={createSelectProps}
+                      <CreatableSelect styles={createSelectAutoFillProps}
                         isClearable
                         // isSearchable
                         // getOptionLabel={({name}) => name}
@@ -1023,7 +1328,7 @@ class CreateStart extends Component {
                       />
                     </Grid>
                     <Grid item xs={12} md={2}>
-                      <Select styles={createSelectProps}
+                      <Select styles={createSelectAutoFillProps}
                         id='requestor'
                         isClearable
                         isSearchable
@@ -1042,7 +1347,7 @@ class CreateStart extends Component {
                       />
                     </Grid>
                     <Grid item xs={12} md={2}>
-                      <CreatableSelect styles={createSelectProps}
+                      <CreatableSelect styles={createSelectAutoFillProps}
                         isClearable
                         placeholder='Subdivision...'
                         onChange={
@@ -1067,7 +1372,7 @@ class CreateStart extends Component {
                       />
                     </Grid>
                     <Grid item xs={12} md={2}>
-                      <CreatableSelect styles={createSelectProps}
+                      <CreatableSelect styles={createSelectAutoFillProps}
                         isClearable
                         placeholder='City...'
                         onChange={
@@ -1090,7 +1395,7 @@ class CreateStart extends Component {
                       />
                     </Grid>
                     <Grid item xs={12} md={2}>
-                      <Select styles={createSelectProps}
+                      <Select styles={createSelectAutoFillProps}
                         id='trelloList'
                         isSearchable
                         options={this.props.trelloListLookup}
@@ -1129,6 +1434,7 @@ class CreateStart extends Component {
                 <Grid container justify="flex-end" style={{marginTop: 10}}>
                   <Grid item>
                     <Button
+                      disabled={!this.state.search.pendingOnly}
                       variant="contained"
                       color="secondary"
                       onClick={(e) => this.commitPendingAddresses()}
@@ -1139,8 +1445,6 @@ class CreateStart extends Component {
                 </Grid>
               </Grid>
             </Grid>
-          </ExpansionPanelDetails>
-        </ExpansionPanel>
 
       </Paper>
       {this.props.showClientDialog && <ClientDialogContainer newValue = {this.state.dialogValue} />}
@@ -1155,11 +1459,11 @@ class CreateStart extends Component {
 
 }
 
-CreateStart.propTypes = {
+ProjectMgmt.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(CreateStart);
+export default withStyles(styles)(ProjectMgmt);
 
 // <ExpansionPanel>
 // <ExpansionPanelSummary expandIcon={<ExpandMore />} classes={{root: classes.panelSummaryProps, expandIcon: classes.panelSummaryProps}}>
@@ -1288,4 +1592,13 @@ export default withStyles(styles)(CreateStart);
 //   </form>
 // </Paper>
 // </ExpansionPanelDetails>
+// </ExpansionPanel>
+
+
+// <ExpansionPanel defaultExpanded={true} style={{marginTop: 10}}>
+//   <ExpansionPanelSummary expandIcon={<ExpandMore />} classes={{root: classes.panelSummaryProps, expandIcon: classes.panelSummaryProps}}>
+//     Project Entry
+//   </ExpansionPanelSummary>
+//   <ExpansionPanelDetails>
+//   </ExpansionPanelDetails>
 // </ExpansionPanel>

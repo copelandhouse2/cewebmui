@@ -1,35 +1,36 @@
 import React from "react";
-import { Paper, withStyles, Grid, Typography, withWidth, IconButton } from "@material-ui/core";
+import { AppBar, Paper, withStyles, Grid, Typography, withWidth, IconButton } from "@material-ui/core";
 import { Copyright } from "@material-ui/icons";
 
-const styles = {
-  Paper: { padding: 10, marginTop: 10, backgroundColor: "#212121"},
-}
+const styles = theme => ({
+  Paper: { padding: 10, marginTop: 10, backgroundColor: "#212121",},
+  appBar: { top: 'auto', bottom: 0, zIndex: theme.zIndex.drawer + 1, padding: 10, marginTop: 10,},
+});
 
 function Footer(props) {
 
   const { classes, width } = props;
 
   return (
-    <Paper position="static" className={classes.Paper}>
-      <Grid container>
-        <Grid item xs>
+    <AppBar position='fixed' className={classes.appBar}>
+      <Grid container justify='space-around' alignItems='center'>
+        <Grid item>
           <Typography color="secondary">
             <Copyright />&nbsp;
             {width === "sm"||width === "xs" ? "2018 CE" : "2018 Copeland Engineering"}
           </Typography>
         </Grid>
-        <Grid item xs>
+        <Grid item>
           <IconButton color="secondary">
             <i style={ {fontSize:"1.2em"} } className="fab fa-facebook-f"></i>
           </IconButton>
         </Grid>
-        <Grid item xs>
+        <Grid item>
           <IconButton color="secondary">
             <i style={ {fontSize:"1.2em"} } className="fab fa-trello"></i>
           </IconButton>
         </Grid>
-        <Grid item xs>
+        <Grid item>
           <IconButton color="secondary">
             <i style={ {fontSize:"1.2em"} } className="fas fa-box"></i>
           </IconButton>
@@ -37,7 +38,7 @@ function Footer(props) {
 
       </Grid>
 
-    </Paper>
+    </AppBar>
   );
 }
 

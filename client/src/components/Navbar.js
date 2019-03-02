@@ -26,10 +26,10 @@ const styles = theme => ({
   },
   icon: { fontSize:"1.2em" },
   navbarGrid: {
+    // [theme.breakpoints.up("xs")]: {
+    //   direction: "row",
+    // },
     [theme.breakpoints.up("xs")]: {
-      direction: "row",
-    },
-    [theme.breakpoints.up("md")]: {
       flexDirection: "column",
       // alignContent: "flex-start",
       alignItems: "center",
@@ -43,7 +43,7 @@ function Navbar(props) {
   const { classes } = props;
 
   return (
-    <Paper className={classes.Paper}>
+    <div className={classes.Paper}>
       {/* <Toolbar> */}
         <Grid container className={classes.navbarGrid} >
 
@@ -62,7 +62,7 @@ function Navbar(props) {
 
           <Grid item>
             <Tooltip title="Starts Entry" placement="left">
-              <Link to={`/create-start`}>
+              <Link to={`/projectmgmt`}>
                 <IconButton color="secondary">
                   <Home className={classes.icon}/>
                 {/* <i className="fas fa-home"></i> */}
@@ -125,7 +125,7 @@ function Navbar(props) {
           </Grid>
         </Grid>
       {/* </Toolbar> */}
-    </Paper>
+    </div>
   );
 }
 

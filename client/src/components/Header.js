@@ -10,13 +10,15 @@ import {
   MenuItem
 } from "@material-ui/core";
 import { AccountCircle } from "@material-ui/icons";
+import MenuIcon from '@material-ui/icons/Menu';
+import CloseIcon from '@material-ui/icons/Close';
 
-const styles = {
+const styles = theme => ({
   root: {},
-  AppBar: {marginBottom: 10,},
+  AppBar: {marginBottom: 10, zIndex: theme.zIndex.drawer + 1,},
   grow: {flexGrow: 1,},
   icon: { fontSize:"1.5em" },
-}
+});
 
 class Header extends React.Component {
 
@@ -44,8 +46,15 @@ class Header extends React.Component {
     const open = Boolean(anchorEl);
 
     return (
-      <AppBar className={classes.AppBar} position="static">
+      <AppBar position='fixed' className={classes.AppBar} >
         <Toolbar>
+          <IconButton
+            color="secondary"
+            aria-label="Open drawer"
+            onClick={this.props.toggleDrawer}
+          >
+            {this.props.navOpen? <CloseIcon /> : <MenuIcon />}
+          </IconButton>
           <Typography
             variant="h5"
             color="secondary"

@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import "../css/App.css";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import Navbar from "./Navbar";
-import CreateStartContainer from "../containers/CreateStartContainer";
+import ProjectMgmtContainer from "../containers/ProjectMgmtContainer";
 import SignUpSignInContainer from "../containers/SignUpSignInContainer";
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -15,6 +15,9 @@ import AlertDialogContainer from "../containers/AlertDialogContainer";
 // import StartsContainer from "./containers/StartsContainer";
 // import ClientContainer from "./containers/ClientContainer";
 // import CitySubContainer from "./containers/CitySubContainer";
+import Main from "./Main";
+import { IconButton, Drawer } from '@material-ui/core';
+
 
 const styles = theme => ({
   canvas: {
@@ -39,14 +42,16 @@ const styles = theme => ({
     [theme.breakpoints.up("md")]: {
       width: "60px",
     }
-  }
+  },
+  toolbar2: theme.mixins.toolbar,
 });
 
 class App extends Component {
   constructor() {
     super();
     this.state = {
-      authenticated: localStorage.getItem('token') || false
+      authenticated: localStorage.getItem('token') || false,
+      open: false
     };
   }
 
@@ -65,6 +70,10 @@ class App extends Component {
     });
   }
 
+  toggleDrawer = () => {
+    this.setState({ open: !this.state.open });
+  };
+
   renderSignUpSignIn() {
     return (
       // <div>
@@ -80,14 +89,20 @@ class App extends Component {
     return (
       <BrowserRouter>
         <div className={classes.root}>
-          <HeaderContainer />
+          <HeaderContainer toggleDrawer = {this.toggleDrawer} navOpen = {this.state.open}/>
           <Grid container className={classes.appBody}>
-            <Grid item className={classes.navWidth}>
-              <Navbar handleSignOut = {this.handleSignOut}/>
-            </Grid>
-            <Grid item xs={12} md={11}>
+            <Drawer
+              open={this.state.open}
+              variant='persistent'
+              // anchor='left'
+            >
+              <div className={classes.toolbar2} />
+              <Navbar />
+            </Drawer>
+            <Grid item xs={12}>
+              <div className={classes.toolbar2} />
               <Switch>
-                <Route path="/create-start" component={CreateStartContainer} />
+                <Route path="/projectmgmt" component={ProjectMgmtContainer} />
                 <Route path="/" render={() =>
                   <Grid container justify='center' alignItems='center'>
                     <Grid item>
@@ -175,32 +190,76 @@ class App extends Component {
 
   }
 
-  // <Route path="/" render={() => {
-  //   <div>
-  //   <Grid container justify='center' alignItems='center'>
-  //     <Grid item>
-  //       <h1>Dashboard</h1>
-  //     </Grid>
-  //   </Grid>
-  //   </div>
-  //   }
-  // } />
-  // render() {
-
-  //   return (
-  //     <BrowserRouter>
-  //       <div>
-  //         <Switch>
-  //           <Route path="/" render={() => <h1>I am protected!</h1>} />
-  //           <Route render={() => <h1>NOT FOUND!</h1>} />
-  //         </Switch>
-  //         <h1>Here I am</h1>
-  //       </div>
-  //     </BrowserRouter>
-  //   );
-
-  // }
-
-
 }
 export default withStyles(styles)(App);
+
+
+// <Grid item className={classes.navWidth}>
+//   <Navbar handleSignOut = {this.handleSignOut}/>
+// </Grid>
+// <Grid item xs={12} md={11}>
+//   <Switch>
+//     <Route path="/create-start" component={CreateStartContainer} />
+//     <Route path="/" render={() =>
+//       <Grid container justify='center' alignItems='center'>
+//         <Grid item>
+//           <h1>The Dashboard</h1>
+//         </Grid>
+//       </Grid>
+//     } />
+//     <Route render={() => <h1>NOT FOUND!</h1>} />
+//   </Switch>
+// </Grid>
+
+// <Grid container className={classes.appBody}>
+//   <Main />
+// </Grid>
+
+// *** Modified version using Main. ***
+// <BrowserRouter>
+//   <div className={classes.root}>
+//     <Switch>
+//       <Route path="/create-start" component={Main} />
+//       <Route path="/" render={() =>
+//         <Grid container justify='center' alignItems='center'>
+//           <Grid item>
+//             <h1>The Dashboard</h1>
+//           </Grid>
+//         </Grid>
+//       } />
+//       <Route render={() => <h1>NOT FOUND!</h1>} />
+//     </Switch>
+//
+//     <Footer />
+//   </div>
+// </BrowserRouter>
+
+// ** Modified version with Drawer code **
+// <BrowserRouter>
+//   <div className={classes.root}>
+//     <HeaderContainer toggleDrawer = {this.toggleDrawer}/>
+//     <Grid container className={classes.appBody}>
+//       <Drawer
+//         open={this.state.open}
+//         variant='persistent'
+//         // anchor='left'
+//       >
+//         <div className={classes.toolbar2} />
+//         <Navbar />
+//       </Drawer>
+//       <div className={classes.toolbar2} />
+//       <Switch>
+//         <Route path="/projects" component={CreateStartContainer} />
+//         <Route path="/" render={() =>
+//           <Grid container justify='center' alignItems='center'>
+//             <Grid item>
+//               <h1>The Dashboard</h1>
+//             </Grid>
+//           </Grid>
+//         } />
+//         <Route render={() => <h1>NOT FOUND!</h1>} />
+//       </Switch>
+//     </Grid>
+//     <Footer />
+//   </div>
+// </BrowserRouter>

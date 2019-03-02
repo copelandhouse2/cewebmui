@@ -25,13 +25,23 @@ function sessionLoaded(session) {
 
 /* ADDRESSES ACTIONS */
 // Loading the list of addresses
-export function loadAddresses() {
+export function loadProjects(search) {
   return function (dispatch) {
-    fetch("/starts")
+    const urlString = `:${search.pendingOnly}`
+      + `/:${search.dateRange}`
+      + `/:${search.enteredBy}`
+      + `/:${search.jobNumber}`
+      + `/:${search.address}`
+      + `/:${search.requestedBy}`
+      + `/:${search.client}`
+      + `/:${search.city}`
+      + `/:${search.subdivision}`
+      + `/:${search.status}`;
+    fetch(`/projects/${urlString}`)
     .then( (response) => {
       return response.json();
-    }).then((addresses) => {
-      dispatch(addressesLoaded(addresses));
+    }).then((projects) => {
+      dispatch(projectsLoaded(projects));
     });
   };
 }
@@ -41,25 +51,25 @@ export function loadPending(userID) {
     fetch(`/pending/${userID}`)
     .then( (response) => {
       return response.json();
-    }).then((addresses) => {
-      dispatch(addressesLoaded(addresses));
+    }).then((projects) => {
+      dispatch(projectsLoaded(projects));
     });
   };
 }
 
-function addressesLoaded(addresses) {
+function projectsLoaded(projects) {
   return {
     type: "ADDRESSES_LOADED",
-    value: addresses
+    value: projects
   };
 }
 
 // Action to create the Address
-export function createAddress(c, userID, loadType) {
+export function createAddress(c) {
   // console.log('Just in createAddress', c, userID, loadType)
   return function (dispatch) {
     // console.log('in function',userID, loadType)
-    fetch("/starts", {
+    fetch("/projects", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(c)
@@ -67,13 +77,14 @@ export function createAddress(c, userID, loadType) {
       return response.json();  // need to do this extra .then to convert json response into object to read.
     }).then((response) => {
       // console.log('.then create Address', response);  // now has insertId
-      loadType === 'PENDING' ? dispatch(loadPending(userID)) : dispatch(loadAddresses());
+      // loadType === 'PENDING' ? dispatch(loadPending(userID)) : dispatch(loadProjects());
+      dispatch(loadProjects(c.search));
     });
   };
 }
 
 // Action to create the Address
-export function commitAddresses(c, userID, loadType) {
+export function commitAddresses(userID, c, search) {
   return function (dispatch) {
     // console.log('in commitAddress function', c, userID, loadType);
     fetch(`/commits/${userID}`, {
@@ -84,7 +95,8 @@ export function commitAddresses(c, userID, loadType) {
       return response.json();  // need to do this extra .then to convert json response into object to read.
     }).then((response) => {
       // console.log('.then create Address', response);
-      loadType === 'PENDING' ? dispatch(loadPending(userID)) : dispatch(loadAddresses());
+      // loadType === 'PENDING' ? dispatch(loadPending(userID)) : dispatch(loadProjects());
+      dispatch(loadProjects(search));
     });
   };
 }
@@ -92,7 +104,7 @@ export function commitAddresses(c, userID, loadType) {
 // Adding the calls to fetch 1 entity.
 export function getAddress(id) {
   return function (dispatch) {
-    fetch(`/starts/${id}`)
+    fetch(`/projects/${id}`)
     .then( (response) => {
       return response.json();
     }).then((address) => {
@@ -108,13 +120,14 @@ function getAddressDone(address) {
 }
 
 // Action to create the Address
-export function deleteAddress(id, userID, loadType) {
+export function deleteAddress(id, search) {
   // console.log('deleteAddress',id)
   return function (dispatch) {
-    fetch(`/starts/${id}`, {
+    fetch(`/projects/${id}`, {
       method: "DELETE"
-    }).then(() =>
-      loadType === 'PENDING' ? dispatch(loadPending(userID)) : dispatch(loadAddresses()));
+    }).then(() => {
+      dispatch(loadProjects(search));
+    });
   };
 }
 
@@ -697,7 +710,7 @@ export function ackMessage() {
 // Adding the calls to fetch 1 entity.
 // export function getAddress(id) {
 //   return function (dispatch) {
-//     fetch(`/starts/${id}`)
+//     fetch(`/projects/${id}`)
 //     .then( (response) => {
 //       return response.json();
 //     }).then((address) => {
