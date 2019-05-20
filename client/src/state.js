@@ -12,6 +12,7 @@ export default {
   recordStatusLookup: [],
   projectStatusLookup: [],
   scopeLookup: [],
+  classificationLookup: [],
   masonryLookup: [],
   ynLookup: [],
   fndTypeLookup: [],
@@ -20,6 +21,10 @@ export default {
   garageSwingLookup: [],
   floorTypeLookup: [],
   roofTypeLookup: [],
+  coveredPatioLookup: [],
+  pitaLookup: [],
+  geos: [],
+  geoMasterData: [],
   session: {
     user_id: null,
     username: "",

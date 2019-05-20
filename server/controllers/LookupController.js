@@ -1,4 +1,5 @@
 import LookupModel from "../models/LookupModel";
+import { geotechs, geoMasterData } from '../seedData';
 
 // function to get the list of values based on lookup type: i.e STATE, COUNTRTY.
 export const list = (request, response) => {

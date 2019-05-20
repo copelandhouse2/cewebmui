@@ -1,7 +1,17 @@
 import { sql } from "../mysqldb";
 
-const StartModel = {
-  getStarts: function(params, callback) {
+const sqlPromise = (SQLstmt, values) => {
+  return new Promise((resolve, reject) => {
+    sql().query(SQLstmt, values, (err, response) => {
+      if (err) reject(err);
+      // console.log('resolve for sql query: ', response);
+      resolve(response);
+    });
+  });
+};
+
+const ProjectModel = {
+  getProjects: function(params, callback) {
 
     // Stripping the first character (:)
     Object.keys(params).forEach(key => params[key] = params[key].slice(0,5) === ':null'? '' : params[key].slice(1));
@@ -9,7 +19,7 @@ const StartModel = {
     // Pulling out the search parameters.  Initializing values array.
     const { pending, dateRange, enteredBy, jobNumber, address, requestedBy, client, city, subdivision, status } = params;
     let values = [];
-    // console.log('StartModel params', pending, dateRange, enteredBy, jobNumber, address, requestedBy, client, city, subdivision, status);
+    // console.log('ProjectModel params', pending, dateRange, enteredBy, jobNumber, address, requestedBy, client, city, subdivision, status);
 
     // Initiating the where clauses.
     let pendingClause = '', enteredByClause = '', jobNumberClause = '', addressClause = '', requestedByClause = ''
@@ -75,16 +85,16 @@ const StartModel = {
         };
       };
     };
-    let SQLstmt = `SELECT s.id, s.job_number, s.client_id, s.user_id, s.contact_id, s.city, s.subdivision, s.address1, s.address2, s.phase, s.section
-, s.lot, s.block, s.fnd_height_fr, s.fnd_height_fl, s.fnd_height_rr, s.fnd_height_rl, s.plan_type, s.elevation, s.masonry, s.garage_type
-, s.garage_entry, s.garage_swing, s.garage_drop, s.garage_extension, s.covered_patio, s.bay_window, s.master_shower_drop
-, s.bath1_shower_drop, s.bath2_shower_drop, s.bath3_shower_drop, s.geo_lab, s.geo_report_num, date_format(s.geo_report_date, '%y-%m-%d') geo_report_date
-, s.geo_pi, s.em_center, s.em_edge, s.ym_center, s.ym_edge, s.additional_options, s.comments, s.status, s.project_status, s.scope, date_format(s.design_date, '%Y-%m-%d') design_date
-, s.start_date, s.onboard_date, s.orig_due_date, s.main_contact, s.billing_contact, s.builder_contact, s.foundation_type, s.floor_type
-, s.roof_type, s.num_stories, s.square_footage, s.pita_factor, s.trello_list_id, l.name trello_list, s.box_folder
-, s.created_by, s.last_updated_by, s.creation_date, s.last_updated_date
-, cl.name client, co.full_name requestor`
-    + ' from starts s'
+    let SQLstmt = `SELECT s.id, s.job_number, s.revision, s.revision_desc, s.client_id, s.user_id, s.contact_id, s.city, s.subdivision, s.address1, s.address2, s.phase, s.section
+    , s.lot, s.block, s.fnd_height_fr, s.fnd_height_fl, s.fnd_height_rr, s.fnd_height_rl, s.plan_type, s.elevation, s.masonry, s.garage_type
+    , s.garage_entry, s.garage_swing, s.garage_drop, s.garage_extension, s.covered_patio, s.bay_window, s.master_shower_drop
+    , s.bath1_shower_drop, s.bath2_shower_drop, s.bath3_shower_drop, s.geo_lab, s.geo_report_num, date_format(s.geo_report_date, '%Y-%m-%d') geo_report_date
+    , s.geo_pi, s.em_center, s.em_edge, s.ym_center, s.ym_edge, s.soil_notes, s.additional_options, s.comments, s.status, s.project_status, s.scope, s.classification, date_format(s.onboard_date, '%Y-%m-%d') onboard_date, date_format(s.start_date, '%Y-%m-%d') start_date
+    , date_format(s.due_date, '%Y-%m-%d') due_date, date_format(s.final_due_date, '%Y-%m-%d') final_due_date, date_format(s.transmittal_date, '%Y-%m-%d') transmittal_date, s.main_contact, s.billing_contact, s.builder_contact, s.foundation_type, s.floor_type
+    , s.roof_type, s.num_stories, s.square_footage, s.pita_factor, s.trello_list_id, l.name trello_list, s.trello_card_id, s.box_folder
+    , s.created_by, s.last_updated_by, s.creation_date, s.last_updated_date
+    , cl.name client, co.full_name requestor`
+    + ' from projects s'
     + ' left join clients cl on s.client_id = cl.id'  // allowing client_id to be null
     + ' left join contacts co on s.contact_id = co.id'  // allowing contact_id to be null
     + ' left join lookups l on IFNULL(s.trello_list_id, \'\') = l.code'
@@ -101,25 +111,25 @@ const StartModel = {
     + dateRangeClause
     + ' order by job_number';
 
-    // console.log('StartModel: SQL', SQLstmt, values);
+    // console.log('ProjectModel: SQL', SQLstmt, values);
 
     return sql().query(SQLstmt, values, callback);
   },
 
-  getPendingStarts: function(userID, callback) {
+  getPendingProjects: function(userID, callback) {
     // const SQLstmt = 'select id, city, state_prov, country from cities';
     // let SQLstmt = 'SELECT s.*, cl.name client, co.full_name requestor'
-    //   + ' from starts s'
-    let SQLstmt = `SELECT s.id, s.job_number, s.client_id, s.user_id, s.contact_id, s.city, s.subdivision, s.address1, s.address2, s.phase, s.section
+    //   + ' from projects s'
+    let SQLstmt = `SELECT s.id, s.job_number, s.revision, s.revision_desc, s.client_id, s.user_id, s.contact_id, s.city, s.subdivision, s.address1, s.address2, s.phase, s.section
     , s.lot, s.block, s.fnd_height_fr, s.fnd_height_fl, s.fnd_height_rr, s.fnd_height_rl, s.plan_type, s.elevation, s.masonry, s.garage_type
     , s.garage_entry, s.garage_swing, s.garage_drop, s.garage_extension, s.covered_patio, s.bay_window, s.master_shower_drop
     , s.bath1_shower_drop, s.bath2_shower_drop, s.bath3_shower_drop, s.geo_lab, s.geo_report_num, date_format(s.geo_report_date, '%Y-%m-%d') geo_report_date
-    , s.geo_pi, s.em_center, s.em_edge, s.ym_center, s.ym_edge, s.additional_options, s.comments, s.status, s.project_status, s.scope, date_format(s.design_date, '%Y-%m-%d') design_date
-    , date_format(s.start_date, '%Y-%m-%d') start_date, date_format(s.onboard_date, '%Y-%m-%d') onboard_date, date_format(s.orig_due_date, '%Y-%m-%d') orig_due_date, s.main_contact, s.billing_contact, s.builder_contact, s.foundation_type, s.floor_type
-    , s.roof_type, s.num_stories, s.square_footage, s.pita_factor, s.trello_list_id, l.name trello_list, s.box_folder
+    , s.geo_pi, s.em_center, s.em_edge, s.ym_center, s.ym_edge, s.soil_notes, s.additional_options, s.comments, s.status, s.project_status, s.scope, s.classification, date_format(s.onboard_date, '%Y-%m-%d') onboard_date, date_format(s.start_date, '%Y-%m-%d') start_date
+    , date_format(s.due_date, '%Y-%m-%d') due_date, date_format(s.final_due_date, '%Y-%m-%d') final_due_date, date_format(s.transmittal_date, '%Y-%m-%d') transmittal_date, s.main_contact, s.billing_contact, s.builder_contact, s.foundation_type, s.floor_type
+    , s.roof_type, s.num_stories, s.square_footage, s.pita_factor, s.trello_list_id, l.name trello_list, s.trello_card_id, s.box_folder
     , s.created_by, s.last_updated_by, s.creation_date, s.last_updated_date
     , cl.name client, co.full_name requestor`
-      + ' from starts s'
+      + ' from projects s'
       + ' left join clients cl on s.client_id = cl.id' // allowing client_id to be null
       + ' left join contacts co on s.contact_id = co.id' // allowing contact_id to be null
       + ' left join lookups l on IFNULL(s.trello_list_id, \'\') = l.code'
@@ -128,38 +138,39 @@ const StartModel = {
       + ' and l.type = "TRELLO_LIST"'
       + ' order by s.job_number';
 
-    // console.log('StartModel: userID, SQL', userID, SQLstmt);
+    // console.log('ProjectModel: userID, SQL', userID, SQLstmt);
     return sql().query(SQLstmt, [userID], callback);
   },
 
-  getStartByID: function(id, callback){
+  getProjectByID: function(id, callback){
     const SQLstmt = 'SELECT *'
-      + ' from starts'
+      + ' from projects'
       + ' where id = ?';
     return sql().query(SQLstmt, [id], callback);
   },
 
   // This function handles BOTH ADD and UPDATE.
   // Basically an UPSERT feature.
-  addStart: function(start, callback){
+  addProject: function(start, callback){
 
   //inserting into mysql
-  const {address_id, job_number, client_id, client, owner_id, requestor_id, city, subdivision, address1, address2, phase, section, lot, block
+  const {address_id, job_number, revision, revision_desc, client_id, client, owner_id, requestor_id, city, subdivision, address1, address2, phase, section, lot, block
     , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation, masonry, garage_type
     , garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window, master_shower_drop
     , bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num, geo_report_date
-    , geo_pi, em_center, em_edge, ym_center, ym_edge, additional_options, comments, status, project_status, scope, design_date
-    , start_date, onboard_date, orig_due_date, main_contact, billing_contact, builder_contact, foundation_type, floor_type
+    , geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, comments, status, project_status, scope, classification, onboard_date
+    , start_date, due_date, final_due_date, transmittal_date, main_contact, billing_contact, builder_contact, foundation_type, floor_type
     , roof_type, num_stories, square_footage, pita_factor, trello_list_id, box_folder
     , created_by, last_updated_by }
     = start;
 
+  // console.log("start", start);
   // console.log("job_number", job_number);
   // console.log("city", city);
   // console.log("user_id", owner_id);
-  // console.log('addStart: Values', values)
+  // console.log('addProject: Values', values)
 
-  // const SQLstmt = "INSERT INTO starts (job_number, client_id, user_id, city, subdivision, address1, address2, phase, section"
+  // const SQLstmt = "INSERT INTO projects (job_number, client_id, user_id, city, subdivision, address1, address2, phase, section"
   // + ", lot, block, fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation, masonry, garage_type"
   // + ", garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window, master_shower_drop"
   // + ", bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num,  geo_report_date"
@@ -167,74 +178,94 @@ const StartModel = {
   // + " VALUES(?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?)";
 
   // 11+10+7+6+11+8+6+2 fields
-  const SQLstmt = `INSERT INTO starts (id, job_number, client_id, user_id, contact_id, city, subdivision, address1, address2, phase, section
+  const SQLstmt = `INSERT INTO projects (id, job_number, revision, revision_desc, client_id, user_id, contact_id, city, subdivision, address1, address2, phase, section
   , lot, block, fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation, masonry, garage_type
   , garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window, master_shower_drop
   , bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num,  geo_report_date
-  , geo_pi, em_center, em_edge, ym_center, ym_edge, additional_options, comments, status, project_status, scope, design_date
-  , start_date, onboard_date, orig_due_date, main_contact, billing_contact, builder_contact, foundation_type, floor_type
+  , geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, comments, status, project_status, scope, classification, onboard_date
+  , start_date, due_date, final_due_date, transmittal_date, main_contact, billing_contact, builder_contact, foundation_type, floor_type
   , roof_type, num_stories, square_footage, pita_factor, trello_list_id, box_folder
   , created_by, last_updated_by)
-   VALUES(?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?)
-   ON DUPLICATE KEY UPDATE job_number = ?, client_id = ?, user_id = ?, contact_id = ?, city = ?, subdivision = ?, address1 = ?, address2 = ?
+   VALUES(?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?)
+   ON DUPLICATE KEY UPDATE job_number = ?, revision = ?, revision_desc = ?, client_id = ?, user_id = ?, contact_id = ?, city = ?, subdivision = ?, address1 = ?, address2 = ?
   , phase = ?, section = ?, lot = ?, block = ?, fnd_height_fr = ?, fnd_height_fl = ?, fnd_height_rr = ?, fnd_height_rl = ?
   , plan_type = ?, elevation = ?, masonry = ?, garage_type = ?, garage_entry = ?, garage_swing = ?, garage_drop = ?, garage_extension = ?
   , covered_patio = ?, bay_window = ?, master_shower_drop = ?, bath1_shower_drop = ?, bath2_shower_drop = ?, bath3_shower_drop = ?
-  , geo_lab = ?, geo_report_num = ?,  geo_report_date = ?, geo_pi = ?, em_center = ?, em_edge = ?, ym_center = ?, ym_edge = ?
-  , additional_options = ?, comments = ?, status = ?, project_status = ?, scope = ?, design_date = ?, start_date = ?
-  , onboard_date = ?, orig_due_date = ?, main_contact = ?, billing_contact = ?, builder_contact = ?, foundation_type = ?, floor_type = ?
+  , geo_lab = ?, geo_report_num = ?,  geo_report_date = ?, geo_pi = ?, em_center = ?, em_edge = ?, ym_center = ?, ym_edge = ?, soil_notes = ?
+  , additional_options = ?, comments = ?, status = ?, project_status = ?, scope = ?, classification = ?, onboard_date = ?, start_date = ?
+  , due_date = ?, final_due_date = ?, transmittal_date = ?, main_contact = ?, billing_contact = ?, builder_contact = ?, foundation_type = ?, floor_type = ?
   , roof_type = ?, num_stories = ?, square_footage = ?, pita_factor = ?, trello_list_id = ?, box_folder = ?
   , last_updated_by = ?`;
 
-  const values = [address_id, job_number, client_id, owner_id, requestor_id, city, subdivision, address1, address2 // 9
+  const values = [address_id, job_number, revision, revision_desc, client_id, owner_id, requestor_id, city, subdivision, address1, address2 // 11
   , phase, section, lot, block, fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation // 10
   , masonry, garage_type, garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window // 8
   , master_shower_drop, bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num  // 6
-  , geo_report_date, geo_pi, em_center, em_edge, ym_center, ym_edge, additional_options, comments, status // 9
-  , project_status, scope, design_date, start_date, onboard_date, orig_due_date, main_contact // 7
+  , geo_report_date, geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, comments, status // 10
+  , project_status, scope, classification, onboard_date, start_date, due_date, final_due_date, transmittal_date, main_contact // 9
   , billing_contact, builder_contact, foundation_type, floor_type, roof_type, num_stories, square_footage // 7
   , pita_factor, trello_list_id, box_folder // 3
   , created_by, last_updated_by // 2
 
-  , job_number, client_id, owner_id, requestor_id, city, subdivision, address1, address2, phase, section, lot, block // 12
+  , job_number, revision, revision_desc, client_id, owner_id, requestor_id, city, subdivision, address1, address2, phase, section, lot, block // 14
   , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation, masonry, garage_type // 8
   , garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window, master_shower_drop // 7
   , bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num, geo_report_date // 6
-  , geo_pi, em_center, em_edge, ym_center, ym_edge, additional_options, comments, status, project_status // 9
-  , scope, design_date, start_date, onboard_date, orig_due_date, main_contact, billing_contact, builder_contact // 8
+  , geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, comments, status, project_status // 10
+  , scope, classification, onboard_date, start_date, due_date, final_due_date, transmittal_date, main_contact, billing_contact, builder_contact // 10
   , foundation_type, floor_type, roof_type, num_stories, square_footage, pita_factor, trello_list_id, box_folder // 8
   , last_updated_by // 1
   ];
 
-
-    // console.log('Model addStart: SQL', SQLstmt);
-    // console.log('Model addStart: Values', values);
+    // console.log('Model addProject: SQL', SQLstmt);
+    // console.log('Model addProject: Values', values);
 
     return sql().query(SQLstmt, values, callback);
   },
 
-  deleteStart: function(id, callback){
-    const SQLstmt = "DELETE from starts where id = ?";
-    // console.log("query", SQLstmt, id);
-    return sql().query(SQLstmt, [id], callback);
+  deleteProject: (id) => {
+    const SQLstmt = "DELETE from projects where id = ?";
+    const values = [id];
+    return sqlPromise(SQLstmt, values);
   },
 
   // right now, not using.  Leveraging the upsert functionality MySQL has.  See add.
-  updateStart: function(city, callback){
-    const SQLstmt = 'update starts set 1=1';
+  updateProject: function(city, callback){
+    const SQLstmt = 'update projects set 1=1';
     const values = [];
     return sql().query(SQLstmt, values, callback);
   },
 
-  commitStart: function(userID, callback) {
-    const SQLstmt = 'update starts'
+  commitProject: function(userID, callback) {
+    const SQLstmt = 'update projects'
       + ' set status = ?'
-      + ' where user_id = ?';
+      + ' where user_id = ?'
+      + ' and status = ?';
 
-    const values = ['ACTIVE', userID];
-    // console.log('StartModel: userID, SQL', SQLstmt, values);
+    const values = ['ACTIVE', userID, 'PENDING'];
+    // console.log('ProjectModel: userID, SQL', SQLstmt, values);
     return sql().query(SQLstmt, values, callback);
-  }
+  },
+
+  commitProjectByUser: (userID) => {
+    const SQLstmt = 'update projects'
+      + ' set status = ?'
+      + ' where user_id = ?'
+      + ' and status = ?';
+    const values = ['ACTIVE', userID, 'PENDING'];
+
+    return sqlPromise(SQLstmt, values);
+  },
+
+  commitProjectByID: (ID, cardID) => {
+    const SQLstmt = 'update projects'
+      + ' set status = ?, trello_card_id = ?'
+      + ' where id = ?';
+    const values = ['ACTIVE', cardID, ID];
+
+    return sqlPromise(SQLstmt, values);
+  },
+
 };
 
-export default StartModel;
+export default ProjectModel;

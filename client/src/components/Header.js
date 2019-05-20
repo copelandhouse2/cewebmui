@@ -15,7 +15,7 @@ import CloseIcon from '@material-ui/icons/Close';
 
 const styles = theme => ({
   root: {},
-  AppBar: {marginBottom: 10, zIndex: theme.zIndex.drawer + 1,},
+  AppBar: {marginBottom: 10, zIndex: theme.zIndex.drawer+1,},
   grow: {flexGrow: 1,},
   icon: { fontSize:"1.5em" },
 });

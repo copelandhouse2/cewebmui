@@ -94,9 +94,18 @@ export function commitAddresses(userID, c, search) {
     }).then((response) => {
       return response.json();  // need to do this extra .then to convert json response into object to read.
     }).then((response) => {
-      // console.log('.then create Address', response);
+      console.log('2nd .then create Address', response);
+      if (response.errno) {
+        throw response;
+      };
       // loadType === 'PENDING' ? dispatch(loadPending(userID)) : dispatch(loadProjects());
       dispatch(loadProjects(search));
+    }).catch(err => {
+      dispatch(loadMessage(
+        { ok:false,
+          status: `${err.errno}:${err.code}`,
+          statusText: err.sqlMessage
+        }, "ERROR"));
     });
   };
 }
@@ -421,6 +430,12 @@ function lookupLoaded(lookupList, type) {
       value: lookupList
     };
   }
+  if (type === 'CLASSIFICATION') {
+    return {
+      type: "CLASSIFICATIONLOOKUP_LOADED",
+      value: lookupList
+    };
+  }
   if (type === 'MASONRY') {
     return {
       type: "MASONRYLOOKUP_LOADED",
@@ -466,6 +481,18 @@ function lookupLoaded(lookupList, type) {
   if (type === 'ROOF_TYPE') {
     return {
       type: "ROOFTYPELOOKUP_LOADED",
+      value: lookupList
+    };
+  }
+  if (type === 'COVERED_PATIO') {
+    return {
+      type: "COVEREDPATIO_LOADED",
+      value: lookupList
+    };
+  }
+  if (type === 'PITA') {
+    return {
+      type: "PITA_LOADED",
       value: lookupList
     };
   }
@@ -672,55 +699,47 @@ export function ackMessage() {
       content: ""
     }
   };
-
 }
-// Action to select the Account
-// export function signIn(user) {
-//   return function (dispatch) {
-//     fetch("/signIn", {
-//       method: "GET",
-//       headers: {"Content-Type": "application/json"},
-//       body: JSON.stringify(user)
-//     })
-//     .then( (response) => {
-//       return response.json();
-//     }).then((address) => {
-//       dispatch(getAddressDone(address));
-//     });
-//   };
-// }
-// Retrieving the country LOV
-// export function getCountryLookup(type) {
-//   return function (dispatch) {
-//     fetch(`/lookupcountries/${type}`)
-//     .then( (response) => {
-//       return response.json();
-//     }).then((lookupList) => {
-//       dispatch(lookupLoaded(lookupList));
-//     });
-//   };
-// }
-// function lookupStateLoaded(addresses) {
-//   return {
-//     type: "STATE_LOOKUP_LOADED",
-//     value: statesLOV
-//   };
-// }
 
-// Adding the calls to fetch 1 entity.
-// export function getAddress(id) {
-//   return function (dispatch) {
-//     fetch(`/projects/${id}`)
-//     .then( (response) => {
-//       return response.json();
-//     }).then((address) => {
-//       dispatch(getAddressDone(address));
-//     });
-//   };
-// }
-// function getAddressDone(address) {
-//   return {
-//     type: "GET_ADDRESS_DONE",
-//     value: address
-//   };
-// }
+/* GEOTECH ACTIONs */
+// Loading the list of geotechs
+export function loadGeotechs() {
+  // console.log('In geotech');
+  return function (dispatch) {
+    fetch('/geos')
+    .then( (response) => {
+      return response.json();
+    }).then((geos) => {
+      // console.log('geos', geos);
+      dispatch(geosLoaded(geos));
+    });
+  };
+}
+function geosLoaded(geos) {
+  return {
+    type: "GEOS_LOADED",
+    value: geos
+  };
+}
+
+// Loading the list of geotechs
+export function loadGeoMasterData(geo_id) {
+  // console.log('In masterData');
+
+  return function (dispatch) {
+    fetch(`/geomasterdata/${geo_id}`)
+    .then( (response) => {
+      // console.log('response', response);
+      return response.json();
+    }).then((masterData) => {
+      // console.log('masterData', masterData);
+      dispatch(geoMasterDataLoaded(masterData));
+    });
+  };
+}
+function geoMasterDataLoaded(masterData) {
+  return {
+    type: "GEO_MASTER_DATA_LOADED",
+    value: masterData
+  };
+}

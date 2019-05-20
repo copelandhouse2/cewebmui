@@ -1,9 +1,9 @@
 import { connect } from "react-redux";
-import ProjectMgmt from "../components/ProjectMgmt";
-import { loadProjects, createAddress, deleteAddress, commitAddresses
+import ProjectCreate from "../components/ProjectCreate";
+import { createAddress
   , showHideClientDialog, showHideContactDialog, showHideSubdivisionDialog
-  , showHideCityDialog, showHideGeotechDialog, loadContacts
-  , getLookup, loadMessage } from "../actions";
+  , showHideCityDialog, showHideGeotechDialog
+  , loadMessage } from "../actions";
 
 function mapStateToProps(state) {
   return {
@@ -14,19 +14,13 @@ function mapStateToProps(state) {
     addresses: state.addresses,
     contacts: state.contacts,
     trelloListLookup: state.trelloListLookup,
-    projectStatusLookup: state.projectStatusLookup,
-    scopeLookup: state.scopeLookup,
-    classificationLookup: state.classificationLookup,
     masonryLookup: state.masonryLookup,
     ynLookup: state.ynLookup,
     fndTypeLookup: state.fndTypeLookup,
     garageTypeLookup: state.garageTypeLookup,
     garageEntryLookup: state.garageEntryLookup,
     garageSwingLookup: state.garageSwingLookup,
-    floorTypeLookup: state.floorTypeLookup,
-    roofTypeLookup: state.roofTypeLookup,
     coveredPatioLookup: state.coveredPatioLookup,
-    pitaLookup: state.pitaLookup,
     showClientDialog: state.showClientDialog,
     showContactDialog: state.showContactDialog,
     showSubdivisionDialog: state.showSubdivisionDialog,
@@ -39,17 +33,8 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    loadProjects: (search) => {
-      dispatch(loadProjects(search));
-    },
     createAddress: (address, userID, loadType) => {
       dispatch(createAddress(address, userID, loadType));
-    },
-    deleteAddress: (id, userID, loadType) => {
-      dispatch(deleteAddress(id, userID, loadType));
-    },
-    commitAddresses: (addresses, userID, loadType) => {
-      dispatch(commitAddresses(addresses, userID, loadType));
     },
     showHideClientDialog: () => {
       dispatch(showHideClientDialog());
@@ -66,16 +51,10 @@ function mapDispatchToProps(dispatch) {
     showHideGeotechDialog: () => {
       dispatch(showHideGeotechDialog());
     },
-    loadContacts: function () {
-      dispatch(loadContacts());
-    },
-    getLookup: function (lookup) {
-      dispatch(getLookup(lookup));
-    },
     loadMessage: function (message, type) {
       dispatch(loadMessage(message, type));
     },
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(ProjectMgmt);
+export default connect(mapStateToProps, mapDispatchToProps)(ProjectCreate);

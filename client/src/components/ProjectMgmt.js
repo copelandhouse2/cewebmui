@@ -31,6 +31,9 @@ import Delete from '@material-ui/icons/Delete';
 import Edit from '@material-ui/icons/Edit';
 import Save from '@material-ui/icons/Save';
 import Cancel from '@material-ui/icons/Cancel';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+
 // import ExpandMore from '@material-ui/icons/ExpandMore';
 
 import Select from 'react-select';
@@ -40,13 +43,18 @@ import ContactDialogContainer from '../containers/ContactDialogContainer';
 import CityDialogContainer from '../containers/CityDialogContainer';
 import SubdivisionDialogContainer from '../containers/SubdivisionDialogContainer';
 import AlertDialogContainer from '../containers/AlertDialogContainer';
+import ProjectCreateContainer from '../containers/ProjectCreateContainer';
+
+import classNames from 'classnames';
+import Drawer from '@material-ui/core/Drawer';
 
 // import ProjectSearchContainer from '../containers/ProjectSearchContainer'
 // import { TRELLO_PARAMS } from '../envVars'
+const drawerWidth = '30%';
 
 const styles = theme => ({
-  container: { marginBottom: 70 },
-  bodyPaper: { padding: 20, minHeight: '84vh' },
+  container: { marginBottom: 70, },
+  bodyPaper: { padding: 20, minHeight: '85vh', marginTop: -10 },
   Paper: { padding: 20, marginTop: 10, marginBottom: 10 },
   grow: { flexGrow: 0, },
   // rightJust: { textAlign: 'right', },
@@ -60,6 +68,22 @@ const styles = theme => ({
   formControl: { margin: theme.spacing.unit, minWidth: 120, },
   panelSummaryProps: {backgroundColor: theme.palette.primary.main, color: theme.palette.secondary.main},
 
+  content: {
+    flexGrow: 1,
+    padding: theme.spacing.unit * 3,
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+    marginRight: 0,
+  },
+  contentShift: {
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    marginRight: `calc(${drawerWidth} - 40px)`,
+  },
 });
 
 // object property to handle the react-select control.  Had to pull it outside MUI styles function.
@@ -77,7 +101,7 @@ const createSelectProps = {
   input: (provided) => ({ ...provided, color: 'black', }),
   singleValue: (provided) => ({ ...provided, color: 'black', }),
   placeholder: (provided) => ({ ...provided, color: 'black', }),
-  control: (provided, state) => ({ ...provided, minHeight: 10, height: 35, color: 'black', backgroundColor: '#e8e8e8', fontSize: 12, borderWidth: 0,
+  control: (provided, state) => ({ ...provided, marginTop:1, minHeight: 10, height: 35, color: 'black', backgroundColor: '#e8e8e8', fontSize: 12, borderWidth: 0,
     borderBottomWidth: state.isFocused? 2:1, borderBottomStyle: 'solid', borderBottomColor: 'black', borderBottomLeftRadius: 0, borderBottomRightRadius: 0,
     ':hover': {borderBottomWidth: state.isFocused? 2:1, borderBottomStyle: 'solid', borderBottomColor: 'black', backgroundColor: '#dedede'},
   }),
@@ -87,11 +111,19 @@ class ProjectMgmt extends Component {
   constructor(props) {
     super(props);
 
+    this.addrRef = React.createRef();
+
     this.NEW_ROW = -1;
+
+    this.today = new Date();
+    this.todayStr = this.today.getMonth()+1 < 10? `${this.today.getFullYear()}-0${this.today.getMonth()+1}-${this.today.getDate()}` :
+      `${this.today.getFullYear()}-${this.today.getMonth()+1}-${this.today.getDate()}`;
 
     this.state = {
       address_id: null,
       job_number: null,
+      revision: '',
+      revision_desc: '',
       client_id: null,
       client: '',
       requestor_id: null,  // contact_id
@@ -120,12 +152,12 @@ class ProjectMgmt extends Component {
       garage_swing: '',
       garage_drop: null,
       garage_extension: null,
-      covered_patio: '',
-      bay_window: '',
-      master_shower_drop: '',
-      bath1_shower_drop: '',
-      bath2_shower_drop: '',
-      bath3_shower_drop: '',
+      covered_patio: 'N',
+      bay_window: 'N',
+      master_shower_drop: 'N',
+      bath1_shower_drop: 'N',
+      bath2_shower_drop: 'N',
+      bath3_shower_drop: 'N',
       geo_lab: '',
       geo_report_num: '',
       geo_report_date: null,
@@ -134,6 +166,7 @@ class ProjectMgmt extends Component {
       em_edge: null,
       ym_center: null,
       ym_edge: null,
+      soil_notes: '',
       additional_options: '',
       comments: '',
       created_by: null,
@@ -148,15 +181,17 @@ class ProjectMgmt extends Component {
       dialogValue: '',
       // Custom Project fields
       project_status: '',
-      scope: '',
-      design_date: null,
-      start_date: null,
-      onboard_date: null,
-      orig_due_date: null,
+      scope: 'FDN',
+      classification: 'VOLUME',
+      onboard_date: this.todayStr,
+      start_date: this.todayStr,
+      due_date: null,  // actual due date of the project.
+      final_due_date: null,
+      transmittal_date: null,
       main_contact: '',
       billing_contact: '',
       builder_contact: '',
-      foundation_type: '',
+      foundation_type: 'POST TENSION',
       floor_type: '',
       roof_type: '',
       num_stories: null,
@@ -166,8 +201,10 @@ class ProjectMgmt extends Component {
       box_folder: '',
       trello_list_id: '',
       trello_list: '',
+      trello_card_id: '',
       createTrelloCard: false,
       rememberData: false,
+      toggleQuickEntry: false,
       search: {
         pendingOnly: true,
         jobNumber: '',
@@ -190,34 +227,38 @@ class ProjectMgmt extends Component {
         {label: 'Address', name: 'address1', id: '', type: 'text', width: '14%', isDisabled: false, required: true, list: []},
       ]},
       {name: 'main', fields: [
-        {label: 'Address 2', name: 'address2', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
-        {label: 'Client', name: 'client', id: 'client_id', type: 'text', width: '10%', isDisabled: true, required: true, list: []},
+        {label: 'Rev', name: 'revision', id: '', type: 'text', width: '3%', isDisabled: false, required: false, list: []},
+        {label: 'Rev Desc', name: 'revision_desc', id: '', type: 'text', width: '12%', isDisabled: false, required: false, list: []},
+        // {label: 'Address 2', name: 'address2', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
+        {label: 'Client', name: 'client', id: 'client_id', type: 'text', width: '10%', isDisabled: false, required: true, list: []},
         {label: 'Requestor', name: 'requestor', id: 'requestor_id', type: 'text', width: '10%', isDisabled: true, required: false, list: []},
         {label: 'Subdivision', name: 'subdivision', id: 'subdivision_id', type: 'text', width: '10%', isDisabled: true, required: false, list: []},
-        {label: 'City', name: 'city', id: 'city_id', type: 'text', width: '10%', isDisabled: true, required: false, list: []},
-        {label: '', name: 'overflow', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
+        {label: 'City', name: 'city', id: 'city_id', type: 'text', width: '10%', isDisabled: true, required: false, list: [], nextTab:'project'},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'project', fields: [
-        {label: 'Proj Status', name: 'project_status', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
+        // {label: 'Proj Status', name: 'project_status', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
+        {label: 'Classification', name: 'classification', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
         {label: 'Scope', name: 'scope', id: '', width: '10%', type: 'text', isDisabled: false, required: false, list: []},
-        {label: 'Design Date', name: 'design_date', id: '', type: 'date', width: '10%', isDisabled: false, required: false, list: []},
-        {label: 'Start Date', name: 'start_date', id: '', type: 'date', width: '10%', isDisabled: false, required: false, list: []},
-        {label: 'On-Board Date', name: 'onboard_date', id: '', type: 'date', width: '10%', isDisabled: false, required: false, list: []},
-        {label: 'Orig Due Date', name: 'orig_due_date', id: '', type: 'date', width: '10%', isDisabled: false, required: false, list: []},
-        {label: '', name: 'overflow', id: '', type: 'text', width: '0%', isDisabled: false, required: false, list: []},
+        {label: 'Due Date', name: 'due_date', id: '', type: 'date', width: '7%', isDisabled: false, required: false, list: []},
+        {label: 'Onboard Date', name: 'onboard_date', id: '', type: 'date', width: '7%', isDisabled: false, required: false, list: []},
+        {label: 'Start Date', name: 'start_date', id: '', type: 'date', width: '7%', isDisabled: false, required: false, list: []},
+        {label: 'Final Due Date', name: 'final_due_date', id: '', type: 'date', width: '7%', isDisabled: false, required: false, list: []},
+        {label: 'Transmittal Date', name: 'transmittal_date', id: '', type: 'date', width: '7%', isDisabled: false, required: false, list: [], nextTab:'communication'},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'communication', fields: [
         {label: 'Main Contact', name: 'main_contact', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
         {label: 'Billing', name: 'billing_contact', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
         {label: 'Builder', name: 'builder_contact', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
-        {label: 'Box Folder', name: 'box_folder', id: '', type: 'text', width: '15%', isDisabled: false, required: false, list: []},
+        {label: 'Box Folder', name: 'box_folder', id: '', type: 'text', width: '15%', isDisabled: false, required: false, list: [], nextTab:'lot'},
         {label: '', name: 'overflow', id: '', type: 'text', width: '15%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'lot', fields: [
         {label: 'Phase', name: 'phase', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
         {label: 'Section', name: 'section', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
         {label: 'Lot', name: 'lot', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
-        {label: 'Block', name: 'block', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
+        {label: 'Block', name: 'block', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: [], nextTab:'design'},
         {label: '', name: 'overflow', id: '', type: 'text', width: '40%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'design', fields: [
@@ -226,7 +267,7 @@ class ProjectMgmt extends Component {
         {label: 'Masonry', name: 'masonry', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
         {label: 'Covered Patio', name: 'covered_patio', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
         {label: 'Bay Window', name: 'bay_window', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
-        {label: 'FND Type', name: 'foundation_type', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'FDN Type', name: 'foundation_type', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: [], nextTab:'garage'},
         {label: '', name: 'overflow', id: '', type: 'text', width: '12%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'garage', fields: [
@@ -234,46 +275,47 @@ class ProjectMgmt extends Component {
         {label: 'Garage Entry', name: 'garage_entry', id: '', type: 'text', width: '12%', isDisabled: false, required: false, list: []},
         {label: 'Garage Swing', name: 'garage_swing', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
         {label: 'Garage Drop', name: 'garage_drop', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
-        {label: 'Garage Ext', name: 'garage_extension', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Garage Ext', name: 'garage_extension', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: [], nextTab:'drop'},
         {label: '', name: 'overflow', id: '', type: 'text', width: '12%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'drop', fields: [
         {label: 'Master', name: 'master_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
         {label: 'Bath 1', name: 'bath1_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
         {label: 'Bath 2', name: 'bath2_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
-        {label: 'Bath 3', name: 'bath3_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Bath 3', name: 'bath3_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: [], nextTab:'soil'},
         {label: '', name: 'overflow', id: '', type: 'text', width: '28%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'soil', fields: [
         {label: 'Lab', name: 'geo_lab', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
-        {label: 'Report #', name: 'geo_report_num', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
-        {label: 'Report Date', name: 'geo_report_date', id: '', type: 'date', width: '10%', isDisabled: false, required: false, list: []},
-        {label: 'PI', name: 'geo_pi', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
-        {label: 'EmC', name: 'em_center', id: '', type: 'number', width: '5%', isDisabled: false, required: false, list: []},
-        {label: 'EmE', name: 'em_edge', id: '', type: 'number', width: '5%', isDisabled: false, required: false, list: []},
-        {label: 'YmC', name: 'ym_center', id: '', type: 'number', width: '5%', isDisabled: false, required: false, list: []},
-        {label: 'YmE', name: 'ym_edge', id: '', type: 'number', width: '5%', isDisabled: false, required: false, list: []},
-        {label: '', name: 'overflow', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
+        {label: 'Report #', name: 'geo_report_num', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Report Date', name: 'geo_report_date', id: '', type: 'date', width: '7%', isDisabled: false, required: false, list: []},
+        {label: 'PI', name: 'geo_pi', id: '', type: 'text', width: '4%', isDisabled: false, required: false, list: []},
+        {label: 'EmC', name: 'em_center', id: '', type: 'number', width: '4%', isDisabled: false, required: false, list: []},
+        {label: 'EmE', name: 'em_edge', id: '', type: 'number', width: '4%', isDisabled: false, required: false, list: []},
+        {label: 'YmC', name: 'ym_center', id: '', type: 'number', width: '4%', isDisabled: false, required: false, list: []},
+        {label: 'YmE', name: 'ym_edge', id: '', type: 'number', width: '4%', isDisabled: false, required: false, list: []},
+        {label: 'Soil Notes', name: 'soil_notes', id: '', type: 'text', width: '13%', isDisabled: false, required: false, list: [], nextTab:'form'},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '2%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'form', fields: [
         {label: 'Front RT', name: 'fnd_height_fr', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
         {label: 'Front LT', name: 'fnd_height_fl', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
         {label: 'Rear RT', name: 'fnd_height_rr', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
-        {label: 'Rear LT', name: 'fnd_height_rl', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Rear LT', name: 'fnd_height_rl', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: [], nextTab:'framing'},
         {label: '', name: 'overflow', id: '', type: 'text', width: '28%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'framing', fields: [
-        {label: 'FND Type', name: 'foundation_type', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
+        {label: 'FDN Type', name: 'foundation_type', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
         {label: 'Floor Type', name: 'floor_type', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
         {label: 'Roof Type', name: 'roof_type', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
         {label: 'Stories', name: 'num_stories', id: '', type: 'number', width: '5%', isDisabled: false, required: false, list: []},
         {label: 'SQFT', name: 'square_footage', id: '', type: 'number', width: '5%', isDisabled: false, required: false, list: []},
-        {label: 'PITA', name: 'pita_factor', id: '', type: 'number', width: '6%', isDisabled: false, required: false, list: []},
+        {label: 'PITA', name: 'pita_factor', id: '', type: 'number', width: '6%', isDisabled: false, required: false, list: [], nextTab:'notes'},
         {label: '', name: 'overflow', id: '', type: 'text', width: '14%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'notes', fields: [
         {label: 'Addl Options', name: 'additional_options', id: '', type: 'text', width: '25%', isDisabled: false, required: false, list: []},
-        {label: 'Notes', name: 'comments', id: '', type: 'text', width: '25%', isDisabled: false, required: false, list: []},
+        {label: 'Notes', name: 'comments', id: '', type: 'text', width: '25%', isDisabled: false, required: false, list: [], nextTab:'trello'},
         {label: '', name: 'overflow', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'trello', fields: [
@@ -291,18 +333,21 @@ class ProjectMgmt extends Component {
   }
 
   componentDidMount = () => {
-    this.props.loadContacts();
-    this.props.getLookup('TRELLO_LIST');
-    this.props.getLookup('PROJECT_STATUS');
-    this.props.getLookup('SCOPE');
-    this.props.getLookup('MASONRY');
-    this.props.getLookup('YN');
-    this.props.getLookup('FND_TYPE');
-    this.props.getLookup('GARAGE_TYPE');
-    this.props.getLookup('GARAGE_ENTRY');
-    this.props.getLookup('GARAGE_SWING');
-    this.props.getLookup('FLOOR_TYPE');
-    this.props.getLookup('ROOF_TYPE');
+    // this.props.loadContacts();
+    // this.props.getLookup('TRELLO_LIST');
+    // this.props.getLookup('PROJECT_STATUS');
+    // this.props.getLookup('SCOPE');
+    // this.props.getLookup('MASONRY');
+    // this.props.getLookup('YN');
+    // this.props.getLookup('FND_TYPE');
+    // this.props.getLookup('GARAGE_TYPE');
+    // this.props.getLookup('GARAGE_ENTRY');
+    // this.props.getLookup('GARAGE_SWING');
+    // this.props.getLookup('FLOOR_TYPE');
+    // this.props.getLookup('ROOF_TYPE');
+    // this.props.getLookup('COVERED_PATIO');
+    // this.props.getLookup('PITA');
+
   }
 
   initState = () => {
@@ -315,12 +360,25 @@ class ProjectMgmt extends Component {
         address_id: null,
         job_number: null,
         editRow: this.NEW_ROW, // this is the address array id that is being edited.  If -1, new address.
+        toggleQuickEntry: false,
       });
     }
     else {
       this.setState( {
         address_id: null,
         job_number: null,
+        revision: '',
+        revision_desc: '',
+        client_id: null,
+        client: '',
+        requestor_id: null,  // contact_id
+        requestor: '',       // contact full name
+        owner_id: null,      // user_id
+        owner: '',           // contact full name of the user_id
+        city_id: null,
+        city: '',
+        subdivision_id: null,
+        subdivision: '',
         address1: '',
         address2: '',
         phase: '',
@@ -339,12 +397,12 @@ class ProjectMgmt extends Component {
         garage_swing: '',
         garage_drop: null,
         garage_extension: null,
-        covered_patio: '',
-        bay_window: '',
-        master_shower_drop: '',
-        bath1_shower_drop: '',
-        bath2_shower_drop: '',
-        bath3_shower_drop: '',
+        covered_patio: 'N',
+        bay_window: 'N',
+        master_shower_drop: 'N',
+        bath1_shower_drop: 'N',
+        bath2_shower_drop: 'N',
+        bath3_shower_drop: 'N',
         geo_lab: '',
         geo_report_num: '',
         geo_report_date: null,
@@ -353,6 +411,7 @@ class ProjectMgmt extends Component {
         em_edge: null,
         ym_center: null,
         ym_edge: null,
+        soil_notes: '',
         additional_options: '',
         comments: '',
         created_by: null,
@@ -366,15 +425,17 @@ class ProjectMgmt extends Component {
         dialogValue: '',
         // Custom Project fields
         project_status: '',
-        scope: '',
-        design_date: null,
-        start_date: null,
-        onboard_date: null,
-        orig_due_date: null,
+        scope: 'FDN',
+        classification: 'VOLUME',
+        onboard_date: this.todayStr,
+        start_date: this.todayStr,
+        due_date: null,  // actual due date of the project.
+        final_due_date: null,
+        transmittal_date: null,
         main_contact: '',
         billing_contact: '',
         builder_contact: '',
-        foundation_type: '',
+        foundation_type: 'POST TENSION',
         floor_type: '',
         roof_type: '',
         num_stories: null,
@@ -382,13 +443,13 @@ class ProjectMgmt extends Component {
         pita_factor: null,
         box_folder: '',
         // Trello List
-        // trello_list_id: '',
-        // trello_list: []
+        trello_list_id: '',
+        trello_card_id: '',
         createTrelloCard: false,
         rememberData: false,
+        toggleQuickEntry: false,
       } );
     }
-
 
   };
 
@@ -397,12 +458,51 @@ class ProjectMgmt extends Component {
     this.setState({ currentTab: value });
   };
 
+  tabKeyChange = (field) => {
+    // using this key trap as an indication that the field has been filled in.
+    if (field.name === 'geo_lab' || field.name === 'geo_pi') {
+      if (this.state.geo_lab && this.state.geo_pi) {
+        const geo_id = this.props.geos.find(geo => geo.code === this.state.geo_lab).id;
+        const oneGeoMaster = this.props.geoMasterData.filter(rec => rec.geotech_id === geo_id);
+        const emYmValues = oneGeoMaster.find(rec => rec.pi === this.state.geo_pi);
+        if (emYmValues) {
+          this.setState( { em_center: emYmValues.emc
+            , em_edge:   emYmValues.eme
+            , ym_center: emYmValues.ymc
+            , ym_edge:   emYmValues.yme
+          } );
+        } else {
+          this.setState( { em_center: null
+            , em_edge:   null
+            , ym_center: null
+            , ym_edge:   null
+          } );
+        }
+      } else {
+        this.setState( { em_center: null
+          , em_edge:   null
+          , ym_center: null
+          , ym_edge:   null
+        } );
+      }
+    }
+
+    if (field.nextTab) {
+      this.setState( {
+        currentTab: field.nextTab
+      }, () => {
+        this.addrRef.current.focus();
+      } )
+    }
+
+  };
+
   handleChange = name => event => {
 
     // name === 'garage_drop'? console.log('field name: ', name, event.target.type, 'value: ', event.target.value, 'checked: ',event.target.checked): ''
-
-    event.target.type === 'checkbox'? this.setState({ [name]: event.target.checked, }):
-    event.target.type === 'number' && event.target.value === ''? this.setState({ [name]: null, }):
+    event.target.type === 'checkbox'? this.setState({ [name]: event.target.checked, }) :
+    event.target.type === 'number' && event.target.value === ''? this.setState({ [name]: null, }) :
+    name === 'geo_pi'? this.setState({ [name]: event.target.value.toUpperCase(), }) :
     this.setState({ [name]: event.target.value, });
   };
 
@@ -421,11 +521,16 @@ class ProjectMgmt extends Component {
 
   };
 
+  handleQuickEntry = () => {
+    this.setState({ toggleQuickEntry: !this.state.toggleQuickEntry });
+  };
+
   searchProjects = () => {
     this.props.loadProjects(this.state.search);
   };
 
   addStart = () => {
+    console.log('state', this.state);
     if (this.state.address1 !== '' && this.state.client_id !== null) {
 
       this.setState({
@@ -484,6 +589,8 @@ class ProjectMgmt extends Component {
     this.setState({
       address_id: this.props.addresses[id].id,
       job_number: this.props.addresses[id].job_number,
+      revision: this.props.addresses[id].revision,
+      revision_desc: this.props.addresses[id].revision_desc,
       client_id: this.props.addresses[id].client_id,
       client: this.props.addresses[id].client,
       requestor_id: this.props.addresses[id].contact_id,   // contact_id
@@ -526,15 +633,18 @@ class ProjectMgmt extends Component {
       em_edge: this.props.addresses[id].em_edge,
       ym_center: this.props.addresses[id].ym_center,
       ym_edge: this.props.addresses[id].ym_edge,
+      soil_notes: this.props.addresses[id].soil_notes,
       additional_options: this.props.addresses[id].additional_options,
       comments: this.props.addresses[id].comments,
       // Custom Project fields
       project_status: this.props.addresses[id].project_status,
       scope: this.props.addresses[id].scope,
-      design_date: this.props.addresses[id].design_date,
-      start_date: this.props.addresses[id].start_date,
+      classification: this.props.addresses[id].classification,
       onboard_date: this.props.addresses[id].onboard_date,
-      orig_due_date: this.props.addresses[id].orig_due_date,
+      start_date: this.props.addresses[id].start_date,
+      due_date: this.props.addresses[id].due_date,
+      final_due_date: this.props.addresses[id].final_due_date,
+      transmittal_date: this.props.addresses[id].transmittal_date,
       main_contact: this.props.addresses[id].main_contact,
       billing_contact: this.props.addresses[id].billing_contact,
       builder_contact: this.props.addresses[id].builder_contact,
@@ -548,6 +658,7 @@ class ProjectMgmt extends Component {
       box_folder: this.props.addresses[id].box_folder,
       trello_list_id: this.props.addresses[id].trello_list_id,
       trello_list: this.props.addresses[id].trello_list,
+      trello_card_id: this.props.addresses[id].trello_card_id,
 
       created_by: this.props.addresses[id].created_by,
       last_updated_by: this.props.addresses[id].last_updated_by,
@@ -600,6 +711,7 @@ class ProjectMgmt extends Component {
     this.setState({ dialogValue: newValue });
     this.props.showHideSubdivisionDialog();
   };
+
   /******** getTableHeader ***************
   Action: This function generates the header columns of the table.  It is a main driver function
   It handles the header and the width of the columns.
@@ -696,10 +808,15 @@ class ProjectMgmt extends Component {
         case 'scope':
           field.list = this.props.scopeLookup;
           break;
+        case 'classification':
+          field.list = this.props.classificationLookup;
+          break;
         case 'masonry':
           field.list = this.props.masonryLookup;
           break;
         case 'covered_patio':
+          field.list = this.props.coveredPatioLookup;
+          break;
         case 'bay_window':
         case 'master_shower_drop':
         case 'bath1_shower_drop':
@@ -724,6 +841,17 @@ class ProjectMgmt extends Component {
           break;
         case 'roof_type':
           field.list = this.props.roofTypeLookup;
+          break;
+        // case 'pita_factor':
+        //   field.list = this.props.pitaLookup;
+        //   break;
+        case 'trello_list':
+          field.list = this.props.trelloListLookup;
+          break;
+        case 'geo_lab':
+          field.list = this.props.geos;
+          break;
+        default:
           break;
       };
 
@@ -785,6 +913,202 @@ class ProjectMgmt extends Component {
           else
             return (
               <TableCell key={id} padding='none' classes={{root: classes.tableCellProps}}/>
+            )
+        case 'client':
+          if (currentRow !== this.state.editRow)
+            return (
+              <TableCell key={id} padding='none' classes={{root: classes.tableCellProps}}>
+                {eval(`theState.${field.name}`)||''}
+              </TableCell>
+            )
+          else
+            return (
+              <TableCell key={id} padding='none' classes={{root: classes.tableCellEntryProps}}>
+                <CreatableSelect styles={createSelectProps} //styles={createSelectAutoFillProps}
+                  isClearable
+                  isSearchable
+                  // getOptionLabel={({name}) => name}
+                  // getOptionValue={({id}) => id}
+                  placeholder=''
+                  onChange={
+                    (selected) => {
+                      this.setState( {
+                        client_id: selected?selected.value:null,
+                        client: selected?selected.name:null
+                      } )
+                    }
+                  }
+                  // onInputChange={this.handleInputChange}
+                  options={
+                    this.props.clients.map(client => {
+                      return {
+                        value: client.id.toString(),
+                        label: `(${client.id}) ${client.name}`,
+                        name: client.name
+                      }
+                    })
+                  }
+                  onCreateOption={this.createClient}
+                  value={ {value: this.state.client_id?this.state.client_id.toString() : ''
+                    , label: this.state.client
+                    , name: this.state.client} }
+                />
+              </TableCell>
+            )
+        case 'requestor':
+          if (currentRow !== this.state.editRow)
+            return (
+              <TableCell key={id} padding='none' classes={{root: classes.tableCellProps}}>
+                {eval(`theState.${field.name}`)||''}
+              </TableCell>
+            )
+          else
+            return (
+              <TableCell key={id} padding='none' classes={{root: classes.tableCellEntryProps}}>
+                <Select styles={createSelectProps} //styles={createSelectAutoFillProps}
+                  id='requestor'
+                  isClearable
+                  isSearchable
+                  options={this.props.contacts}
+                  getOptionLabel={({full_name}) => full_name}
+                  getOptionValue={({id}) => id}
+                  placeholder=''
+                  onChange={
+                    (selected) => {
+                      this.setState( {
+                        requestor_id: selected?selected.id:null,
+                        requestor: selected?selected.full_name:null
+                      } )
+                    }
+                  }
+                  value={ {id: this.state.requestor_id? this.state.requestor_id.toString() : ''
+                    , full_name: this.state.requestor} }
+                />
+              </TableCell>
+            )
+        case 'subdivision':
+          if (currentRow !== this.state.editRow)
+            return (
+              <TableCell key={id} padding='none' classes={{root: classes.tableCellProps}}>
+                {eval(`theState.${field.name}`)||''}
+              </TableCell>
+            )
+          else
+            return (
+              <TableCell key={id} padding='none' classes={{root: classes.tableCellEntryProps}}>
+                <CreatableSelect styles={createSelectProps} //styles={createSelectAutoFillProps}
+                  isClearable
+                  placeholder=''
+                  onChange={
+                    (selected) => {
+                      this.setState( {
+                        subdivision_id: selected?selected.value:null,
+                        subdivision: selected?selected.name:null
+                      } )
+                    }
+                  }
+                  options={
+                    this.props.subdivisions.map(sub => {
+                      return {
+                        value: sub.id.toString(),
+                        label: `(${sub.id}) ${sub.subdivision}`,
+                        name: sub.subdivision
+
+                      }
+                    })
+                  }
+                  onCreateOption={this.createSubdivision}
+                  value={ {value: this.state.subdivision_id? this.state.subdivision_id.toString() : ''
+                    , label: this.state.subdivision
+                    , name: this.state.subdivision} }
+                />
+              </TableCell>
+            )
+        case 'city':
+          if (currentRow !== this.state.editRow)
+            return (
+              <TableCell key={id} padding='none' classes={{root: classes.tableCellProps}}>
+                {eval(`theState.${field.name}`)||''}
+              </TableCell>
+            )
+          else
+            return (
+              <TableCell key={id} padding='none' classes={{root: classes.tableCellEntryProps}}>
+                <CreatableSelect styles={createSelectProps} //styles={createSelectAutoFillProps}
+                  isClearable
+                  placeholder=''
+                  onChange={
+                    (selected) => {
+                      this.setState( {
+                        city_id: selected?selected.value:null,
+                        city: selected?selected.label:null
+                      } )
+                    }
+                  }
+                  onKeyDown={
+                    (e) => {
+                      if (e.keyCode == 9 || e.keyCode == 13) { this.tabKeyChange(field); }
+                    }
+                  }
+                  options={
+                    this.props.cities.map(city => {
+                      return {
+                        value: city.id.toString(),
+                        label: city.city
+                      }
+                    })
+                  }
+                  onCreateOption={this.createCity}
+                  value={ {value: this.state.city_id? this.state.city_id.toString() : ''
+                    , label: this.state.city
+                    , name: this.state.city} }
+                />
+              </TableCell>
+            )
+        case 'geo_lab':
+          if (currentRow !== this.state.editRow)
+            return (
+              <TableCell key={id} padding='none' classes={{root: classes.tableCellProps}}>
+                {eval(`theState.${field.name}`)||''}
+              </TableCell>
+            )
+          else
+            var currentValue = {value: '', label: ''};
+            if (this.state.geo_lab) {
+              const lab = this.props.geos.find(geo => geo.code === this.state.geo_lab).name;
+              // console.log ('the selected lab', lab)
+              currentValue = { value: this.state.geo_lab, label: lab };
+            };
+
+            return (
+              <TableCell key={id} padding='none' classes={{root: classes.tableCellEntryProps}}>
+                <CreatableSelect styles={createSelectProps} //styles={createSelectAutoFillProps}
+                  isClearable
+                  placeholder=''
+                  onChange={
+                    (selected) => {
+                      this.setState( {
+                        geo_lab: selected?selected.value:null
+                      } )
+                    }
+                  }
+                  options={
+                    this.props.geos.map(geo => {
+                      return {
+                        value: geo.code,
+                        label: geo.name
+                      }
+                    })
+                  }
+                  onKeyDown={
+                    (e) => {
+                      if (e.keyCode == 9 || e.keyCode == 13) { this.tabKeyChange(field); }
+                    }
+                  }
+                  onCreateOption={this.createCity}
+                  value={ currentValue }
+                />
+              </TableCell>
             )
         case 'status':
           if (currentRow !== this.state.editRow)
@@ -898,18 +1222,19 @@ class ProjectMgmt extends Component {
               </TableCell>
             )
           else if (field.list.length > 0) {
-            let currentValue = theState[field.name]?
-              field.list.find(option => option.code === theState[field.name]) :
-              {code: '', name: ''};
+            // console.log('field.list', field.list);
+            let currentValue;
+            if (field.id) {
+              currentValue = theState[field.id]?
+                field.list.find(option => option.code === theState[field.id]) :
+                {code: '', name: ''};
+            } else {
+              currentValue = theState[field.name]?
+                field.list.find(option => option.code === theState[field.name]) :
+                {code: '', name: ''};
+            }
 
-
-            // if (theState[field.name]) {
-            //   currentValue = field.list.find(option => option.code === theState[field.name]);
-            // }
-            // else {
-            //   currentValue = {code: '', name: ''};
-            // }
-            console.log('field: '+field.name, currentValue);
+            // console.log('switch stmt, field: '+field.name, currentValue);
             return (
               <TableCell key={id} padding='none' classes={{root: classes.tableCellEntryProps}}>
                 <Select styles={createSelectProps}
@@ -923,8 +1248,18 @@ class ProjectMgmt extends Component {
                   // value={ {code: eval(`theState.${field.name}`)||'', name: curName} }
                   onChange={
                     (selected) => {
-                      selected? this.setState({ [field.name]: selected.code }) :
-                      this.setState({ [field.name]: null });
+                      selected?
+                        field.id?
+                          this.setState({ [field.id]: selected.code, [field.name]: selected.name }) :
+                          this.setState({ [field.name]: selected.code }) :
+                        field.id?
+                          this.setState({ [field.id]: null, [field.name]: null }) :
+                          this.setState({ [field.name]: null });
+                    }
+                  }
+                  onKeyDown={
+                    (e) => {
+                      if (e.keyCode == 9 || e.keyCode == 13) { this.tabKeyChange(field); }
                     }
                   }
                 />
@@ -935,13 +1270,19 @@ class ProjectMgmt extends Component {
             return (
               <TableCell key={id} padding='none' classes={{root: classes.tableCellEntryProps}}>
                 <TextField
+                  inputRef={field.name === 'address1'? this.addrRef:null}
                   required={field.required}
                   select={field.list.length !== 0? true: false}
                   id={field.name}
-                  value={eval(`theState.${field.name}`)||''}
+                  value={ eval(`theState.${field.name}`)||'' }
                   fullWidth = {true}
                   variant='filled'
                   onChange={this.handleChange(field.name)}
+                  onKeyDown={
+                    (e) => {
+                      if (e.keyCode == 9 || e.keyCode == 13) { this.tabKeyChange(field); }
+                    }
+                  }
                   type={field.type}
                   // root = {{fontSize: '8px'}}
                   InputProps={{
@@ -960,11 +1301,10 @@ class ProjectMgmt extends Component {
                 </TextField>
               </TableCell>
             )
-      }
-    });
-
+      }  // switch stmt closure.
+    });  // map loop to create tableEntry closures.
     return tableEntry
-  };
+  };    // getTableEntry() closure
 
   /******** displayPending ***************
   Action: This function generates the pending starts that have been created so far.
@@ -975,7 +1315,6 @@ class ProjectMgmt extends Component {
   displayRows = () => {
     // console.log('displayPending', this.props.addresses);
     const pending = this.props.addresses.map((start,id) => {
-      // console.log(start.job_number, 'Swing: ', start.garage_swing? start.garage_swing === 'RIGHT'? 'R':'L' : '')
       if (id !== this.state.editRow)
         return (
           <TableRow key={id}>
@@ -1030,11 +1369,27 @@ class ProjectMgmt extends Component {
     ];
 
     return (
-      <Fragment>
+      <div>
+      <main
+        className={classNames(classes.content, {
+          [classes.contentShift]: this.state.toggleQuickEntry,
+        })}
+      >
 
       <Paper className={classes.bodyPaper}>
-        <Typography variant='h5'>Project Management</Typography>
-
+        <Grid container justify='space-between'>
+          <Grid item >
+            <Typography variant='h5'>Project Management</Typography>
+          </Grid>
+          <Grid item >
+            <Fab variant='extended' color='secondary' aria-label='Add'
+            >
+              <ChevronLeftIcon />
+              Quick Entry! <br/>
+              <Typography color='error'>(under construction)</Typography>
+            </Fab>
+          </Grid>
+        </Grid>
 
             <Grid container className={classes.container}>
               <Grid item xs={12}>
@@ -1299,120 +1654,6 @@ class ProjectMgmt extends Component {
                           />
                       </Tabs>
                     </Grid>
-                    <Grid item xs={12}><Typography variant='button' align='center'>Auto-fill fields</Typography></Grid>
-                    <Grid item xs={12} md={2}>
-                      <CreatableSelect styles={createSelectAutoFillProps}
-                        isClearable
-                        // isSearchable
-                        // getOptionLabel={({name}) => name}
-                        // getOptionValue={({id}) => id}
-                        placeholder='Client...'
-                        onChange={
-                          (selected) => {
-                            this.setState( {
-                              client_id: selected?selected.value:null,
-                              client: selected?selected.name:null
-                            } )
-                          }
-                        }
-                        // onInputChange={this.handleInputChange}
-                        options={
-                          this.props.clients.map(client => {
-                            return {
-                              value: client.id.toString(),
-                              label: `(${client.id}) ${client.name}`,
-                              name: client.name
-                            }
-                          })
-                        }
-                        onCreateOption={this.createClient}
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={2}>
-                      <Select styles={createSelectAutoFillProps}
-                        id='requestor'
-                        isClearable
-                        isSearchable
-                        options={this.props.contacts}
-                        getOptionLabel={({full_name}) => full_name}
-                        getOptionValue={({id}) => id}
-                        placeholder='Requestor...'
-                        onChange={
-                          (selected) => {
-                            this.setState( {
-                              requestor_id: selected?selected.id:null,
-                              requestor: selected?selected.full_name:null
-                            } )
-                          }
-                        }
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={2}>
-                      <CreatableSelect styles={createSelectAutoFillProps}
-                        isClearable
-                        placeholder='Subdivision...'
-                        onChange={
-                          (selected) => {
-                            this.setState( {
-                              subdivision_id: selected?selected.value:null,
-                              subdivision: selected?selected.name:null
-                            } )
-                          }
-                        }
-                        options={
-                          this.props.subdivisions.map(sub => {
-                            return {
-                              value: sub.id.toString(),
-                              label: `(${sub.id}) ${sub.subdivision}`,
-                              name: sub.subdivision
-
-                            }
-                          })
-                        }
-                        onCreateOption={this.createSubdivision}
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={2}>
-                      <CreatableSelect styles={createSelectAutoFillProps}
-                        isClearable
-                        placeholder='City...'
-                        onChange={
-                          (selected) => {
-                            this.setState( {
-                              city_id: selected?selected.value:null,
-                              city: selected?selected.label:null
-                            } )
-                          }
-                        }
-                        options={
-                          this.props.cities.map(city => {
-                            return {
-                              value: city.id.toString(),
-                              label: city.city
-                            }
-                          })
-                        }
-                        onCreateOption={this.createCity}
-                      />
-                    </Grid>
-                    <Grid item xs={12} md={2}>
-                      <Select styles={createSelectAutoFillProps}
-                        id='trelloList'
-                        isSearchable
-                        options={this.props.trelloListLookup}
-                        getOptionLabel={({name}) => name}
-                        getOptionValue={({code}) => code}
-                        placeholder='Trello List...'
-                        onChange={
-                          (selected) => {
-                            this.setState( {
-                              trello_list_id: selected?selected.code:null,
-                              trello_list: selected?selected.name:null
-                            } )
-                          }
-                        }
-                      />
-                    </Grid>
                   </Grid>
                 </AppBar>
               </Grid>
@@ -1446,15 +1687,16 @@ class ProjectMgmt extends Component {
                 </Grid>
               </Grid>
             </Grid>
-
       </Paper>
       {this.props.showClientDialog && <ClientDialogContainer newValue = {this.state.dialogValue} />}
       {this.props.showContactDialog && <ContactDialogContainer newValue = {this.state.dialogValue} />}
       {this.props.showCityDialog && <CityDialogContainer newValue = {this.state.dialogValue} />}
       {this.props.showSubdivisionDialog && <SubdivisionDialogContainer newValue = {this.state.dialogValue} />}
       <AlertDialogContainer />
-      </Fragment>
+      </main>
 
+      <ProjectCreateContainer toggleQuickEntry = {this.state.toggleQuickEntry} handleQuickEntry = {this.handleQuickEntry}/>
+      </div>
     );
   }
 
@@ -1465,6 +1707,31 @@ ProjectMgmt.propTypes = {
 };
 
 export default withStyles(styles)(ProjectMgmt);
+
+// <Drawer
+//   variant='persistent'
+//   anchor='right'
+//   open={this.state.toggleQuickEntry}
+//   className={ {width: 500, flexShrink: 0} }
+//   classes={{
+//     paper: {width: 500}
+//   }}
+// >
+//   <Grid container className={{width: 500}}>
+//     <Grid item className={{width: 500}}>
+//       <br />
+//       <br />
+//       <br />
+//       <br />
+//       <Typography variant="h6" color="inherit" noWrap>
+//         I am a drawer!
+//       </Typography>
+//       <IconButton onClick={this.handleQuickEntry}>
+//         <ChevronRightIcon />
+//       </IconButton>
+//     </Grid>
+//   </Grid>
+// </Drawer>
 
 // <ExpansionPanel>
 // <ExpansionPanelSummary expandIcon={<ExpandMore />} classes={{root: classes.panelSummaryProps, expandIcon: classes.panelSummaryProps}}>
@@ -1603,3 +1870,119 @@ export default withStyles(styles)(ProjectMgmt);
 //   <ExpansionPanelDetails>
 //   </ExpansionPanelDetails>
 // </ExpansionPanel>
+
+// Old Auto-fill code
+// <Grid item xs={12}><Typography variant='button' align='center'>Auto-fill fields</Typography></Grid>
+// <Grid item xs={12} md={2}>
+//   <CreatableSelect styles={createSelectAutoFillProps}
+//     isClearable
+//     // isSearchable
+//     // getOptionLabel={({name}) => name}
+//     // getOptionValue={({id}) => id}
+//     placeholder='Client...'
+//     onChange={
+//       (selected) => {
+//         this.setState( {
+//           client_id: selected?selected.value:null,
+//           client: selected?selected.name:null
+//         } )
+//       }
+//     }
+//     // onInputChange={this.handleInputChange}
+//     options={
+//       this.props.clients.map(client => {
+//         return {
+//           value: client.id.toString(),
+//           label: `(${client.id}) ${client.name}`,
+//           name: client.name
+//         }
+//       })
+//     }
+//     onCreateOption={this.createClient}
+//   />
+// </Grid>
+// <Grid item xs={12} md={2}>
+//   <Select styles={createSelectAutoFillProps}
+//     id='requestor'
+//     isClearable
+//     isSearchable
+//     options={this.props.contacts}
+//     getOptionLabel={({full_name}) => full_name}
+//     getOptionValue={({id}) => id}
+//     placeholder='Requestor...'
+//     onChange={
+//       (selected) => {
+//         this.setState( {
+//           requestor_id: selected?selected.id:null,
+//           requestor: selected?selected.full_name:null
+//         } )
+//       }
+//     }
+//   />
+// </Grid>
+// <Grid item xs={12} md={2}>
+//   <CreatableSelect styles={createSelectAutoFillProps}
+//     isClearable
+//     placeholder='Subdivision...'
+//     onChange={
+//       (selected) => {
+//         this.setState( {
+//           subdivision_id: selected?selected.value:null,
+//           subdivision: selected?selected.name:null
+//         } )
+//       }
+//     }
+//     options={
+//       this.props.subdivisions.map(sub => {
+//         return {
+//           value: sub.id.toString(),
+//           label: `(${sub.id}) ${sub.subdivision}`,
+//           name: sub.subdivision
+//
+//         }
+//       })
+//     }
+//     onCreateOption={this.createSubdivision}
+//   />
+// </Grid>
+// <Grid item xs={12} md={2}>
+//   <CreatableSelect styles={createSelectAutoFillProps}
+//     isClearable
+//     placeholder='City...'
+//     onChange={
+//       (selected) => {
+//         this.setState( {
+//           city_id: selected?selected.value:null,
+//           city: selected?selected.label:null
+//         } )
+//       }
+//     }
+//     options={
+//       this.props.cities.map(city => {
+//         return {
+//           value: city.id.toString(),
+//           label: city.city
+//         }
+//       })
+//     }
+//     onCreateOption={this.createCity}
+//   />
+// </Grid>
+// <Grid item xs={12} md={2}>
+//   <Select styles={createSelectAutoFillProps}
+//     id='trelloList'
+//     isSearchable
+//     options={this.props.trelloListLookup}
+//     getOptionLabel={({name}) => name}
+//     getOptionValue={({code}) => code}
+//     placeholder='Trello List...'
+//     onChange={
+//       (selected) => {
+//         this.setState( {
+//           trello_list_id: selected?selected.code:null,
+//           trello_list: selected?selected.name:null
+//         } )
+//       }
+//     }
+//   />
+// </Grid>

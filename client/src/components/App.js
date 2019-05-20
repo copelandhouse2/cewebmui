@@ -60,7 +60,26 @@ class App extends Component {
     this.props.loadClients();
     this.props.loadCities();
     this.props.loadSubdivisions();
+    this.props.loadContacts();
 
+    this.props.getLookup('TRELLO_LIST');
+    this.props.getLookup('PROJECT_STATUS');
+    this.props.getLookup('SCOPE');
+    this.props.getLookup('CLASSIFICATION');
+    this.props.getLookup('MASONRY');
+    this.props.getLookup('YN');
+    this.props.getLookup('FND_TYPE');
+    this.props.getLookup('GARAGE_TYPE');
+    this.props.getLookup('GARAGE_ENTRY');
+    this.props.getLookup('GARAGE_SWING');
+    this.props.getLookup('FLOOR_TYPE');
+    this.props.getLookup('ROOF_TYPE');
+    this.props.getLookup('COVERED_PATIO');
+    this.props.getLookup('PITA');
+
+    this.props.loadGeotechs();
+    // 1 = MLALABS
+    this.props.loadGeoMasterData(1);
   }
 
   handleSignOut = () => {

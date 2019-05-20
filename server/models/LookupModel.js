@@ -4,11 +4,11 @@ const LookupModel = {
 
 getLookupByType: function(lookupType, callback) {
 
-  const SQLstmt = 'select id, type, code, name, description, \`key\`, attribute1, attribute2, attribute3'
+  const SQLstmt = 'select id, type, code, name, description, \`key\`, \`order\`, attribute1, attribute2, attribute3'
     + ', attribute4, attribute5'
     + ' from lookups'
     + ' where type = ?'
-    + ' order by name';
+    + ' order by \`order\`, name';
 
   // console.log("query", SQLstmt);
 
@@ -17,11 +17,12 @@ getLookupByType: function(lookupType, callback) {
 
 getLookupByCode: function(lookupType, lookupCode, callback) {
 
-  const SQLstmt = 'select id, type, code, name, description, key, attribute1, attribute2, attribute3'
+  const SQLstmt = 'select id, type, code, name, description, key, \`order\`, attribute1, attribute2, attribute3'
     + ', attribute4, attribute5'
     + ' from lookups'
     + ' where type = ?'
-    + ' and code = ?';
+    + ' and code = ?'
+    + ' order by \`order\`, name';
 
   // console.log("query", SQLstmt);
 

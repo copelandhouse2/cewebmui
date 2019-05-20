@@ -112,6 +112,13 @@ function scopeLookup(state = [], action) {
   return state;
 }
 
+function classificationLookup(state = [], action) {
+  if (action.type === "CLASSIFICATIONLOOKUP_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
 function masonryLookup(state = [], action) {
   if (action.type === "MASONRYLOOKUP_LOADED") {
     return action.value;
@@ -168,6 +175,20 @@ function roofTypeLookup(state = [], action) {
   return state;
 }
 
+function coveredPatioLookup(state = [], action) {
+  if (action.type === "COVEREDPATIO_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
+function pitaLookup(state = [], action) {
+  if (action.type === "PITA_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
 function showClientDialog(state = false, action) {
   if (action.type === "SHOW_CLIENT_DIALOG") {
     return !state;
@@ -196,12 +217,27 @@ function showCityDialog(state = false, action) {
   return state;
 }
 
+function geos(state = [], action) {
+  if (action.type === "GEOS_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
+function geoMasterData(state = [], action) {
+  if (action.type === "GEO_MASTER_DATA_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
 const rootReducer = combineReducers({
   session, message, addresses, address, clients, contacts, cities
   , subdivisions, jobnumberseqs, stateLookup, countryLookup
   , roleLookup, trelloListLookup, showClientDialog, showSubdivisionDialog
   , showCityDialog, showContactDialog, recordStatusLookup, projectStatusLookup
-  , scopeLookup, masonryLookup, ynLookup, fndTypeLookup, garageTypeLookup
+  , scopeLookup, classificationLookup, masonryLookup, ynLookup, fndTypeLookup, garageTypeLookup
   , garageEntryLookup, garageSwingLookup, floorTypeLookup, roofTypeLookup
+  , coveredPatioLookup, pitaLookup, geos, geoMasterData
 });
 export default rootReducer;
