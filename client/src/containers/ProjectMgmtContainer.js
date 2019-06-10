@@ -42,14 +42,14 @@ function mapDispatchToProps(dispatch) {
     loadProjects: (search) => {
       dispatch(loadProjects(search));
     },
-    createAddress: (address, userID, loadType) => {
-      dispatch(createAddress(address, userID, loadType));
+    createAddress: (address) => {
+      dispatch(createAddress(address));
     },
     deleteAddress: (id, userID, loadType) => {
       dispatch(deleteAddress(id, userID, loadType));
     },
-    commitAddresses: (addresses, userID, loadType) => {
-      dispatch(commitAddresses(addresses, userID, loadType));
+    commitAddresses: (userID, addresses, search, create) => {
+      dispatch(commitAddresses(userID, addresses, search, create));
     },
     showHideClientDialog: () => {
       dispatch(showHideClientDialog());

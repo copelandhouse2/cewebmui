@@ -26,9 +26,10 @@ export default {
   geos: [],
   geoMasterData: [],
   session: {
-    user_id: null,
+    id: null,
     username: "",
     auth_key: "",
+    approved: '',
     authenticated: false,
     token: "",
     contact_id: null,

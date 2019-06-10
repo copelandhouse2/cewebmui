@@ -57,7 +57,7 @@ class SignUpSignIn extends Component {
       showPassword: false,
       role: "",
       client: "",
-      access_approved: false,
+      approved: '',
       tab: 0,
       showError: false,
       errTitle: "",
@@ -99,7 +99,9 @@ class SignUpSignIn extends Component {
           statusText: "Email not formatted correctly.  Please review."
         }, "ERROR");
     } else {
-      this.props.signUp(this.state);
+        this.setState({ approved: 'PENDING' }, () => {
+          this.props.signUp(this.state);
+        });
 
       // const promiseRes = Promise.resolve(this.props.signUp(this.state));
       // promiseRes.then(theResponse => {
@@ -128,7 +130,7 @@ class SignUpSignIn extends Component {
   }
 
   handleSignIn = () => {
-    console.log("In the handleSignIn", this.state);
+    // console.log("In the handleSignIn", this.state);
     if ( !this.state.email || !this.state.password ) {
       this.props.loadMessage(
         { ok:false,

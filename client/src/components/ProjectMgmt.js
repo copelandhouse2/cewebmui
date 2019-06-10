@@ -33,6 +33,8 @@ import Save from '@material-ui/icons/Save';
 import Cancel from '@material-ui/icons/Cancel';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import Lock from '@material-ui/icons/Lock';
+import LockOpen from '@material-ui/icons/LockOpen';
 
 // import ExpandMore from '@material-ui/icons/ExpandMore';
 
@@ -50,7 +52,7 @@ import Drawer from '@material-ui/core/Drawer';
 
 // import ProjectSearchContainer from '../containers/ProjectSearchContainer'
 // import { TRELLO_PARAMS } from '../envVars'
-const drawerWidth = '30%';
+const drawerWidth = '33.3%';
 
 const styles = theme => ({
   container: { marginBottom: 70, },
@@ -116,18 +118,20 @@ class ProjectMgmt extends Component {
     this.NEW_ROW = -1;
 
     this.today = new Date();
-    this.todayStr = this.today.getMonth()+1 < 10? `${this.today.getFullYear()}-0${this.today.getMonth()+1}-${this.today.getDate()}` :
-      `${this.today.getFullYear()}-${this.today.getMonth()+1}-${this.today.getDate()}`;
+    const theMonth = this.today.getMonth()+1 < 10? `0${this.today.getMonth()+1}` : `${this.today.getMonth()+1}`;
+    const theDay = this.today.getDate() < 10? `0${this.today.getDate()}` : `${this.today.getDate()}`;
+    this.todayStr = `${this.today.getFullYear()}-${theMonth}-${theDay}`;
 
     this.state = {
       address_id: null,
       job_number: null,
+      jobNumUnlock: false,
       revision: '',
       revision_desc: '',
       client_id: null,
       client: '',
-      requestor_id: null,  // contact_id
-      requestor: '',       // contact full name
+      requestor_id: this.props.session.contact_id,  // contact_id
+      requestor: this.props.session.full_name,       // contact full name
       owner_id: null,      // user_id
       owner: '',           // contact full name of the user_id
       city_id: null,
@@ -223,7 +227,8 @@ class ProjectMgmt extends Component {
       {name: 'pre_key', fields: [
         {label: '', name: 'edit', id: '', type: 'text', width: '3%', isDisabled: false, required: false, list: []},
         {label: '', name: 'delete', id: '', type: 'text', width: '3%', isDisabled: false, required: false, list: []},
-        {label: 'Job Number', name: 'job_number', id: '', type: 'number', width: '10%', isDisabled: true, required: false, list: []},
+        {label: 'Job Number', name: 'job_number', id: '', type: 'number', width: '9%', isDisabled: true, required: false, list: []},
+        {label: '', name: 'jobNumUnlock', id: '', type: 'text', width: '1%', isDisabled: false, required: false, list: []},
         {label: 'Address', name: 'address1', id: '', type: 'text', width: '14%', isDisabled: false, required: true, list: []},
       ]},
       {name: 'main', fields: [
@@ -257,8 +262,8 @@ class ProjectMgmt extends Component {
       {name: 'lot', fields: [
         {label: 'Phase', name: 'phase', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
         {label: 'Section', name: 'section', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
-        {label: 'Lot', name: 'lot', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
-        {label: 'Block', name: 'block', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: [], nextTab:'design'},
+        {label: 'Block', name: 'block', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
+        {label: 'Lot', name: 'lot', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: [], nextTab:'design'},
         {label: '', name: 'overflow', id: '', type: 'text', width: '40%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'design', fields: [
@@ -274,8 +279,8 @@ class ProjectMgmt extends Component {
         {label: 'Garage Type', name: 'garage_type', id: '', type: 'text', width: '12%', isDisabled: false, required: false, list: []},
         {label: 'Garage Entry', name: 'garage_entry', id: '', type: 'text', width: '12%', isDisabled: false, required: false, list: []},
         {label: 'Garage Swing', name: 'garage_swing', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
-        {label: 'Garage Drop', name: 'garage_drop', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
-        {label: 'Garage Ext', name: 'garage_extension', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: [], nextTab:'drop'},
+        {label: 'Garage Ext', name: 'garage_extension', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Garage Drop', name: 'garage_drop', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: [], nextTab:'drop'},
         {label: '', name: 'overflow', id: '', type: 'text', width: '12%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'drop', fields: [
@@ -359,20 +364,22 @@ class ProjectMgmt extends Component {
       this.setState( {
         address_id: null,
         job_number: null,
+        jobNumUnlock: false,
         editRow: this.NEW_ROW, // this is the address array id that is being edited.  If -1, new address.
-        toggleQuickEntry: false,
+        // toggleQuickEntry: false,
       });
     }
     else {
       this.setState( {
         address_id: null,
         job_number: null,
+        jobNumUnlock: false,
         revision: '',
         revision_desc: '',
         client_id: null,
         client: '',
-        requestor_id: null,  // contact_id
-        requestor: '',       // contact full name
+        requestor_id: this.props.session.contact_id,  // contact_id
+        requestor: this.props.session.full_name,       // contact full name
         owner_id: null,      // user_id
         owner: '',           // contact full name of the user_id
         city_id: null,
@@ -447,7 +454,7 @@ class ProjectMgmt extends Component {
         trello_card_id: '',
         createTrelloCard: false,
         rememberData: false,
-        toggleQuickEntry: false,
+        // toggleQuickEntry: false,
       } );
     }
 
@@ -461,7 +468,7 @@ class ProjectMgmt extends Component {
   tabKeyChange = (field) => {
     // using this key trap as an indication that the field has been filled in.
     if (field.name === 'geo_lab' || field.name === 'geo_pi') {
-      if (this.state.geo_lab && this.state.geo_pi) {
+      if (this.state.geo_lab === 'MLALABS' && this.state.geo_pi) {
         const geo_id = this.props.geos.find(geo => geo.code === this.state.geo_lab).id;
         const oneGeoMaster = this.props.geoMasterData.filter(rec => rec.geotech_id === geo_id);
         const emYmValues = oneGeoMaster.find(rec => rec.pi === this.state.geo_pi);
@@ -471,20 +478,34 @@ class ProjectMgmt extends Component {
             , ym_center: emYmValues.ymc
             , ym_edge:   emYmValues.yme
           } );
-        } else {
-          this.setState( { em_center: null
-            , em_edge:   null
-            , ym_center: null
-            , ym_edge:   null
-          } );
         }
-      } else {
-        this.setState( { em_center: null
-          , em_edge:   null
-          , ym_center: null
-          , ym_edge:   null
-        } );
       }
+
+      // if (this.state.geo_lab && this.state.geo_pi) {
+      //   const geo_id = this.props.geos.find(geo => geo.code === this.state.geo_lab).id;
+      //   const oneGeoMaster = this.props.geoMasterData.filter(rec => rec.geotech_id === geo_id);
+      //   const emYmValues = oneGeoMaster.find(rec => rec.pi === this.state.geo_pi);
+      //   if (emYmValues) {
+      //     this.setState( { em_center: emYmValues.emc
+      //       , em_edge:   emYmValues.eme
+      //       , ym_center: emYmValues.ymc
+      //       , ym_edge:   emYmValues.yme
+      //     } );
+      //   } else {
+      //     this.setState( { em_center: null
+      //       , em_edge:   null
+      //       , ym_center: null
+      //       , ym_edge:   null
+      //     } );
+      //   }
+      // } else {
+      //   this.setState( { em_center: null
+      //     , em_edge:   null
+      //     , ym_center: null
+      //     , ym_edge:   null
+      //   } );
+      // }
+
     }
 
     if (field.nextTab) {
@@ -499,13 +520,19 @@ class ProjectMgmt extends Component {
 
   handleChange = name => event => {
 
-    // name === 'garage_drop'? console.log('field name: ', name, event.target.type, 'value: ', event.target.value, 'checked: ',event.target.checked): ''
+    // console.log('field name: ', name, event.target.type, 'value: ', event.target.value, 'checked: ',event.target.checked);
+    // console.log('field name: ', name, event.target);
     event.target.type === 'checkbox'? this.setState({ [name]: event.target.checked, }) :
     event.target.type === 'number' && event.target.value === ''? this.setState({ [name]: null, }) :
+    event.target.type === 'date' && event.target.value === ''? this.setState({ [name]: null, }) :
     name === 'geo_pi'? this.setState({ [name]: event.target.value.toUpperCase(), }) :
+    name === 'jobNumUnlock'? this.setState({ [name]: !this.state[name], }) :
     this.setState({ [name]: event.target.value, });
   };
 
+// handleJobNumLock = name => event => {
+//
+// };
   handleSearchChange = (name, value) => event => {
 
     // console.log('handleSearchChange', name, value, event.target.value, event.target.checked)
@@ -530,8 +557,9 @@ class ProjectMgmt extends Component {
   };
 
   addStart = () => {
-    console.log('state', this.state);
+    // console.log('In add start: state', this.state);
     if (this.state.address1 !== '' && this.state.client_id !== null) {
+      // console.log('In the if', this.state);
 
       this.setState({
         owner_id: this.props.session.id,
@@ -581,7 +609,7 @@ class ProjectMgmt extends Component {
 
   commitPendingAddresses = () => {
     // console.log('In Commit Start',this.props.session.id);
-    this.props.commitAddresses(this.props.session.id, this.props.addresses, this.state.search);
+    this.props.commitAddresses(this.props.session.id, this.props.addresses, this.state.search, false);
     // this.initState();
   };
 
@@ -589,6 +617,7 @@ class ProjectMgmt extends Component {
     this.setState({
       address_id: this.props.addresses[id].id,
       job_number: this.props.addresses[id].job_number,
+      jobNumUnlock: false,
       revision: this.props.addresses[id].revision,
       revision_desc: this.props.addresses[id].revision_desc,
       client_id: this.props.addresses[id].client_id,
@@ -746,6 +775,7 @@ class ProjectMgmt extends Component {
         case 'save':
         case 'status':
         case 'add':
+        case 'jobNumUnlock':
           return (
             <TableCell key={id} padding='none' style={{fontWeight: 'bold', fontSize: 13}}>
               {field.label}
@@ -861,8 +891,9 @@ class ProjectMgmt extends Component {
             return (
               <TableCell key={id} padding='none'>
                 <IconButton
-                  aria-label='Delete'
+                  aria-label='Edit'
                   color='secondary'
+                  title='Edit record'
                   onClick={(e) => {
                   e.preventDefault();
                   if (this.editStart) {
@@ -885,6 +916,7 @@ class ProjectMgmt extends Component {
                 <IconButton
                   aria-label='Delete'
                   color='secondary'
+                  title='Delete record'
                   onClick={(e) => {
                   e.preventDefault();
                   if (this.deleteStart) {
@@ -904,7 +936,7 @@ class ProjectMgmt extends Component {
             <TableCell key={id} padding='none' classes={{root: classes.tableCellProps}}/>
           )
         case 'job_number':  // For job number, show it unless it is the add row.
-          if (currentRow !== this.NEW_ROW)
+          if (currentRow !== this.state.editRow)
             return (
               <TableCell key={id} padding='none' classes={{root: classes.tableCellProps}}>
                 {eval(`theState.${field.name}`)||''}
@@ -912,7 +944,47 @@ class ProjectMgmt extends Component {
             )
           else
             return (
-              <TableCell key={id} padding='none' classes={{root: classes.tableCellProps}}/>
+              <TableCell key={id} padding='none' classes={{root: classes.tableCellEntryProps}}>
+                <TextField
+                  required={field.required}
+                  id={field.name}
+                  disabled={!this.state.jobNumUnlock}
+                  value={ eval(`theState.${field.name}`)||'' }
+                  fullWidth = {true}
+                  variant='filled'
+                  onChange={this.handleChange(field.name)}
+                  onKeyDown={
+                    (e) => {
+                      if (e.keyCode === 9 || e.keyCode === 13) { this.tabKeyChange(field); }
+                    }
+                  }
+                  type={field.type}
+                  // root = {{fontSize: '8px'}}
+                  InputProps={{
+                    classes: {
+                      input: classes.inputProps,
+                    },
+                    // readOnly: field.isDisabled,
+                  }}
+                />
+              </TableCell>
+            )
+        case 'jobNumUnlock':
+          if (currentRow !== this.state.editRow)
+            return (
+              <TableCell key={id} padding='none' />
+            )
+          else
+            return (
+              <TableCell key={id} padding='none' >
+                <IconButton
+                  aria-label='job-unlock'
+                  color='secondary'
+                  title='Unlock job number for editing'
+                  onClick={this.handleChange('jobNumUnlock')}>
+                  {this.state.jobNumUnlock? <LockOpen /> : <Lock />}
+                </IconButton>
+              </TableCell>
             )
         case 'client':
           if (currentRow !== this.state.editRow)
@@ -934,7 +1006,7 @@ class ProjectMgmt extends Component {
                     (selected) => {
                       this.setState( {
                         client_id: selected?selected.value:null,
-                        client: selected?selected.name:null
+                        client: selected?selected.name:''
                       } )
                     }
                   }
@@ -1003,7 +1075,7 @@ class ProjectMgmt extends Component {
                     (selected) => {
                       this.setState( {
                         subdivision_id: selected?selected.value:null,
-                        subdivision: selected?selected.name:null
+                        subdivision: selected?selected.name:''
                       } )
                     }
                   }
@@ -1041,7 +1113,7 @@ class ProjectMgmt extends Component {
                     (selected) => {
                       this.setState( {
                         city_id: selected?selected.value:null,
-                        city: selected?selected.label:null
+                        city: selected?selected.label:''
                       } )
                     }
                   }
@@ -1142,6 +1214,7 @@ class ProjectMgmt extends Component {
                 <IconButton
                   aria-label='Cancel'
                   color='secondary'
+                  title='Cancel edits made to record'
                   onClick={(e) => {
                   e.preventDefault();
                   if (this.cancelStart) {
@@ -1164,6 +1237,7 @@ class ProjectMgmt extends Component {
                   size='small'
                   color='secondary'
                   aria-label='Add'
+                  title='Add record to pending queue for submission later'
                   onClick={(e) => {
                   e.preventDefault();
                   if (this.addStart) {
@@ -1184,6 +1258,7 @@ class ProjectMgmt extends Component {
                 <IconButton
                   color='secondary'
                   aria-label='Save'
+                  title='Save record'
                   onClick={(e) => {
                   e.preventDefault();
                   if (this.updateStart) {
@@ -1259,7 +1334,7 @@ class ProjectMgmt extends Component {
                   }
                   onKeyDown={
                     (e) => {
-                      if (e.keyCode == 9 || e.keyCode == 13) { this.tabKeyChange(field); }
+                      if (e.keyCode === 9 || e.keyCode === 13) { this.tabKeyChange(field); }
                     }
                   }
                 />
@@ -1267,6 +1342,7 @@ class ProjectMgmt extends Component {
             )
           }
           else
+
             return (
               <TableCell key={id} padding='none' classes={{root: classes.tableCellEntryProps}}>
                 <TextField
@@ -1280,7 +1356,7 @@ class ProjectMgmt extends Component {
                   onChange={this.handleChange(field.name)}
                   onKeyDown={
                     (e) => {
-                      if (e.keyCode == 9 || e.keyCode == 13) { this.tabKeyChange(field); }
+                      if (e.keyCode === 9 || e.keyCode === 13) { this.tabKeyChange(field); }
                     }
                   }
                   type={field.type}
@@ -1382,11 +1458,10 @@ class ProjectMgmt extends Component {
             <Typography variant='h5'>Project Management</Typography>
           </Grid>
           <Grid item >
-            <Fab variant='extended' color='secondary' aria-label='Add'
+            <Fab variant='extended' color='secondary' aria-label='Add' onClick={ this.handleQuickEntry }
             >
-              <ChevronLeftIcon />
-              Quick Entry! <br/>
-              <Typography color='error'>(under construction)</Typography>
+              { this.state.toggleQuickEntry? <ChevronRightIcon /> : <ChevronLeftIcon /> }
+              <Typography color='default'>Quick Entry</Typography>
             </Fab>
           </Grid>
         </Grid>
@@ -1612,7 +1687,7 @@ class ProjectMgmt extends Component {
                       <Tabs
                         value = {this.state.currentTab}
                         onChange={this.handleTabChange}
-                        indicatorColor='secondary'
+                        indicatorColor='primary'
                         textColor='primary'
                         variant='fullWidth'
                       >
@@ -1679,6 +1754,7 @@ class ProjectMgmt extends Component {
                       disabled={!this.state.search.pendingOnly}
                       variant="contained"
                       color="secondary"
+                      title='Commits the pending record(s)... Changes record status to ACTIVE, and creates Trello cards'
                       onClick={(e) => this.commitPendingAddresses()}
                     >
                       Submit

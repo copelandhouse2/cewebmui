@@ -20,6 +20,6 @@ router.delete('/projects/:id', remove);
 router.get('/pending/:userID', listPending);
 
 //Getting the projects... those pending for the user
-router.put('/commits/:userID', commit);
+router.put('/commits/:userID/:create', commit);
 
 export default router;

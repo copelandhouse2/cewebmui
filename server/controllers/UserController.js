@@ -75,9 +75,9 @@ export const signUp = (request, response) => {
       return response;
     }
 
-    console.log("This username is free to use");
+    // console.log("This username is free to use", request.body);
     hash(request.body.password, null, (hashedPassword) => {
-      console.log("Completed hash", hashedPassword);
+      // console.log("Completed hash", hashedPassword);
       UserModel.addUser(request.body, hashedPassword, (err, result) => {
         if (err) {
           console.log("Error", err);
@@ -104,12 +104,13 @@ export const signUp = (request, response) => {
             //return response.json(resultContact.insertId);
           });
           const token = tokenForUser({id: result.insertId});
-          console.log("Success", result.insertId, token);
+          // console.log("Success", result.insertId, token);
           return response.json(
             { user_id: result.insertId,
               username: request.body.email,
               auth_key: hashedPassword,
               authenticated: true,
+              approved: request.body.approved,
               token: token,
               ok:true,
               status: 200,
@@ -123,10 +124,10 @@ export const signUp = (request, response) => {
 
 export const signIn = (request, response) => {
 
-  console.group("In server controller signin");
+  // console.group("In server controller signin");
   // const { email, password } = request.body;
 
-  console.log("Looking for a user with the username");
+  // console.log("Looking for a user with the username");
   UserModel.getUserByUsername(request.body.email, function(err, rows, fields) {
     // console.log('pulled from db', err, rows);
     if (err) return response.json(err);
@@ -136,7 +137,7 @@ export const signIn = (request, response) => {
       compare(request.body.password, rows[0].auth_key, function(err1, res1) {
         // console.log('inside callback compare', err1, res1);
         if (res1) {
-          console.log("Found match!", rows[0].id);
+          // console.log("Found match!", rows[0].id);
           const token = tokenForUser({id: rows[0].id});
           // console.log("Success", rows[0].id, token);
 
@@ -145,6 +146,7 @@ export const signIn = (request, response) => {
               username: request.body.email,
               auth_key: rows[0].auth_key,
               authenticated: true,
+              approved: rows[0].approved,
               token: token,
               ok:true,
               status: 200,
@@ -157,8 +159,20 @@ export const signIn = (request, response) => {
 
         } else {  // passwords do no match
           response.writeHead(401, "Passwords do not match");
-          response.end();
+          // response.write({ message: 'Passwords do not match'} );
+          response.end('Passwords do not match');
+          // console.log('response', response);
           return response;
+          // return response.json(
+          //   { user_id: rows[0].id,
+          //     authenticated: false,
+          //     approved: rows[0].approved,
+          //     token: token,
+          //     ok:false,
+          //     status: 401,
+          //     statusText: "Password do not match"
+          //   }
+          // );
         }
       });
     } else {  // could not find email
@@ -187,14 +201,24 @@ export const signIn = (request, response) => {
 // function to authenticate the user.
 export const authenticate = (request, response) => {
 
-  console.log('Start authenticate');
+  // console.log('Start authenticate');
   const theUser = decodeToken(request.params.authToken);
-  console.log('authenticate after decode', theUser);
+  // console.log('authenticate after decode', theUser);
   UserModel.getUserByID(theUser.userId, function(err, rows, fields) {
     if (!err) {
       console.log('Authenticate pass... from token');
       // console.log('Authenticate pass... from token', rows[0]);
-      return response.json(rows[0]);
+      if (rows.length > 0) {
+        // console.log('I have a record', rows[0]);
+        return response.json( { ok: true, data: rows[0] });
+      } else {
+        return response.json( {
+          ok:false,
+          status: 401,
+          statusText: "No record found"
+        } );
+
+      }
     }
     else {
       console.log('User: Error while performing Query.');
@@ -217,6 +241,6 @@ export const remove = (request, response) => {
 
   UserModel.deleteUser(request.params.id, function(err, result) {
     if (err) return response.json(err);
-    return response.json("city deleted");
+    return response.json("user deleted");
   });
 }

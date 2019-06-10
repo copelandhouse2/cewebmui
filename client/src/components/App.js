@@ -17,6 +17,24 @@ import AlertDialogContainer from "../containers/AlertDialogContainer";
 // import CitySubContainer from "./containers/CitySubContainer";
 // import Main from "./Main";
 import Drawer from '@material-ui/core/Drawer';
+import WelcomeContainer from "../containers/WelcomeContainer";
+
+import red from '@material-ui/core/colors/red';
+import pink from '@material-ui/core/colors/pink';
+import purple from '@material-ui/core/colors/purple';
+import deepPurple from '@material-ui/core/colors/deepPurple';
+import indigo from '@material-ui/core/colors/indigo';
+import blue from '@material-ui/core/colors/blue';
+import lightBlue from '@material-ui/core/colors/lightBlue';
+import cyan from '@material-ui/core/colors/cyan';
+import teal from '@material-ui/core/colors/teal';
+import green from '@material-ui/core/colors/green';
+import lightGreen from '@material-ui/core/colors/lightGreen';
+import lime from '@material-ui/core/colors/lime';
+import yellow from '@material-ui/core/colors/yellow';
+import amber from '@material-ui/core/colors/amber';
+import orange from '@material-ui/core/colors/orange';
+import grey from '@material-ui/core/colors/grey';
 
 
 const styles = theme => ({
@@ -85,7 +103,7 @@ class App extends Component {
   handleSignOut = () => {
     localStorage.removeItem('token');
     this.setState({
-      authenticated: false
+      authenticated: false,
     });
   }
 
@@ -122,13 +140,14 @@ class App extends Component {
               <div className={classes.toolbar2} />
               <Switch>
                 <Route path="/projectmgmt" component={ProjectMgmtContainer} />
-                <Route path="/" render={() =>
+                <Route path="/dashboard" render={() =>
                   <Grid container justify='center' alignItems='center'>
                     <Grid item>
                       <h1>The Dashboard</h1>
                     </Grid>
                   </Grid>
                 } />
+                <Route path="/" component={WelcomeContainer} />
                 <Route render={() => <h1>NOT FOUND!</h1>} />
               </Switch>
             </Grid>
@@ -148,17 +167,23 @@ class App extends Component {
       },
       palette: {
         primary: {
-          light: '#484848',
-          main: '#212121',
-          dark: '#000000',
-          contrastText: '#fff',
+          main: grey[900]
         },
         secondary: {
-          light: '#f5fd67',
-          main: '#c0ca33',
-          dark: '#8c9900',
-          contrastText: '#000',
+          main: teal[300]
         },
+        // primary: {
+        //   light: '#484848',
+        //   main: '#212121',
+        //   dark: '#000000',
+        //   contrastText: '#fff',
+        // },
+        // secondary: {
+        //   light: '#f5fd67',
+        //   main: '#c0ca33',
+        //   dark: '#8c9900',
+        //   contrastText: '#000',
+        // },
         error: {
         light: "#e57373",
         main: "#f44336",
@@ -185,8 +210,9 @@ class App extends Component {
 
     const theToken = localStorage.getItem('token');
     // console.log('App Start', this.props.session);
-    // console.log('App Start token', localStorage.getItem('token'));
+    // console.log('App Start token', theToken);
 
+    // console.log('authenticated', this.props.session.authenticated)
     if (this.props.session.authenticated) {
       whatToRender = this.renderApp(classes);
     }

@@ -66,7 +66,7 @@ function projectsLoaded(projects) {
 
 // Action to create the Address
 export function createAddress(c) {
-  // console.log('Just in createAddress', c, userID, loadType)
+  // console.log('Just in createAddress', c)
   return function (dispatch) {
     // console.log('in function',userID, loadType)
     fetch("/projects", {
@@ -76,6 +76,9 @@ export function createAddress(c) {
     }).then((response) => {
       return response.json();  // need to do this extra .then to convert json response into object to read.
     }).then((response) => {
+      if (response.errno) {
+        // console.log('.then create Address', response);  // now has insertId
+      }
       // console.log('.then create Address', response);  // now has insertId
       // loadType === 'PENDING' ? dispatch(loadPending(userID)) : dispatch(loadProjects());
       dispatch(loadProjects(c.search));
@@ -84,18 +87,18 @@ export function createAddress(c) {
 }
 
 // Action to create the Address
-export function commitAddresses(userID, c, search) {
+export function commitAddresses(userID, c, search, create) {
   return function (dispatch) {
-    // console.log('in commitAddress function', c, userID, loadType);
-    fetch(`/commits/${userID}`, {
+    // console.log('in commitAddress function', userID, create);
+    fetch(`/commits/${userID}/${create}`, {
       method: "PUT",
       headers: {"Content-Type": "application/json"}
       , body: JSON.stringify(c)
     }).then((response) => {
       return response.json();  // need to do this extra .then to convert json response into object to read.
     }).then((response) => {
-      console.log('2nd .then create Address', response);
       if (response.errno) {
+        // console.log('2nd .then create Address', response);
         throw response;
       };
       // loadType === 'PENDING' ? dispatch(loadPending(userID)) : dispatch(loadProjects());
@@ -517,10 +520,18 @@ export function authenticate() {
       .then( (response) => {
         // console.log('authenticate response', response);
         return response.json();
-    }).then((user) => {
-        // console.log('authenticate response.json', user);
-        dispatch(loadSession(user.username));
-        // return true;
+    }).then((response) => {
+        if (!response.ok) {
+          dispatch(loadMessage(
+            { ok:false,
+              status: 'User',
+              statusText: 'User could not be found'
+            }, "ERROR"));
+            localStorage.removeItem('token');
+        } else {
+          // console.log('authenticate response.json', user);
+          dispatch(loadSession(response.data.username));
+        }
     }).catch( err => {
         // console.log("authenticate.catch", err);
         dispatch(loadMessage(
@@ -528,6 +539,8 @@ export function authenticate() {
             status: 401,
             statusText: "Caught unknown authorization error"
           }, "ERROR"));
+        localStorage.removeItem('token');
+
         // return false;
       });
     };
@@ -549,20 +562,31 @@ export function signUp(user) {
       }
       else {
         const res = response.json();
-        // console.log("signUp.then else part", res);
-        localStorage.setItem('token', res.token);
-        dispatch(sessionLoaded({
-          user_id: res.user_id,
-          username: res.username,
-          auth_key: res.auth_key,
-          authenticated: true,
-          token: res.token,
-          contact_id: null,
-          full_name: "",
-          role: "",
-          client_id: null,
-          client_name: ""
-        }));
+        if (res.approved === 'Y') {
+          // console.log("signUp.then else part", res);
+          localStorage.setItem('token', res.token);
+          dispatch(sessionLoaded({
+            user_id: res.user_id,
+            username: res.username,
+            auth_key: res.auth_key,
+            authenticated: true,
+            token: res.token,
+            approved: res.approved,
+            contact_id: null,
+            full_name: "",
+            role: "",
+            client_id: null,
+            client_name: ""
+          }));
+        } else {
+          dispatch(loadMessage(
+            { ok:false,
+              status: 'Pending Approval',
+              statusText: `Account approval has been sent to Copeland Engineering.
+              It may take up to 3 business days for approval.  If you have any questions please contact
+              Copeland Engineering: 512-800-9200`
+            }, "INFO"));
+        }
       }
     }).catch( err => {
       // console.log("signUp.catch", err);
@@ -596,9 +620,20 @@ export function signIn(user) {
       //   dispatch(loadSession(user.email));
       // }
     }).then( theUser => {
-      // console.log("signIn response", theUser);
-      localStorage.setItem('token', theUser.token);
-      dispatch(loadSession(user.email));
+      if (theUser.approved === 'Y') {
+        // console.log("signIn response", theUser);
+        localStorage.setItem('token', theUser.token);
+        dispatch(loadSession(user.email));
+      } else {
+        dispatch(loadMessage(
+          { ok:false,
+            status: 'Pending Approval',
+            statusText: `Account has not been approved yet to
+            use CE Webtools software.  If you requested approval more
+            than 3 business days ago, please contact CE: 512-800-9200`
+          }, "INFO"));
+      }
+
     }).catch( err => {
       // console.log("signIn.catch", err);
       dispatch(loadMessage(

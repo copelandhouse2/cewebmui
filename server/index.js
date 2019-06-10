@@ -2,6 +2,8 @@
 // require("dotenv").config();
 import { env } from "./envVars";
 
+import '@babel/polyfill';
+
 import express from "express";
 // import mongoose from "mongoose";
 import { TEST_MODE, PROD_MODE, connect } from "./mysqldb";
@@ -26,7 +28,8 @@ import { MysqlSeed, geotechs, geoMasterData } from "./seedData.js"  //not workin
 // mongoose.Promise = global.Promise;
 // mongoose.connect("mongodb://public:public@ds257858.mlab.com:57858/checkpoint2");
 
-connect(TEST_MODE, function(err) {
+console.log('MODE', env.REACT_APP_MODE);
+connect(env.REACT_APP_MODE, function(err) {
   if(!err) {
     console.log("Database is connected ... \n\n");
   } else {
@@ -34,7 +37,7 @@ connect(TEST_MODE, function(err) {
   }
 });
 
-tconnect(TEST, function(err) {
+tconnect(env.REACT_APP_MODE, function(err) {
   if(!err) {
     console.log("Trello is connected ... \n\n");
   } else {
@@ -83,7 +86,9 @@ app.use(LookupRoutes);
 app.use(UserRoutes);
 app.use(GeotechRoutes);
 
-const port = env.REACT_APP_PORT || 3001;
+const port = env.REACT_APP_MODE === 'PROD'?
+  env.REACT_APP_PORT || 3001 : env.REACT_APP_PORT_TEST || 5001;
+
 app.listen(port, () => {
   console.log(`Listening on port:${port}`);
 });

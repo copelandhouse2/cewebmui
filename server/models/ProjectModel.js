@@ -142,16 +142,26 @@ const ProjectModel = {
     return sql().query(SQLstmt, [userID], callback);
   },
 
-  getProjectByID: function(id, callback){
+  getProjectByID: function(id, callback = null){
     const SQLstmt = 'SELECT *'
       + ' from projects'
       + ' where id = ?';
-    return sql().query(SQLstmt, [id], callback);
+
+
+    if (callback) {
+      // console.log('Model addProject: in the callback version');
+      return sql().query(SQLstmt, [id], callback);
+    } else {
+      // console.log('Model addProject: in the promise version');
+      return sqlPromise(SQLstmt, [id]);
+
+    }
+
   },
 
   // This function handles BOTH ADD and UPDATE.
   // Basically an UPSERT feature.
-  addProject: function(start, callback){
+  addProject: function(start, callback = null){
 
   //inserting into mysql
   const {address_id, job_number, revision, revision_desc, client_id, client, owner_id, requestor_id, city, subdivision, address1, address2, phase, section, lot, block
@@ -219,8 +229,14 @@ const ProjectModel = {
 
     // console.log('Model addProject: SQL', SQLstmt);
     // console.log('Model addProject: Values', values);
+    if (callback) {
+      // console.log('Model addProject: in the callback version')
+      return sql().query(SQLstmt, values, callback);
+    } else {
+      // console.log('Model addProject: in the promise version')
+      return sqlPromise(SQLstmt, values);
+    }
 
-    return sql().query(SQLstmt, values, callback);
   },
 
   deleteProject: (id) => {

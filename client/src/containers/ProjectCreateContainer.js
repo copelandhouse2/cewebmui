@@ -1,6 +1,6 @@
 import { connect } from "react-redux";
 import ProjectCreate from "../components/ProjectCreate";
-import { createAddress
+import { createAddress, commitAddresses
   , showHideClientDialog, showHideContactDialog, showHideSubdivisionDialog
   , showHideCityDialog, showHideGeotechDialog
   , loadMessage } from "../actions";
@@ -33,8 +33,11 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    createAddress: (address, userID, loadType) => {
-      dispatch(createAddress(address, userID, loadType));
+    createAddress: (address) => {
+      dispatch(createAddress(address));
+    },
+    commitAddresses: (userID, addresses, search, create) => {
+      dispatch(commitAddresses(userID, addresses, search, create));
     },
     showHideClientDialog: () => {
       dispatch(showHideClientDialog());

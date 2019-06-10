@@ -14,6 +14,7 @@ import {
   , PermContactCalendar
   // , SupervisorAccount
   , BusinessCenter
+  , Apps
 } from "@material-ui/icons";
 import { Link } from "react-router-dom"
 
@@ -52,9 +53,22 @@ function Navbar(props) {
         <Grid container className={classes.navbarGrid} >
 
           <Grid item>
-            <Tooltip title="Dashboard" placement="left">
+            <Tooltip title="Welcome" placement="left">
               <div>
               <Link to={`/`}>
+                <IconButton color="secondary" className={classes.icon}>
+                  {/* <Dashboard /> */}
+                  <Apps className={classes.icon}/>
+                </IconButton>
+              </Link>
+              </div>
+            </Tooltip>
+          </Grid>
+
+          <Grid item>
+            <Tooltip title="Dashboard" placement="left">
+              <div>
+              <Link to={`/dashboard`}>
                 <IconButton color="secondary" className={classes.icon}>
                   {/* <Dashboard /> */}
                   <i className="fas fa-tachometer-alt" />

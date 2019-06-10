@@ -4,10 +4,10 @@ import { env } from "./envVars";
 
 
 const PROD_DB = "copelandeng";
-const TEST_DB = "copelandeng";
+const TEST_DB = "copelandeng_test";
 
-export const TEST_MODE = "test_mode";
-export const PROD_MODE = "prod_mode";
+export const TEST_MODE = 'TEST';
+export const PROD_MODE = 'PROD';
 
 const state = {
   pool: null,
