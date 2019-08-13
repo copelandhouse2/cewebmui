@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import "../css/App.css";
-import { BrowserRouter, Route, Switch } from "react-router-dom";
+import { BrowserRouter, Route, Switch, Redirect } from "react-router-dom";
 import Navbar from "./Navbar";
 import ProjectMgmtContainer from "../containers/ProjectMgmtContainer";
 import SignUpSignInContainer from "../containers/SignUpSignInContainer";
@@ -49,6 +49,10 @@ const styles = theme => ({
     width: "95%",
     margin: "auto"
   },
+  appBodyWide: {
+    width: '100%',
+    margin: "auto"
+  },
   appHeight: {
     height: "100%"
   },
@@ -69,7 +73,8 @@ class App extends Component {
     super();
     this.state = {
       authenticated: localStorage.getItem('token') || false,
-      open: false
+      open: false,
+      welcome: true
     };
   }
 
@@ -104,6 +109,13 @@ class App extends Component {
     localStorage.removeItem('token');
     this.setState({
       authenticated: false,
+    });
+  }
+
+  toggleWelcomeScreen = (state) => {
+    this.setState({
+      welcome: state,
+      open: false
     });
   }
 
@@ -147,7 +159,14 @@ class App extends Component {
                     </Grid>
                   </Grid>
                 } />
-                <Route path="/" component={WelcomeContainer} />
+                <Route path="/" render={() =>
+                  <Grid container justify='center' alignItems='center'>
+                    <Grid item>
+                      <h1>Welcome Screen</h1>
+                    </Grid>
+                  </Grid>
+                } />
+                // <Route path="/" component={WelcomeContainer} />
                 <Route render={() => <h1>NOT FOUND!</h1>} />
               </Switch>
             </Grid>
@@ -157,6 +176,45 @@ class App extends Component {
       </BrowserRouter>
     );
   }
+
+  // renderApp(classes) {
+  //   return (
+  //     <BrowserRouter>
+  //
+  //       <div className={classes.root}>
+  //         {!this.state.welcome && <HeaderContainer toggleDrawer = {this.toggleDrawer} navOpen = {this.state.open}/>}
+  //         <Grid container className={this.state.welcome? classes.appBodyWide : classes.appBody}>
+  //           <Drawer
+  //             open={this.state.open}
+  //             variant='persistent'
+  //             // anchor='left'
+  //           >
+  //             <div className={classes.toolbar2} />
+  //             <Navbar toggleWelcomeScreen={this.toggleWelcomeScreen} />
+  //           </Drawer>
+  //           <Grid item xs={12}>
+  //             {!this.state.welcome && <div className={classes.toolbar2} />}
+  //             <Switch>
+  //               <Route exact path="/" render={() =>
+  //                 <WelcomeContainer toggleWelcomeScreen={this.toggleWelcomeScreen} />
+  //               } />
+  //               <Route path="/projectmgmt" component={ProjectMgmtContainer} />
+  //               <Route path="/dashboard" render={() =>
+  //                 <Grid container justify='center' alignItems='center'>
+  //                   <Grid item>
+  //                     <h1>The Dashboard</h1>
+  //                   </Grid>
+  //                 </Grid>
+  //               } />
+  //               <Redirect to="/" />
+  //             </Switch>
+  //           </Grid>
+  //         </Grid>
+  //         {!this.state.welcome && <Footer />}
+  //       </div>
+  //     </BrowserRouter>
+  //   );
+  // }
 
   render() {
     const { classes } = this.props;
@@ -214,7 +272,7 @@ class App extends Component {
 
     // console.log('authenticated', this.props.session.authenticated)
     if (this.props.session.authenticated) {
-      whatToRender = this.renderApp(classes);
+        whatToRender = this.renderApp(classes);
     }
     else if (theToken !== null) {
       this.props.authenticate();

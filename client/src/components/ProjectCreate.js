@@ -28,6 +28,7 @@ import ContactDialogContainer from '../containers/ContactDialogContainer';
 import CityDialogContainer from '../containers/CityDialogContainer';
 import SubdivisionDialogContainer from '../containers/SubdivisionDialogContainer';
 import AlertDialogContainer from '../containers/AlertDialogContainer';
+import DupsDialogContainer from '../containers/DupsDialogContainer';
 
 const drawerWidth = '33%';
 
@@ -67,7 +68,7 @@ const styles = theme => ({
     // marginBottom: 80
     zIndex: theme.zIndex.drawer+1,
     padding: 10,
-    height: '86%'
+    height: '85%'
 
   },
   drawerHeader: {
@@ -99,8 +100,13 @@ const styles = theme => ({
   selectLabel: {
     paddingLeft: 8,
     // '&:hover': {color: 'black'}
-  }
-
+  },
+  jobNumber: {
+    backgroundColor: theme.palette.secondary.light,
+    alignItems: 'center',
+    fontWeight: 'bold',
+    borderRadius: 4
+  },
 //, padding: 8, minHeight: 20
 });
 
@@ -197,12 +203,13 @@ class ProjectCreate extends Component {
         city: '',
         subdivision: '',
         status: '',
-      }
+      },
+      dupsDialogActivate: false,
     };
 
     this.fields = [
       {name: 'title', title: 'Project Information', width: 12},
-      // {label: 'Job Number', name: 'job_number', id: '', type: 'text', width: 6, isDisabled: true, required: false, list: []},
+      // {label: 'Job Number', name: 'job_number', id: '', type: 'text', width: 12, isDisabled: true, required: false, list: []},
       {label: 'Address', name: 'address1', id: '', type: 'text', width: 6, isDisabled: false, required: true, list: []},
       {label: 'Client', name: 'client', id: 'client_id', type: 'text', width: 6, isDisabled: false, required: true, list: [], zIndex: 1000},
       {label: 'Requestor', name: 'requestor', id: 'requestor_id', type: 'text', width: 6, isDisabled: true, required: false, list: [], zIndex: 990},
@@ -239,8 +246,9 @@ class ProjectCreate extends Component {
       {label: 'Garage Ext', name: 'garage_extension', id: '', type: 'number', width: 6, isDisabled: false, required: false, list: []},
       {label: 'Addl Options', name: 'additional_options', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: []},
       {label: 'Notes', name: 'comments', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: []},
-
+      {label: 'Scope', name: 'scope', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.scopeLookup, zIndex: 1010},
       {label: 'Trello List', name: 'trello_list', id: 'trello_list_id', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.trelloListLookup, zIndex: 1010},
+      {label: 'Trello Card', name: 'trello_card_id', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: []},
       // {label: 'FDN Type', name: 'foundation_type', id: '', type: 'text', width: 4, isDisabled: false, required: false, list: []},
       // {label: 'Garage Entry', name: 'garage_entry', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.garageEntryLookup},
       // {label: 'Garage Drop', name: 'garage_drop', id: '', type: 'number', width: 6, isDisabled: false, required: false, list: []},
@@ -252,13 +260,32 @@ class ProjectCreate extends Component {
 
   handleChange = name => event => {
 
-    // name === 'garage_drop'? console.log('field name: ', name, event.target.type, 'value: ', event.target.value, 'checked: ',event.target.checked): ''
+    // name === 'scope'? console.log('field name: ', name, event.target.type, 'value: ', event.target.value, 'checked: ',event.target.checked): ''
     event.target.type === 'checkbox'? this.setState({ [name]: event.target.checked, }) :
     event.target.type === 'number' && event.target.value === ''? this.setState({ [name]: null, }) :
     event.target.type === 'date' && event.target.value === ''? this.setState({ [name]: null, }) :
     name === 'geo_pi'? this.setState({ [name]: event.target.value.toUpperCase(), }) :
     this.setState({ [name]: event.target.value, });
   };
+
+  handleListChange = (selected, field) => {
+    // console.log('in handleListChange', selected, field);
+
+    switch (field.name) {
+      case 'scope':
+        selected.code === 'FDN'?
+            this.setState({ [field.name]: selected.code, foundation_type: 'POST TENSION' }) :  // fill in value.
+            this.setState({ [field.name]: null, foundation_type: null });  // clear out
+      default:
+        selected?  // if selected
+          field.id?  // then if field has an id
+            this.setState({ [field.id]: selected.code, [field.name]: selected.name }) :  // fill in id and value.
+            this.setState({ [field.name]: selected.code }) :  // fill in value.
+          field.id?  // else (selected is null)... now if field has an id...
+            this.setState({ [field.id]: null, [field.name]: null }) :  // clear out
+            this.setState({ [field.name]: null });  // clear out
+    }
+  }
 
   handleTabChange = (event, value) => {
     // console.log('handleTabChange', value)
@@ -267,6 +294,20 @@ class ProjectCreate extends Component {
 
   tabKeyChange = (field) => {
     // using this key trap as an indication that the field has been filled in.
+    // using this key trap as an indication that the field has been filled in.
+    // console.log('tabKeyChange: job number', field.job_number);
+    if (!this.state.job_number && field.name === 'address1' && this.state.address1) {
+      this.searchForExisting('ADDRESS');
+    }
+
+    if (
+        (!this.state.job_number)
+        && (field.name === 'subdivision' || field.name === 'lot' || field.name === 'block')
+        && this.state.subdivision && this.state.lot && this.state.block
+    ) {
+      this.searchForExisting('LOT');
+    };
+
     if (field.name === 'geo_lab' || field.name === 'geo_pi') {
       if (this.state.geo_lab === 'MLALABS' && this.state.geo_pi) {
         const geo_id = this.props.geos.find(geo => geo.code === this.state.geo_lab).id;
@@ -362,7 +403,8 @@ class ProjectCreate extends Component {
           city: '',
           subdivision: '',
           status: '',
-        }
+        },
+        dupsDialogActivate: false,
       } );
     }
 
@@ -420,6 +462,16 @@ class ProjectCreate extends Component {
     this.props.showHideSubdivisionDialog();
   };
 
+  searchForExisting = (test) => {
+    // console.log('searchForExisting', test);
+    this.props.searchForDups(test, this.state);
+    this.setState({ dupsDialogActivate: true });
+  };
+
+  dupsDialogClose = () => {
+    this.setState({ dupsDialogActivate: false });
+  }
+
   getVolFieldEntry = (theState) => {
     const { classes } = this.props;
 
@@ -430,14 +482,23 @@ class ProjectCreate extends Component {
           return (
             <Grid key={id} container justify='center'>
               <Grid item xs={12}>
-                <Typography variant='overline' align='center'><b>{field.title}</b></Typography>
+                <Typography variant='overline' align='center' >
+                  <b>{field.title}</b>
+                </Typography>
               </Grid>
             </Grid>
           )
-        // case 'job_number':  // For job number, show it unless it is the add row.
-        //   return (
-        //     <Grid item key={id} xs={12} md={field.width} />
-        //   )
+        case 'job_number':  // For job number, show it unless it is the add row.
+          if (this.state.job_number) {
+            return (
+              <Grid item key={id} xs={12} md={field.width}>
+                <Typography variant='overline' align='center' className={ classes.jobNumber }>
+                  {this.state.job_number}
+                </Typography>
+              </Grid>
+            )
+          }
+          return null;
         case 'client':
           return (
             <Grid item key={id} xs={12} md={field.width} style={ {zIndex: field.zIndex } } //className={classes.zIndexLift}
@@ -521,6 +582,11 @@ class ProjectCreate extends Component {
                         subdivision_id: selected?selected.value:null,
                         subdivision: selected?selected.name:''
                       } )
+                    }
+                  }
+                  onKeyDown={
+                    (e) => {
+                      if (e.keyCode === 9 || e.keyCode === 13) { this.tabKeyChange(field); }
                     }
                   }
                   options={
@@ -650,13 +716,14 @@ class ProjectCreate extends Component {
                     // value={ {code: eval(`theState.${field.name}`)||'', name: curName} }
                     onChange={
                       (selected) => {
-                        selected?
-                          field.id?
-                            this.setState({ [field.id]: selected.code, [field.name]: selected.name }) :
-                            this.setState({ [field.name]: selected.code }) :
-                          field.id?
-                            this.setState({ [field.id]: null, [field.name]: null }) :
-                            this.setState({ [field.name]: null });
+                        // selected?  // if selected
+                        //   field.id?  // then if field has an id
+                        //     this.setState({ [field.id]: selected.code, [field.name]: selected.name }) :  // fill in id and value.
+                        //     this.setState({ [field.name]: selected.code }) :  // fill in value.
+                        //   field.id?  // else (selected is null)... now if field has an id...
+                        //     this.setState({ [field.id]: null, [field.name]: null }) :  // clear out
+                        //     this.setState({ [field.name]: null });  // clear out
+                        this.handleListChange(selected, field);
                       }
                     }
                   />
@@ -680,11 +747,18 @@ class ProjectCreate extends Component {
                   // helperText={field.label}
                   // placeholder={field.label}
                   onChange={this.handleChange(field.name)}
+                  // onKeyDown={
+                  //   (e) => {
+                  //     if (field.name === 'geo_pi' &&
+                  //        (e.keyCode == 9 || e.keyCode == 13)
+                  //     ) { this.tabKeyChange(field); }
+                  //   }
+                  // }
                   onKeyDown={
                     (e) => {
-                      if (field.name === 'geo_pi' &&
-                         (e.keyCode == 9 || e.keyCode == 13)
-                      ) { this.tabKeyChange(field); }
+                      if (e.keyCode === 9 || e.keyCode === 13) {
+                        this.tabKeyChange(field);
+                      }
                     }
                   }
                   type={field.type}
@@ -797,6 +871,16 @@ class ProjectCreate extends Component {
       {this.props.showClientDialog && <ClientDialogContainer newValue = {this.state.dialogValue} />}
       {this.props.showCityDialog && <CityDialogContainer newValue = {this.state.dialogValue} />}
       {this.props.showSubdivisionDialog && <SubdivisionDialogContainer newValue = {this.state.dialogValue} />}
+      {this.props.dups.length > 0  &&
+      this.state.dupsDialogActivate &&
+      <DupsDialogContainer
+        open = {this.props.dups.length > 0}
+        // onSelectAndClose = {this.editStart}
+        onSelectAndClose = {null}
+        onClose = {this.dupsDialogClose}
+        curRec = {this.state}
+        selectAllowed = {false}
+      />}
       <AlertDialogContainer />
       </div>
     )

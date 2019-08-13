@@ -1,22 +1,242 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
-// import bg from '../img/copelandWC4.jpg';
+import { withStyles, makeStyles } from '@material-ui/core/styles';
+import background from '../img/background3.jpg';
+
+import slab from '../img/slab.jpg';
+import framing from '../img/framing.jpg';
+import pierandbeam from '../img/pierandbeam.jpg';
+import cusframing from '../img/framing4.jpg';
+import wall from '../img/wall.jpg';
+import pool from '../img/pool.jpg';
+import splitterbox from '../img/splitterbox.jpg';
+import detentionpond from '../img/detentionpond.jpg';
+import culvert from '../img/culvert.jpg';
+import amenitycenter from '../img/amenitycenter.jpg';
+import court from '../img/court.jpg';
+import entrymonument from '../img/entrymonument.jpg';
+import decowall from '../img/decowall.jpg';
+import column from '../img/column.jpg';
+import trellis from '../img/trellis.jpg';
+import raingarden from '../img/raingarden.jpg';
+import client from '../img/client.jpg';
+import subdivision from '../img/subdivision.jpg';
+
+
+import bg1 from '../img/slab.jpg';
+import bg2 from '../img/slab.jpg';
+import bg3 from '../img/slab.jpg';
+import bg4 from '../img/wall.jpg';
+import bg5 from '../img/wall.jpg';
 
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import ButtonBase from '@material-ui/core/ButtonBase';
+import { Link } from "react-router-dom"
+import Fade from '@material-ui/core/Fade';
+
+
+const images = [
+  {
+    url: `${slab}`,
+    title: 'Volume Foundation',
+    // width: '15%',
+    width: 200,
+
+  },
+  {
+  url: `${framing}`,
+  title: 'Volume Framing / Lateral',
+  width: '15%',
+  },
+  {
+    // url: '../img/slab.jpg',
+    url: `${pierandbeam}`,
+    title: 'Custom Foundation',
+    width: '15%',
+  },
+  {
+    url: `${cusframing}`,
+    title: 'Custom Framing / Lateral',
+    width: '15%',
+  },
+  {
+    url: `${wall}`,
+    title: 'Retaining Walls',
+    width: '15%',
+  },
+  {
+    url: `${pool}`,
+    title: 'Pools',
+    width: '20%',
+  },
+
+  {
+    url: `${splitterbox}`,
+    title: 'Splitter Boxes',
+    width: '20%',
+  },
+  {
+  url: `${detentionpond}`,
+  title: 'Detention Ponds',
+  width: '20%',
+  },
+  {
+    url: `${culvert}`,
+    title: 'Culverts',
+    width: '20%',
+  },
+  {
+    url: `${amenitycenter}`,
+    title: 'Amenity Centers',
+    width: '20%',
+  },
+  {
+    url: `${court}`,
+    title: 'Sport Courts',
+    width: '20%',
+  },
+  {
+    url: `${entrymonument}`,
+    title: 'Entry Monuments',
+    width: '20%',
+  },
+  {
+    url: `${decowall}`,
+    title: 'Walls',
+    width: '20%',
+  },
+  {
+  url: `${column}`,
+  title: 'Columns',
+  width: '20%',
+  },
+  {
+    url: `${trellis}`,
+    title: 'Trellis',
+    width: '20%',
+  },
+  {
+    url: `${raingarden}`,
+    title: 'Rain Gardens',
+    width: '20%',
+  },
+  {
+    url: `${client}`,
+    title: 'Client Onboarding',
+    width: '20%',
+  },
+  {
+    url: `${subdivision}`,
+    title: 'Subdivision Onboarding',
+    width: '20%',
+  },
+];
 
 const styles = theme => ({
-  root: {
+  rootBlack: {
     display: 'flex',
+    flexWrap: 'wrap',
+    minWidth: 500,
+    minHeight: 900,
+    // height: 780,
+    width: '100%',
+    backgroundColor: theme.palette.common.black,
+    // backgroundImage: `url(${background})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center 50%',
+    marginTop: 10,
+    opacity: 1,
+    transitionProperty: 'opacity',
+    transitionDuration: '1s',
+    transitionTimingFunction: 'ease-in-out',
   },
-  background: {
-    // backgroundImage: `url(${bg})`,
-    height: 900,
-    // width: 1920
-  }
-
+  showWelcome: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    minWidth: 500,
+    minHeight: 900,
+    // height: 780,
+    width: '100%',
+    backgroundColor: theme.palette.common.black,
+    backgroundImage: `url(${background})`,
+    backgroundSize: '100% 100%',
+    backgroundPosition: 'center 50%',
+    marginTop: 10,
+    opacity: 1,
+    transitionProperty: 'opacity',
+    transitionDuration: '5s',
+    transitionTimingFunction: 'ease-in-out',
+  },
+  image: {
+    position: 'relative',
+    height: 200,
+    [theme.breakpoints.down('xs')]: {
+      width: '100% !important', // Overrides inline-style
+      height: 100,
+    },
+    '&:hover, &$focusVisible': {
+      zIndex: 1,
+      '& $imageSrc': {
+        opacity: 1,
+        transitionProperty: 'opacity',
+        transitionDuration: '1s',
+        transitionTimingFunction: 'ease-in-out',
+      },
+      '& $imageMarked': {
+        opacity: 0,
+      },
+      '& $imageTitle': {
+        border: '4px solid currentColor',
+      },
+    },
+  },
+  focusVisible: {},
+  imageButton: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: theme.palette.common.white,
+  },
+  imageSrc: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center 50%',
+    opacity: '0.4',
+    // transitionProperty: 'opacity',
+    // transitionDuration: '5s',
+    // transitionTimingFunction: 'ease-in-out',
+    // transition: theme.transitions.create('opacity', ),
+    margin: 10
+  },
+  imageInit: {
+    opacity: 0,
+  },
+  imageTitle: {
+    position: 'relative',
+    // padding: `${theme.spacing(2)}px ${theme.spacing(4)}px ${theme.spacing(1) + 6}px`,
+    padding: `16px 10px`,
+    // opacity: 0.5,
+  },
+  imageMarked: {  // this is for the little line
+    height: 3,
+    width: 18,
+    backgroundColor: theme.palette.common.white,
+    position: 'absolute',
+    bottom: -2,
+    left: 'calc(50% - 9px)',
+    transition: theme.transitions.create('opacity'),
+  },
 });
 
 class Welcome extends Component {
@@ -24,56 +244,8 @@ class Welcome extends Component {
     super(props);
 
     this.state = {
-
+      showButtons: false,
     };
-
-    this.fields = [
-      {name: 'title', title: 'Project Information', width: 12},
-      // {label: 'Job Number', name: 'job_number', id: '', type: 'text', width: 6, isDisabled: true, required: false, list: []},
-      {label: 'Address', name: 'address1', id: '', type: 'text', width: 6, isDisabled: false, required: true, list: []},
-      {label: 'Client', name: 'client', id: 'client_id', type: 'text', width: 6, isDisabled: false, required: true, list: [], zIndex: 1000},
-      {label: 'Requestor', name: 'requestor', id: 'requestor_id', type: 'text', width: 6, isDisabled: true, required: false, list: [], zIndex: 990},
-      {label: 'Subdivision', name: 'subdivision', id: 'subdivision_id', type: 'text', width: 6, isDisabled: true, required: false, list: [], zIndex: 980},
-      {label: 'City', name: 'city', id: 'city_id', type: 'text', width: 6, isDisabled: true, required: false, list: [], zIndex: 970},
-      {label: 'Due Date', name: 'due_date', id: '', type: 'date', width: 6, isDisabled: false, required: false, list: []},
-      {label: 'Phase', name: 'phase', id: '', type: 'text', width: 3, isDisabled: false, required: false, list: []},
-      {label: 'Section', name: 'section', id: '', type: 'text', width: 3, isDisabled: false, required: false, list: []},
-      {label: 'Block', name: 'block', id: '', type: 'text', width: 3, isDisabled: false, required: false, list: []},
-      {label: 'Lot', name: 'lot', id: '', type: 'text', width: 3, isDisabled: false, required: false, list: []},
-
-      {name: 'title', title: 'Design Details', width: 12},
-      {label: 'Plan Type', name: 'plan_type', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: []},
-      {label: 'Elevation', name: 'elevation', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: []},
-      {label: 'Garage Swing', name: 'garage_swing', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.garageSwingLookup, zIndex: 960},
-      {label: 'Masonry', name: 'masonry', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.masonryLookup, zIndex: 950},
-      {label: 'Garage Type', name: 'garage_type', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.garageTypeLookup, zIndex: 940},
-      {label: 'Covered Patio', name: 'covered_patio', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.coveredPatioLookup, zIndex: 930},
-      {label: 'Bay Window', name: 'bay_window', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.ynLookup, zIndex: 920},
-
-      {name: 'title', title: 'Soils', width: 12},
-      {label: 'Lab', name: 'geo_lab', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.geos, zIndex: 910},
-      {label: 'Report #', name: 'geo_report_num', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: []},
-      {label: 'Report Date', name: 'geo_report_date', id: '', type: 'date', width: 6, isDisabled: false, required: false, list: []},
-      {label: 'PI', name: 'geo_pi', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: []},
-      {label: 'EmC', name: 'em_center', id: '', type: 'number', width: 3, isDisabled: false, required: false, list: []},
-      {label: 'EmE', name: 'em_edge', id: '', type: 'number', width: 3, isDisabled: false, required: false, list: []},
-      {label: 'YmC', name: 'ym_center', id: '', type: 'number', width: 3, isDisabled: false, required: false, list: []},
-      {label: 'YmE', name: 'ym_edge', id: '', type: 'number', width: 3, isDisabled: false, required: false, list: []},
-      {label: 'Soil Notes', name: 'soil_notes', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: []},
-
-      {name: 'title', title: 'Other', width: 12},
-      {label: 'Master Shower Drop', name: 'master_shower_drop', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.ynLookup, zIndex: 900},
-      {label: 'Garage Ext', name: 'garage_extension', id: '', type: 'number', width: 6, isDisabled: false, required: false, list: []},
-      {label: 'Addl Options', name: 'additional_options', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: []},
-      {label: 'Notes', name: 'comments', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: []},
-
-      {label: 'Trello List', name: 'trello_list', id: 'trello_list_id', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.trelloListLookup, zIndex: 1010},
-      // {label: 'FDN Type', name: 'foundation_type', id: '', type: 'text', width: 4, isDisabled: false, required: false, list: []},
-      // {label: 'Garage Entry', name: 'garage_entry', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.garageEntryLookup},
-      // {label: 'Garage Drop', name: 'garage_drop', id: '', type: 'number', width: 6, isDisabled: false, required: false, list: []},
-      // {label: 'Bath 1', name: 'bath1_shower_drop', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.ynLookup},
-      // {label: 'Default List', name: 'trello_list', id: 'trello_list_id', type: 'text', width: 4, isDisabled: false, required: false, list: this.props.trelloListLookup},
-    ]
 
   }
 
@@ -87,20 +259,68 @@ class Welcome extends Component {
     this.setState({ [name]: event.target.value, });
   };
 
+  handleClick = name => event => {
+    this.setState({
+      showButtons: !this.state.showButtons,
+    });
+  };
 
   render() {
     const { classes, theme } = this.props;
-
-    // <div className={classes.background} >
-    // </div>
+    console.log('the state', this.state);
     return (
-      <Grid container alignItems='center' style={ {height: 900} }>
-        <Grid item xs={12} style={ {height: 200} }>
-        <Typography variant='h2' align='center' ><b>Welcome screen</b></Typography>
-        <Typography variant='h2' align='center' ><b>Under Construction...</b></Typography>
-        </Grid>
-      </Grid>
-    )
+      <div className={this.state.showButtons? classes.rootBlack:classes.showWelcome} onClick={this.handleClick('showButtons')}>
+
+        {this.state.showButtons && images.map(image => (
+          <ButtonBase
+            focusRipple
+            key={image.title}
+            className={classes.image}
+            focusVisibleClassName={classes.focusVisible}
+            style={{
+              width: image.width,
+            }}
+            onClick={ (e) => this.props.toggleWelcomeScreen(false) }
+          >
+          <Fade in={true} timeout={15000}>
+            <Link to={`/projectmgmt`} >
+            <span
+              className={`${classes.imageSrc}`}
+              style={{
+                backgroundImage: `url(${image.url})`,
+                // opacity: 0,
+              }}
+            />
+            <span className={classes.imageButton}>
+              <Typography
+                component="span"
+                variant="subtitle1"
+                color="inherit"
+                className={classes.imageTitle}
+              >
+                {image.title}
+                <span className={classes.imageMarked} />
+              </Typography>
+            </span>
+            </Link>
+          </Fade>
+          </ButtonBase>
+        ))}
+        {!this.state.showButtons &&
+        <span className={classes.imageButton}>
+          <Typography
+            component="span"
+            variant="subtitle1"
+            color="inherit"
+            className={classes.imageTitle}
+          >
+            click anywhere to begin
+          </Typography>
+        </span>}
+
+      </div>
+    );
+
   }
 
 } // Project Create class closure
@@ -111,15 +331,4 @@ Welcome.propTypes = {
 
 export default withStyles(styles, { withTheme: true })(Welcome);
 
-
-// <div className={classes.drawerHeader}>
-//   <Fab
-//     size='small'
-//     color='secondary'
-//     aria-label='Add'
-//     onClick={this.props.handleQuickEntry}
-//   >
-//     {theme.direction === 'rtl' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-//   </Fab>
-// </div>
-// <Divider />
+// <Fade in={true} timeout={15000}>

@@ -46,6 +46,7 @@ import CityDialogContainer from '../containers/CityDialogContainer';
 import SubdivisionDialogContainer from '../containers/SubdivisionDialogContainer';
 import AlertDialogContainer from '../containers/AlertDialogContainer';
 import ProjectCreateContainer from '../containers/ProjectCreateContainer';
+import DupsDialogContainer from '../containers/DupsDialogContainer';
 
 import classNames from 'classnames';
 import Drawer from '@material-ui/core/Drawer';
@@ -183,6 +184,7 @@ class ProjectMgmt extends Component {
       status: '',
       editRow: this.NEW_ROW, // this is the address array id that is being edited.  If -1, new address.
       dialogValue: '',
+      showSubDialog: false,
       // Custom Project fields
       project_status: '',
       scope: 'FDN',
@@ -220,7 +222,8 @@ class ProjectMgmt extends Component {
         city: '',
         subdivision: '',
         status: '',
-      }
+      },
+      dupsDialogActivate: false,
     };
 
     this.tabs = [
@@ -324,9 +327,10 @@ class ProjectMgmt extends Component {
         {label: '', name: 'overflow', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'trello', fields: [
-        {label: 'Default List', name: 'trello_list', id: 'trello_list_id', type: 'text', width: '25%', isDisabled: false, required: false, list: []},
+        {label: 'Default List', name: 'trello_list', id: 'trello_list_id', type: 'text', width: '20%', isDisabled: false, required: false, list: []},
+        {label: 'Card ID', name: 'trello_card_id', id: '', type: 'text', width: '20%', isDisabled: false, required: false, list: []},
         // {label: 'Create?', name: 'createTrelloCard', id: '', type: 'checkbox', width: '3%', isDisabled: false, required: false, list: []},
-        {label: '', name: 'overflow', id: '', type: 'text', width: '32%', isDisabled: false, required: false, list: []},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '20%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'post_key', fields: [
         {label: 'Status', name: 'status', id: '', type: 'text', width: '4%', isDisabled: false, required: false, list: []},
@@ -430,6 +434,7 @@ class ProjectMgmt extends Component {
         status: '',
         editRow: this.NEW_ROW, // this is the address array id that is being edited.  If -1, new address.
         dialogValue: '',
+        showSubDialog: false,
         // Custom Project fields
         project_status: '',
         scope: 'FDN',
@@ -460,13 +465,26 @@ class ProjectMgmt extends Component {
 
   };
 
-  handleTabChange = (event, value) => {
-    // console.log('handleTabChange', value)
+  handleMuiTabChange = (event, value) => {
+    // console.log('handleMuiTabChange', value)
     this.setState({ currentTab: value });
   };
 
   tabKeyChange = (field) => {
     // using this key trap as an indication that the field has been filled in.
+    // console.log('tabKeyChange: job number', field.job_number);
+    if (!this.state.job_number && field.name === 'address1' && this.state.address1) {
+      this.searchForExisting('ADDRESS');
+    }
+
+    if (
+        (!this.state.job_number)
+        && (field.name === 'subdivision' || field.name === 'lot' || field.name === 'block')
+        && this.state.subdivision && this.state.lot && this.state.block
+    ) {
+      this.searchForExisting('LOT');
+    };
+
     if (field.name === 'geo_lab' || field.name === 'geo_pi') {
       if (this.state.geo_lab === 'MLALABS' && this.state.geo_pi) {
         const geo_id = this.props.geos.find(geo => geo.code === this.state.geo_lab).id;
@@ -480,32 +498,6 @@ class ProjectMgmt extends Component {
           } );
         }
       }
-
-      // if (this.state.geo_lab && this.state.geo_pi) {
-      //   const geo_id = this.props.geos.find(geo => geo.code === this.state.geo_lab).id;
-      //   const oneGeoMaster = this.props.geoMasterData.filter(rec => rec.geotech_id === geo_id);
-      //   const emYmValues = oneGeoMaster.find(rec => rec.pi === this.state.geo_pi);
-      //   if (emYmValues) {
-      //     this.setState( { em_center: emYmValues.emc
-      //       , em_edge:   emYmValues.eme
-      //       , ym_center: emYmValues.ymc
-      //       , ym_edge:   emYmValues.yme
-      //     } );
-      //   } else {
-      //     this.setState( { em_center: null
-      //       , em_edge:   null
-      //       , ym_center: null
-      //       , ym_edge:   null
-      //     } );
-      //   }
-      // } else {
-      //   this.setState( { em_center: null
-      //     , em_edge:   null
-      //     , ym_center: null
-      //     , ym_edge:   null
-      //   } );
-      // }
-
     }
 
     if (field.nextTab) {
@@ -527,7 +519,7 @@ class ProjectMgmt extends Component {
     event.target.type === 'date' && event.target.value === ''? this.setState({ [name]: null, }) :
     name === 'geo_pi'? this.setState({ [name]: event.target.value.toUpperCase(), }) :
     name === 'jobNumUnlock'? this.setState({ [name]: !this.state[name], }) :
-    this.setState({ [name]: event.target.value, });
+    this.setState({ [name]: event.target.value, }, );
   };
 
 // handleJobNumLock = name => event => {
@@ -613,88 +605,174 @@ class ProjectMgmt extends Component {
     // this.initState();
   };
 
-  editStart = (id) => {
+  // editStart = (id) => {
+  //   this.setState({
+  //     address_id: this.props.addresses[id].id,
+  //     job_number: this.props.addresses[id].job_number,
+  //     jobNumUnlock: false,
+  //     revision: this.props.addresses[id].revision,
+  //     revision_desc: this.props.addresses[id].revision_desc,
+  //     client_id: this.props.addresses[id].client_id,
+  //     client: this.props.addresses[id].client,
+  //     requestor_id: this.props.addresses[id].contact_id,   // contact_id
+  //     requestor: this.props.addresses[id].requestor,       // contact full name
+  //     owner_id: this.props.session.id,      // user_id
+  //     owner: this.props.session.full_name,  // contact full name of the user_id
+  //     city_id: null,  // query getting addresses does not get id.  starts table does not capture it.
+  //     city: this.props.addresses[id].city,
+  //     subdivision_id: null,  // query getting addresses does not get id.  starts table does not capture it.
+  //     subdivision: this.props.addresses[id].subdivision,
+  //     address1: this.props.addresses[id].address1,
+  //     address2: this.props.addresses[id].address2,
+  //     phase: this.props.addresses[id].phase,
+  //     section: this.props.addresses[id].section,
+  //     lot: this.props.addresses[id].lot,
+  //     block: this.props.addresses[id].block,
+  //     fnd_height_fr: this.props.addresses[id].fnd_height_fr,
+  //     fnd_height_fl: this.props.addresses[id].fnd_height_fl,
+  //     fnd_height_rr: this.props.addresses[id].fnd_height_rr,
+  //     fnd_height_rl: this.props.addresses[id].fnd_height_rl,
+  //     plan_type: this.props.addresses[id].plan_type,
+  //     elevation: this.props.addresses[id].elevation,
+  //     masonry: this.props.addresses[id].masonry,
+  //     garage_type: this.props.addresses[id].garage_type,
+  //     garage_entry: this.props.addresses[id].garage_entry,
+  //     garage_swing: this.props.addresses[id].garage_swing,
+  //     garage_drop: this.props.addresses[id].garage_drop,
+  //     garage_extension: this.props.addresses[id].garage_extension,
+  //     covered_patio: this.props.addresses[id].covered_patio,
+  //     bay_window: this.props.addresses[id].bay_window,
+  //     master_shower_drop: this.props.addresses[id].master_shower_drop,
+  //     bath1_shower_drop: this.props.addresses[id].bath1_shower_drop,
+  //     bath2_shower_drop: this.props.addresses[id].bath2_shower_drop,
+  //     bath3_shower_drop: this.props.addresses[id].bath3_shower_drop,
+  //     geo_lab: this.props.addresses[id].geo_lab,
+  //     geo_report_num: this.props.addresses[id].geo_report_num,
+  //     geo_report_date: this.props.addresses[id].geo_report_date,
+  //     geo_pi: this.props.addresses[id].geo_pi,
+  //     em_center: this.props.addresses[id].em_center,
+  //     em_edge: this.props.addresses[id].em_edge,
+  //     ym_center: this.props.addresses[id].ym_center,
+  //     ym_edge: this.props.addresses[id].ym_edge,
+  //     soil_notes: this.props.addresses[id].soil_notes,
+  //     additional_options: this.props.addresses[id].additional_options,
+  //     comments: this.props.addresses[id].comments,
+  //     // Custom Project fields
+  //     project_status: this.props.addresses[id].project_status,
+  //     scope: this.props.addresses[id].scope,
+  //     classification: this.props.addresses[id].classification,
+  //     onboard_date: this.props.addresses[id].onboard_date,
+  //     start_date: this.props.addresses[id].start_date,
+  //     due_date: this.props.addresses[id].due_date,
+  //     final_due_date: this.props.addresses[id].final_due_date,
+  //     transmittal_date: this.props.addresses[id].transmittal_date,
+  //     main_contact: this.props.addresses[id].main_contact,
+  //     billing_contact: this.props.addresses[id].billing_contact,
+  //     builder_contact: this.props.addresses[id].builder_contact,
+  //     foundation_type: this.props.addresses[id].foundation_type,
+  //     floor_type: this.props.addresses[id].floor_type,
+  //     roof_type: this.props.addresses[id].roof_type,
+  //     num_stories: this.props.addresses[id].num_stories,
+  //     square_footage: this.props.addresses[id].square_footage,
+  //     pita_factor: this.props.addresses[id].pita_factor,
+  //     // Trello and Box
+  //     box_folder: this.props.addresses[id].box_folder,
+  //     trello_list_id: this.props.addresses[id].trello_list_id,
+  //     trello_list: this.props.addresses[id].trello_list,
+  //     trello_card_id: this.props.addresses[id].trello_card_id,
+  //
+  //     created_by: this.props.addresses[id].created_by,
+  //     last_updated_by: this.props.addresses[id].last_updated_by,
+  //     status: this.props.addresses[id].status,
+  //     editRow: id, // this is the address array id that is being edited.  If -1, new address.
+  //     createTrelloCard: false,
+  //     rememberData: false,
+  //   });
+  // };
+
+  editStart = (project, id) => {
     this.setState({
-      address_id: this.props.addresses[id].id,
-      job_number: this.props.addresses[id].job_number,
+      address_id: project.id,
+      job_number: project.job_number,
       jobNumUnlock: false,
-      revision: this.props.addresses[id].revision,
-      revision_desc: this.props.addresses[id].revision_desc,
-      client_id: this.props.addresses[id].client_id,
-      client: this.props.addresses[id].client,
-      requestor_id: this.props.addresses[id].contact_id,   // contact_id
-      requestor: this.props.addresses[id].requestor,       // contact full name
+      revision: project.revision,
+      revision_desc: project.revision_desc,
+      client_id: project.client_id,
+      client: project.client,
+      requestor_id: project.contact_id,   // contact_id
+      requestor: project.requestor,       // contact full name
       owner_id: this.props.session.id,      // user_id
       owner: this.props.session.full_name,  // contact full name of the user_id
       city_id: null,  // query getting addresses does not get id.  starts table does not capture it.
-      city: this.props.addresses[id].city,
+      city: project.city,
       subdivision_id: null,  // query getting addresses does not get id.  starts table does not capture it.
-      subdivision: this.props.addresses[id].subdivision,
-      address1: this.props.addresses[id].address1,
-      address2: this.props.addresses[id].address2,
-      phase: this.props.addresses[id].phase,
-      section: this.props.addresses[id].section,
-      lot: this.props.addresses[id].lot,
-      block: this.props.addresses[id].block,
-      fnd_height_fr: this.props.addresses[id].fnd_height_fr,
-      fnd_height_fl: this.props.addresses[id].fnd_height_fl,
-      fnd_height_rr: this.props.addresses[id].fnd_height_rr,
-      fnd_height_rl: this.props.addresses[id].fnd_height_rl,
-      plan_type: this.props.addresses[id].plan_type,
-      elevation: this.props.addresses[id].elevation,
-      masonry: this.props.addresses[id].masonry,
-      garage_type: this.props.addresses[id].garage_type,
-      garage_entry: this.props.addresses[id].garage_entry,
-      garage_swing: this.props.addresses[id].garage_swing,
-      garage_drop: this.props.addresses[id].garage_drop,
-      garage_extension: this.props.addresses[id].garage_extension,
-      covered_patio: this.props.addresses[id].covered_patio,
-      bay_window: this.props.addresses[id].bay_window,
-      master_shower_drop: this.props.addresses[id].master_shower_drop,
-      bath1_shower_drop: this.props.addresses[id].bath1_shower_drop,
-      bath2_shower_drop: this.props.addresses[id].bath2_shower_drop,
-      bath3_shower_drop: this.props.addresses[id].bath3_shower_drop,
-      geo_lab: this.props.addresses[id].geo_lab,
-      geo_report_num: this.props.addresses[id].geo_report_num,
-      geo_report_date: this.props.addresses[id].geo_report_date,
-      geo_pi: this.props.addresses[id].geo_pi,
-      em_center: this.props.addresses[id].em_center,
-      em_edge: this.props.addresses[id].em_edge,
-      ym_center: this.props.addresses[id].ym_center,
-      ym_edge: this.props.addresses[id].ym_edge,
-      soil_notes: this.props.addresses[id].soil_notes,
-      additional_options: this.props.addresses[id].additional_options,
-      comments: this.props.addresses[id].comments,
+      subdivision: project.subdivision,
+      address1: project.address1,
+      address2: project.address2,
+      phase: project.phase,
+      section: project.section,
+      lot: project.lot,
+      block: project.block,
+      fnd_height_fr: project.fnd_height_fr,
+      fnd_height_fl: project.fnd_height_fl,
+      fnd_height_rr: project.fnd_height_rr,
+      fnd_height_rl: project.fnd_height_rl,
+      plan_type: project.plan_type,
+      elevation: project.elevation,
+      masonry: project.masonry,
+      garage_type: project.garage_type,
+      garage_entry: project.garage_entry,
+      garage_swing: project.garage_swing,
+      garage_drop: project.garage_drop,
+      garage_extension: project.garage_extension,
+      covered_patio: project.covered_patio,
+      bay_window: project.bay_window,
+      master_shower_drop: project.master_shower_drop,
+      bath1_shower_drop: project.bath1_shower_drop,
+      bath2_shower_drop: project.bath2_shower_drop,
+      bath3_shower_drop: project.bath3_shower_drop,
+      geo_lab: project.geo_lab,
+      geo_report_num: project.geo_report_num,
+      geo_report_date: project.geo_report_date,
+      geo_pi: project.geo_pi,
+      em_center: project.em_center,
+      em_edge: project.em_edge,
+      ym_center: project.ym_center,
+      ym_edge: project.ym_edge,
+      soil_notes: project.soil_notes,
+      additional_options: project.additional_options,
+      comments: project.comments,
       // Custom Project fields
-      project_status: this.props.addresses[id].project_status,
-      scope: this.props.addresses[id].scope,
-      classification: this.props.addresses[id].classification,
-      onboard_date: this.props.addresses[id].onboard_date,
-      start_date: this.props.addresses[id].start_date,
-      due_date: this.props.addresses[id].due_date,
-      final_due_date: this.props.addresses[id].final_due_date,
-      transmittal_date: this.props.addresses[id].transmittal_date,
-      main_contact: this.props.addresses[id].main_contact,
-      billing_contact: this.props.addresses[id].billing_contact,
-      builder_contact: this.props.addresses[id].builder_contact,
-      foundation_type: this.props.addresses[id].foundation_type,
-      floor_type: this.props.addresses[id].floor_type,
-      roof_type: this.props.addresses[id].roof_type,
-      num_stories: this.props.addresses[id].num_stories,
-      square_footage: this.props.addresses[id].square_footage,
-      pita_factor: this.props.addresses[id].pita_factor,
+      project_status: project.project_status,
+      scope: project.scope,
+      classification: project.classification,
+      onboard_date: project.onboard_date,
+      start_date: project.start_date,
+      due_date: project.due_date,
+      final_due_date: project.final_due_date,
+      transmittal_date: project.transmittal_date,
+      main_contact: project.main_contact,
+      billing_contact: project.billing_contact,
+      builder_contact: project.builder_contact,
+      foundation_type: project.foundation_type,
+      floor_type: project.floor_type,
+      roof_type: project.roof_type,
+      num_stories: project.num_stories,
+      square_footage: project.square_footage,
+      pita_factor: project.pita_factor,
       // Trello and Box
-      box_folder: this.props.addresses[id].box_folder,
-      trello_list_id: this.props.addresses[id].trello_list_id,
-      trello_list: this.props.addresses[id].trello_list,
-      trello_card_id: this.props.addresses[id].trello_card_id,
+      box_folder: project.box_folder,
+      trello_list_id: project.trello_list_id,
+      trello_list: project.trello_list,
+      trello_card_id: project.trello_card_id,
 
-      created_by: this.props.addresses[id].created_by,
-      last_updated_by: this.props.addresses[id].last_updated_by,
-      status: this.props.addresses[id].status,
+      created_by: project.created_by,
+      last_updated_by: project.last_updated_by,
+      status: project.status,
       editRow: id, // this is the address array id that is being edited.  If -1, new address.
       createTrelloCard: false,
       rememberData: false,
+      dupsDialogActivate: false,
     });
   };
 
@@ -735,11 +813,23 @@ class ProjectMgmt extends Component {
     this.props.showHideCityDialog();
   };
 
-  createSubdivision = (newValue) => {
-    // console.log('create Subdivision', newValue);
-    this.setState({ dialogValue: newValue });
-    this.props.showHideSubdivisionDialog();
+  subdivisionDialog = (newValue = '', sub_id = this.state.subdivision_id, sub = this.state.subdivision) => {
+    console.log('create Subdivision', newValue, sub_id, sub);
+
+    this.setState({ dialogValue: newValue, subdivision_id: sub_id, subdivision: sub, showSubDialog: !this.state.showSubDialog });
+    // this.props.showHideSubdivisionDialog();
+
   };
+
+  searchForExisting = (test) => {
+    // console.log('searchForExisting', test);
+    this.props.searchForDups(test, this.state);
+    this.setState({ dupsDialogActivate: true });
+  };
+
+  dupsDialogClose = () => {
+    this.setState({ dupsDialogActivate: false });
+  }
 
   /******** getTableHeader ***************
   Action: This function generates the header columns of the table.  It is a main driver function
@@ -897,7 +987,7 @@ class ProjectMgmt extends Component {
                   onClick={(e) => {
                   e.preventDefault();
                   if (this.editStart) {
-                    this.editStart(currentRow);
+                    this.editStart(this.props.addresses[currentRow], currentRow);
                   }
                 }}>
                   <Edit fontSize='small' />
@@ -1079,6 +1169,11 @@ class ProjectMgmt extends Component {
                       } )
                     }
                   }
+                  onKeyDown={
+                    (e) => {
+                      if (e.keyCode == 9 || e.keyCode == 13) { this.tabKeyChange(field); }
+                    }
+                  }
                   options={
                     this.props.subdivisions.map(sub => {
                       return {
@@ -1089,7 +1184,7 @@ class ProjectMgmt extends Component {
                       }
                     })
                   }
-                  onCreateOption={this.createSubdivision}
+                  onCreateOption={this.subdivisionDialog}
                   value={ {value: this.state.subdivision_id? this.state.subdivision_id.toString() : ''
                     , label: this.state.subdivision
                     , name: this.state.subdivision} }
@@ -1334,9 +1429,16 @@ class ProjectMgmt extends Component {
                   }
                   onKeyDown={
                     (e) => {
+                      // console.log('on key down');
                       if (e.keyCode === 9 || e.keyCode === 13) { this.tabKeyChange(field); }
                     }
                   }
+                  // onBlur={
+                  //   (e) => {
+                  //     console.log('on blur');
+                  //     if (e.keyCode === 9 || e.keyCode === 13) { this.tabKeyChange(field); }
+                  //   }
+                  // }
                 />
               </TableCell>
             )
@@ -1356,9 +1458,16 @@ class ProjectMgmt extends Component {
                   onChange={this.handleChange(field.name)}
                   onKeyDown={
                     (e) => {
+                      // console.log('on key down: ', e.type, e.target.id, e.keyCode);
                       if (e.keyCode === 9 || e.keyCode === 13) { this.tabKeyChange(field); }
                     }
                   }
+                  // onBlur={
+                  //   (e) => {
+                  //     console.log('on blur: ', e.type, e.target.id);
+                  //     if (e.keyCode === 9 || e.keyCode === 13) { this.tabKeyChange(field); }
+                  //   }
+                  // }
                   type={field.type}
                   // root = {{fontSize: '8px'}}
                   InputProps={{
@@ -1415,6 +1524,7 @@ class ProjectMgmt extends Component {
     // console.log('Create Start Render: state', this.state);
     // console.log('starts', this.props.addresses);
     // console.log('trelloList', this.props.trelloListLookup);
+    // this.props.dups.length > 0? console.log('possible dups', this.props.dups) : null;
 
     // console.log('client: ', this.state.client, this.state.client_id);
     // console.log('owner: ', this.state.owner, this.state.owner_id);
@@ -1686,7 +1796,7 @@ class ProjectMgmt extends Component {
                     <Grid item xs={12}>
                       <Tabs
                         value = {this.state.currentTab}
-                        onChange={this.handleTabChange}
+                        onChange={this.handleMuiTabChange}
                         indicatorColor='primary'
                         textColor='primary'
                         variant='fullWidth'
@@ -1764,10 +1874,29 @@ class ProjectMgmt extends Component {
               </Grid>
             </Grid>
       </Paper>
-      {this.props.showClientDialog && <ClientDialogContainer newValue = {this.state.dialogValue} />}
-      {this.props.showContactDialog && <ContactDialogContainer newValue = {this.state.dialogValue} />}
-      {this.props.showCityDialog && <CityDialogContainer newValue = {this.state.dialogValue} />}
-      {this.props.showSubdivisionDialog && <SubdivisionDialogContainer newValue = {this.state.dialogValue} />}
+      {this.props.showClientDialog && <ClientDialogContainer
+        newValue = {this.state.dialogValue}
+      />}
+      {this.props.showContactDialog && <ContactDialogContainer
+        newValue = {this.state.dialogValue}
+      />}
+      {this.props.showCityDialog && <CityDialogContainer
+        newValue = {this.state.dialogValue}
+      />}
+      {this.state.showSubDialog && <SubdivisionDialogContainer
+        newValue = {this.state.dialogValue}
+        open = {this.state.showSubDialog}
+        closeDialog = {this.subdivisionDialog}
+      />}
+      {this.props.dups.length > 0 &&
+      this.state.dupsDialogActivate &&
+      <DupsDialogContainer
+        open = {this.props.dups.length > 0}
+        onSelectAndClose = {this.editStart}
+        onClose = {this.dupsDialogClose}
+        curRec = {this.state}
+        selectAllowed = {true}
+      />}
       <AlertDialogContainer />
       </main>
 

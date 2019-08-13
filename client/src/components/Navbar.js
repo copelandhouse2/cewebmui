@@ -65,6 +65,23 @@ function Navbar(props) {
             </Tooltip>
           </Grid>
 
+          {// <Grid item>
+          //   <Tooltip title="Welcome" placement="left">
+          //     <div>
+          //     <Link to={`/`}>
+          //
+          //       <IconButton color="secondary" className={classes.icon}
+          //         onClick={ (e) => props.toggleWelcomeScreen(true) }
+          //       >
+          //         {/* <Dashboard /> */}
+          //         <Apps className={classes.icon}/>
+          //       </IconButton>
+          //     </Link>
+          //     </div>
+          //   </Tooltip>
+          // </Grid>
+          }
+
           <Grid item>
             <Tooltip title="Dashboard" placement="left">
               <div>

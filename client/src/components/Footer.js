@@ -10,7 +10,7 @@ import { Copyright } from "@material-ui/icons";
 
 const styles = theme => ({
   Paper: { padding: 10, marginTop: 10, backgroundColor: "#212121",},
-  appBar: { top: 'auto', bottom: 0, zIndex: theme.zIndex.drawer + 1, padding: 10, marginTop: 10,},
+  appBar: { top: 'auto', bottom: 0, zIndex: theme.zIndex.drawer + 1, padding: 10, marginTop: 10,},  
 });
 
 function Footer(props) {

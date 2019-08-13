@@ -21,6 +21,13 @@ function addresses(state = [], action) {
   return state;
 }
 
+function dups(state = [], action) {
+  if (action.type === "DUPS_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
 function address(state = [], action) {
   if (action.type === "GET_ADDRESS_DONE") {
     return action.value;
@@ -232,7 +239,7 @@ function geoMasterData(state = [], action) {
 }
 
 const rootReducer = combineReducers({
-  session, message, addresses, address, clients, contacts, cities
+  session, message, addresses, dups, address, clients, contacts, cities
   , subdivisions, jobnumberseqs, stateLookup, countryLookup
   , roleLookup, trelloListLookup, showClientDialog, showSubdivisionDialog
   , showCityDialog, showContactDialog, recordStatusLookup, projectStatusLookup

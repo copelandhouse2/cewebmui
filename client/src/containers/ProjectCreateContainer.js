@@ -3,7 +3,7 @@ import ProjectCreate from "../components/ProjectCreate";
 import { createAddress, commitAddresses
   , showHideClientDialog, showHideContactDialog, showHideSubdivisionDialog
   , showHideCityDialog, showHideGeotechDialog
-  , loadMessage } from "../actions";
+  , loadMessage, searchForDups } from "../actions";
 
 function mapStateToProps(state) {
   return {
@@ -12,10 +12,12 @@ function mapStateToProps(state) {
     cities: state.cities,
     subdivisions: state.subdivisions,
     addresses: state.addresses,
+    dups: state.dups,
     contacts: state.contacts,
     trelloListLookup: state.trelloListLookup,
     masonryLookup: state.masonryLookup,
     ynLookup: state.ynLookup,
+    scopeLookup: state.scopeLookup,
     fndTypeLookup: state.fndTypeLookup,
     garageTypeLookup: state.garageTypeLookup,
     garageEntryLookup: state.garageEntryLookup,
@@ -56,6 +58,9 @@ function mapDispatchToProps(dispatch) {
     },
     loadMessage: function (message, type) {
       dispatch(loadMessage(message, type));
+    },
+    searchForDups: (test, project) => {
+      dispatch(searchForDups(test, project));
     },
   };
 }

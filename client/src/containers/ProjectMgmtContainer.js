@@ -3,7 +3,7 @@ import ProjectMgmt from "../components/ProjectMgmt";
 import { loadProjects, createAddress, deleteAddress, commitAddresses
   , showHideClientDialog, showHideContactDialog, showHideSubdivisionDialog
   , showHideCityDialog, showHideGeotechDialog, loadContacts
-  , getLookup, loadMessage } from "../actions";
+  , getLookup, loadMessage, searchForDups } from "../actions";
 
 function mapStateToProps(state) {
   return {
@@ -12,6 +12,7 @@ function mapStateToProps(state) {
     cities: state.cities,
     subdivisions: state.subdivisions,
     addresses: state.addresses,
+    dups: state.dups,
     contacts: state.contacts,
     trelloListLookup: state.trelloListLookup,
     projectStatusLookup: state.projectStatusLookup,
@@ -74,6 +75,9 @@ function mapDispatchToProps(dispatch) {
     },
     loadMessage: function (message, type) {
       dispatch(loadMessage(message, type));
+    },
+    searchForDups: (test, project) => {
+      dispatch(searchForDups(test, project));
     },
   };
 }

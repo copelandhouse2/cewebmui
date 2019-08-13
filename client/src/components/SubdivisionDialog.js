@@ -11,7 +11,7 @@ import Grid from '@material-ui/core/Grid';
 import Select from 'react-select';
 // import PropTypes from 'prop-types';
 // import { resolve } from 'url';
-
+import '@babel/polyfill';
 
 const styles = theme => ({
   root: {
@@ -48,13 +48,17 @@ const styles = theme => ({
   },
 });
 
+var counter = 0;
+var saveProp;
+var subdivision_id;
+
 class SubdivisionDialog extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
       id: null,
-      subdivision: props.newValue,  // only seed data.
+      subdivision: this.props.newValue,  // only seed data.
       city_id: '',
       city: '',
       created_by: null,
@@ -62,10 +66,21 @@ class SubdivisionDialog extends Component {
     };
 
     this.initState = {...this.state};
+
   }
 
+  componentWillMount = () => {
+    console.log(counter, 'props in CWM', this.props);
+
+  }
+
+  componentWillUnmount = () => {
+    console.log(counter, 'component unmounting', this.props, this.state);
+
+  }
 
   componentDidMount = () => {
+    console.log(counter, 'props in CDM', this.props.newValue);
 
   }
 
@@ -82,6 +97,25 @@ class SubdivisionDialog extends Component {
       }
     )
     console.log('after the setState and createSubdivision');
+
+    // console.log('1st promise: setState');
+    // await new Promise(resolve => this.setState({
+    //   created_by: this.props.session.id,
+    //   last_updated_by: this.props.session.id
+    // }, resolve))
+    //
+    // console.log('2nd promise: create Sub');
+    // await new Promise( (resolve) => {
+    //   this.props.createSubdivision(this.state);
+    //   resolve();
+    // });
+    // // this.props.createSubdivision(this.state);
+    //
+    // console.log('setState with ID');
+    // this.setState({ id: this.setSubdivisionID() });
+    // await new Promise(resolve => this.setState({
+    //   id: this.setSubdivisionID()
+    // }, resolve))
 
   }
 
@@ -105,13 +139,18 @@ class SubdivisionDialog extends Component {
   setSubdivisionID = () => {
     const subdivision = this.props.subdivisions.find(x => x.subdivision === this.state.subdivision)
     if (typeof subdivision === 'undefined') return 'NA'
+    subdivision_id = subdivision.id;
     return subdivision.id;
   };
 
   render() {
-    console.group('Subdivision Dialog Render');
-    console.log('state', this.state);
-    console.groupEnd();
+    counter = counter + 1;
+    if (counter === 1) {saveProp = this.props.newValue};
+    console.log(counter, 'props', this.props, saveProp);
+
+    // console.group('Subdivision Dialog Render');
+    console.log(counter, 'state', this.state, saveProp);
+    // console.groupEnd();
     // console.log('Create Client props', this.props);
     // console.log('Create Client state', this.state);
     // this.setClientID();
@@ -119,7 +158,7 @@ class SubdivisionDialog extends Component {
 
     return (
       <Dialog fullWidth = {false}
-        open={this.props.showSubdivisionDialog}
+        open={this.props.open}
       >
         <DialogTitle>Create Subdivision</DialogTitle>
         <DialogContent className={classes.container}>
@@ -129,6 +168,7 @@ class SubdivisionDialog extends Component {
                 id='id'
                 label=''
                 value={this.setSubdivisionID()}
+                // value={this.state.id||'NA'}
                 // variant='filled'
                 InputProps={{
                   classes: {
@@ -171,7 +211,8 @@ class SubdivisionDialog extends Component {
 
         <DialogActions>
           <Button
-            onClick = {this.handleClose}
+            // onClick = {this.handleClose}
+            onClick = {() => {this.props.closeDialog('',subdivision_id, this.state.subdivision)}}
             variant = 'contained' color='secondary'
           >
             Close

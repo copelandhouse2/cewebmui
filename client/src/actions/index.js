@@ -64,6 +64,40 @@ function projectsLoaded(projects) {
   };
 }
 
+// Action to test for possible duplicates.  Right now 2 tests...
+// 1. address dup test
+// 2. Subdivision, phase, section, lot, block dup test
+export function searchForDups(test, project) {
+  return function (dispatch) {
+    const urlString = `:${test}`
+      + `/:${project.address1}`
+      + `/:${project.subdivision}`
+      + `/:${project.phase}`
+      + `/:${project.section}`
+      + `/:${project.block}`
+      + `/:${project.lot}`;
+    fetch(`/dups/${urlString}`)
+    .then( (response) => {
+      return response.json();
+    }).then((dups) => {
+      dispatch(dupsLoaded(dups));
+    });
+  };
+}
+
+export function clearDups() {
+  return function (dispatch) {
+    dispatch(dupsLoaded([]));
+  };
+}
+
+function dupsLoaded(dups) {
+  return {
+    type: "DUPS_LOADED",
+    value: dups
+  };
+}
+
 // Action to create the Address
 export function createAddress(c) {
   // console.log('Just in createAddress', c)

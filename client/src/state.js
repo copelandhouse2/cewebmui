@@ -1,5 +1,6 @@
 export default {
   addresses: [],
+  dups: [],
   clients: [],
   cities: [],
   subdivisions: [],

@@ -66,6 +66,38 @@ export const listPending = (request, response) => {
   });
 }
 
+export const listDups = async (request, response) => {
+
+  // ProjectModel.getDups(request.params, function (err, rows, fields) {
+  //   console.log('getDups', request.params);
+  //   console.log('getDups', rows);
+  //
+  //   if (!err) {
+  //     console.log('Data retrieved... Dups');
+  //     return response.json(rows);
+  //   }
+  //   else {
+  //     console.log('Projects: Error while performing Query.', err);
+  //     return response.json(err);
+  //   }
+  // });
+
+  try {
+    // console.log('in db update.  Params:', id, tCardID);
+    const dups = await ProjectModel.getDups(request.params);
+    console.log('listDups', request.params);
+    console.log('listDups', dups);
+    return response.json(dups);
+
+  } catch (err) {
+    // console.log('MySQL Update record Error: ', `${err.errno}:${err.code} - ${err.sqlMessage}`);
+    // errors.push(err);
+    // throw new Error(err);
+    return response.json(err);
+
+  }
+}
+
 // function to get details of one address
 export const show = (request, response) => {
 
@@ -197,7 +229,8 @@ export const commit = (request, response) => {
 
         // Defining the description for volume client cards.
         const gs = garage_swing? garage_swing === 'RIGHT'? 'R':'L' : '';
-        const ms = masonry === 'PLAN'? ', PLAN' : masonry === null? ', 0SM' : `, ${masonry}SM`
+        console.log('masonry', ':'||masonry||':');
+        const ms = masonry === 'PLAN'? ', PLAN' : masonry === null||masonry ===''? '' : `, ${masonry}SM`
         const gext = garage_extension? `X${garage_extension}` : '';
         const gdrop = garage_drop? `D${garage_drop}` : '';
         const gt = garage_type? `, ${garage_type}${gext}${gdrop}` : '';
@@ -257,6 +290,8 @@ export const commit = (request, response) => {
           desc: cardDesc,
           pos: 'bottom',
           due: dueDate ? dueDate.toString() : '',
+          closed: false,    // this will unarchive the card.
+          // idList: trello_list_id,
         };
 
         // Create or update the base Trello card.
@@ -656,6 +691,17 @@ export const commit = (request, response) => {
                   if (geo_report_num) {
                     value = {
                       value: {'text': geo_report_num}  // need to fix when null.  only update when value exists.
+                    };
+                    tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
+                    // console.log('url for custom field', tUrl);
+                    promises.push(TrelloModel.put(tUrl, value));
+                  }
+                  break;
+                case 'SCOPE':
+                  // console.log('Folder', box_folder);
+                  if (scope) {
+                    value = {
+                      value: {'text': scope}  // need to fix when null.  only update when value exists.
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
