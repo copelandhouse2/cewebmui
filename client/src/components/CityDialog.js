@@ -75,7 +75,7 @@ class CityDialog extends Component {
 
 
   handleSubmit = () => {
-    console.log('In the handleSubmit');
+    // console.log('In the handleSubmit');
 
     this.setState({
       created_by: this.props.session.id,
@@ -85,12 +85,12 @@ class CityDialog extends Component {
         this.props.createCity(this.state);
       }
     )
-    console.log('after the setState and createCity');
+    // console.log('after the setState and createCity');
 
   }
 
   handleClose = () => {
-    console.log('In the handleClose');
+    // console.log('In the handleClose');
 
     this.setState(this.initState);
     this.props.showHideCityDialog();
@@ -113,11 +113,12 @@ class CityDialog extends Component {
   };
 
   render() {
-    console.group('City Dialog Render');
-    console.log('state', this.state);
-    console.log('State Lookup', this.props.stateLookup);
-    console.log('Country Lookup', this.props.countryLookup);
-    console.groupEnd();
+    // console.group('City Dialog Render');
+    // console.log('state', this.state);
+    // console.log('State Lookup', this.props.stateLookup);
+    // console.log('Country Lookup', this.props.countryLookup);
+    // console.groupEnd();
+
     // console.log('Create Client props', this.props);
     // console.log('Create Client state', this.state);
     // this.setClientID();

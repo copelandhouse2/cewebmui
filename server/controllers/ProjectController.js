@@ -238,12 +238,12 @@ export const commit = (request, response) => {
                    covered_patio === 'Y'? ', CP' : '';
         const bw = bay_window === 'Y'? ', BW':'';
         const pi = geo_pi === null? '' : geo_pi;
-        const rev = revision? `\n\n**REV ${revision}:** ${revision_desc}` : '';
+        const rev = revision? `**REV ${revision}:** ${revision_desc}` : '';  //Removing the new line characters.  If custom, this is the first value.
         const soil = soil_notes? `\n\n**SOIL NOTES:** ${soil_notes}` : '';
         const opt = additional_options? `\n\n**ADDL OPTIONS:** ${additional_options}` : '';
         const com = comments? `\n\n**COMMENTS:** ${comments}` : '';
         const end = `\n\n*Do not erase line below.  Used by webtools.  All information above line is auto-generated.  Anything below line is for your use and will be protected from overwrite.*\n__________`;
-        const cardDesc = trello_list === 'CUSTOM QUEUE'? '': `**${plan_type} ${elevation}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**${rev}${soil}${opt}${com}${end}${enteredDesc}`;
+        const cardDesc = trello_list === 'CUSTOM QUEUE'? `${rev}${soil}${opt}${com}${end}${enteredDesc}`: `**${plan_type} ${elevation}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**\n\n${rev}${soil}${opt}${com}${end}${enteredDesc}`;
 
         // console.log('card name', cardName);
         // console.log('gs, cp, bw, ms, pi', gs, cp, bw, ms, pi);

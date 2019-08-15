@@ -71,7 +71,7 @@ class ClientDialog extends Component {
 
 
   handleSubmit = () => {
-    console.log('In the handleSubmit');
+    // console.log('In the handleSubmit');
 
     this.setState({
       created_by: this.props.session.id,
@@ -81,12 +81,12 @@ class ClientDialog extends Component {
         this.props.createClient(this.state);
       }
     )
-    console.log('after the setState and createClient');
+    // console.log('after the setState and createClient');
 
   }
 
   handleClose = () => {
-    console.log('In the handleClose');
+    // console.log('In the handleClose');
 
     this.setState(this.initState);
     this.props.showHideClientDialog();
@@ -114,7 +114,7 @@ class ClientDialog extends Component {
   };
 
   render() {
-    console.log('state', this.state);
+    // console.log('state', this.state);
     // console.log('Create Client props', this.props);
     // console.log('Create Client state', this.state);
     // this.setClientID();

@@ -70,23 +70,20 @@ class SubdivisionDialog extends Component {
   }
 
   componentWillMount = () => {
-    console.log(counter, 'props in CWM', this.props);
-
+    // console.log(counter, 'props in CWM', this.props);
   }
 
   componentWillUnmount = () => {
-    console.log(counter, 'component unmounting', this.props, this.state);
-
+    // console.log(counter, 'component unmounting', this.props, this.state);
   }
 
   componentDidMount = () => {
-    console.log(counter, 'props in CDM', this.props.newValue);
-
+    // console.log(counter, 'props in CDM', this.props.newValue);
   }
 
 
   handleSubmit = () => {
-    console.log('In the handleSubmit');
+    // console.log('In the handleSubmit');
 
     this.setState({
       created_by: this.props.session.id,
@@ -96,7 +93,7 @@ class SubdivisionDialog extends Component {
         this.props.createSubdivision(this.state);
       }
     )
-    console.log('after the setState and createSubdivision');
+    // console.log('after the setState and createSubdivision');
 
     // console.log('1st promise: setState');
     // await new Promise(resolve => this.setState({
@@ -120,7 +117,7 @@ class SubdivisionDialog extends Component {
   }
 
   handleClose = () => {
-    console.log('In the handleClose');
+    // console.log('In the handleClose');
 
     this.setState(this.initState);
     this.props.showHideSubdivisionDialog();
@@ -146,10 +143,10 @@ class SubdivisionDialog extends Component {
   render() {
     counter = counter + 1;
     if (counter === 1) {saveProp = this.props.newValue};
-    console.log(counter, 'props', this.props, saveProp);
+    // console.log(counter, 'props', this.props, saveProp);
 
     // console.group('Subdivision Dialog Render');
-    console.log(counter, 'state', this.state, saveProp);
+    // console.log(counter, 'state', this.state, saveProp);
     // console.groupEnd();
     // console.log('Create Client props', this.props);
     // console.log('Create Client state', this.state);

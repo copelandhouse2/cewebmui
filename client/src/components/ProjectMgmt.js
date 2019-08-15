@@ -814,11 +814,9 @@ class ProjectMgmt extends Component {
   };
 
   subdivisionDialog = (newValue = '', sub_id = this.state.subdivision_id, sub = this.state.subdivision) => {
-    console.log('create Subdivision', newValue, sub_id, sub);
-
+    // console.log('create Subdivision', newValue, sub_id, sub);
     this.setState({ dialogValue: newValue, subdivision_id: sub_id, subdivision: sub, showSubDialog: !this.state.showSubDialog });
     // this.props.showHideSubdivisionDialog();
-
   };
 
   searchForExisting = (test) => {

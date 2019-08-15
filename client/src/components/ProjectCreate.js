@@ -178,6 +178,7 @@ class ProjectCreate extends Component {
       last_updated_by: this.props.session.id,
       status: '',
       dialogValue: '',
+      showSubDialog: false,
       due_date: null,  // actual due date of the project.
       onboard_date: this.todayStr,
       start_date: this.todayStr,
@@ -205,6 +206,8 @@ class ProjectCreate extends Component {
         status: '',
       },
       dupsDialogActivate: false,
+      saveValue: '',
+
     };
 
     this.fields = [
@@ -260,18 +263,31 @@ class ProjectCreate extends Component {
 
   handleChange = name => event => {
 
+    // console.log('handleChange:', name);
     // name === 'scope'? console.log('field name: ', name, event.target.type, 'value: ', event.target.value, 'checked: ',event.target.checked): ''
     event.target.type === 'checkbox'? this.setState({ [name]: event.target.checked, }) :
     event.target.type === 'number' && event.target.value === ''? this.setState({ [name]: null, }) :
     event.target.type === 'date' && event.target.value === ''? this.setState({ [name]: null, }) :
     name === 'geo_pi'? this.setState({ [name]: event.target.value.toUpperCase(), }) :
+    // name === 'block'?
+    //   this.setState({ [name]: event.target.value, }, () => {
+    //     if (this.state.subdivision && this.state.lot && this.state.block) {
+    //       this.searchForExisting('LOT')
+    //     }}
+    //   ) :
     this.setState({ [name]: event.target.value, });
   };
 
   handleListChange = (selected, field) => {
-    // console.log('in handleListChange', selected, field);
+    // console.log('in handleListChange:', field.name, selected);
 
     switch (field.name) {
+      case 'subdivision':
+        this.setState({ [field.name]: selected.code }, () => {
+          if (this.state.subdivision && this.state.lot && this.state.block) {
+            this.searchForExisting('LOT')
+          }}
+        );  // fill in value.
       case 'scope':
         selected.code === 'FDN'?
             this.setState({ [field.name]: selected.code, foundation_type: 'POST TENSION' }) :  // fill in value.
@@ -295,18 +311,8 @@ class ProjectCreate extends Component {
   tabKeyChange = (field) => {
     // using this key trap as an indication that the field has been filled in.
     // using this key trap as an indication that the field has been filled in.
-    // console.log('tabKeyChange: job number', field.job_number);
-    if (!this.state.job_number && field.name === 'address1' && this.state.address1) {
-      this.searchForExisting('ADDRESS');
-    }
 
-    if (
-        (!this.state.job_number)
-        && (field.name === 'subdivision' || field.name === 'lot' || field.name === 'block')
-        && this.state.subdivision && this.state.lot && this.state.block
-    ) {
-      this.searchForExisting('LOT');
-    };
+    // console.log('tabKeyChange ** No Action **:', field.name);
 
     if (field.name === 'geo_lab' || field.name === 'geo_pi') {
       if (this.state.geo_lab === 'MLALABS' && this.state.geo_pi) {
@@ -382,6 +388,7 @@ class ProjectCreate extends Component {
         last_updated_by: this.props.session.id,
         status: '',
         dialogValue: '',
+        showSubDialog: false,
         due_date: null,  // actual due date of the project.
         foundation_type: 'POST TENSION',
         // Trello and Box
@@ -405,6 +412,7 @@ class ProjectCreate extends Component {
           status: '',
         },
         dupsDialogActivate: false,
+        saveValue: '',
       } );
     }
 
@@ -462,6 +470,12 @@ class ProjectCreate extends Component {
     this.props.showHideSubdivisionDialog();
   };
 
+  subdivisionDialog = (newValue = '', sub_id = this.state.subdivision_id, sub = this.state.subdivision) => {
+    // console.log('create Subdivision', newValue, sub_id, sub);
+    this.setState({ dialogValue: newValue, subdivision_id: sub_id, subdivision: sub, showSubDialog: !this.state.showSubDialog });
+    // this.props.showHideSubdivisionDialog();
+  };
+
   searchForExisting = (test) => {
     // console.log('searchForExisting', test);
     this.props.searchForDups(test, this.state);
@@ -470,6 +484,34 @@ class ProjectCreate extends Component {
 
   dupsDialogClose = () => {
     this.setState({ dupsDialogActivate: false });
+  }
+
+  // saving value before changing it.
+  handleFocus = (name) => {
+    // console.log('handleFocus:', name, this.state[name]);
+    this.setState({ saveValue: this.state[name] });
+  }
+
+  // testing for on change.  But this test for change once you leave field and not firing after each keystroke.
+  handleBlur = (name) => {
+    // console.log('handleBlur:', name, this.state.saveValue, this.state[name]);
+    switch (name) {
+      case 'address1':
+        if (this.state[name] !== this.state.saveValue && this.state.address1) {
+          this.searchForExisting('ADDRESS');
+        }
+        break;
+      case 'subdivision':
+      case 'block':
+      case 'lot':
+        if (this.state[name] !== this.state.saveValue
+            && (this.state.subdivision && this.state.lot && this.state.block)
+        ) {
+          this.searchForExisting('LOT');
+        }
+        break;
+    };
+
   }
 
   getVolFieldEntry = (theState) => {
@@ -581,13 +623,14 @@ class ProjectCreate extends Component {
                       this.setState( {
                         subdivision_id: selected?selected.value:null,
                         subdivision: selected?selected.name:''
-                      } )
+                      });
                     }
                   }
-                  onKeyDown={
-                    (e) => {
-                      if (e.keyCode === 9 || e.keyCode === 13) { this.tabKeyChange(field); }
-                    }
+                  onFocus={
+                    (e) => {this.handleFocus(field.name);}
+                  }
+                  onBlur={
+                    (e) => {this.handleBlur(field.name);}
                   }
                   options={
                     this.props.subdivisions.map(sub => {
@@ -599,7 +642,8 @@ class ProjectCreate extends Component {
                       }
                     })
                   }
-                  onCreateOption={this.createSubdivision}
+                  // onCreateOption={this.createSubdivision}
+                  onCreateOption={this.subdivisionDialog}
                   value={ {value: this.state.subdivision_id? this.state.subdivision_id.toString() : ''
                     , label: this.state.subdivision
                     , name: this.state.subdivision} }
@@ -716,13 +760,6 @@ class ProjectCreate extends Component {
                     // value={ {code: eval(`theState.${field.name}`)||'', name: curName} }
                     onChange={
                       (selected) => {
-                        // selected?  // if selected
-                        //   field.id?  // then if field has an id
-                        //     this.setState({ [field.id]: selected.code, [field.name]: selected.name }) :  // fill in id and value.
-                        //     this.setState({ [field.name]: selected.code }) :  // fill in value.
-                        //   field.id?  // else (selected is null)... now if field has an id...
-                        //     this.setState({ [field.id]: null, [field.name]: null }) :  // clear out
-                        //     this.setState({ [field.name]: null });  // clear out
                         this.handleListChange(selected, field);
                       }
                     }
@@ -747,19 +784,18 @@ class ProjectCreate extends Component {
                   // helperText={field.label}
                   // placeholder={field.label}
                   onChange={this.handleChange(field.name)}
-                  // onKeyDown={
-                  //   (e) => {
-                  //     if (field.name === 'geo_pi' &&
-                  //        (e.keyCode == 9 || e.keyCode == 13)
-                  //     ) { this.tabKeyChange(field); }
-                  //   }
-                  // }
                   onKeyDown={
                     (e) => {
                       if (e.keyCode === 9 || e.keyCode === 13) {
                         this.tabKeyChange(field);
                       }
                     }
+                  }
+                  onFocus={
+                    (e) => {this.handleFocus(field.name);}
+                  }
+                  onBlur={
+                    (e) => {this.handleBlur(field.name);}
                   }
                   type={field.type}
                   // root = {{fontSize: '8px'}}
@@ -870,7 +906,12 @@ class ProjectCreate extends Component {
       </Drawer>
       {this.props.showClientDialog && <ClientDialogContainer newValue = {this.state.dialogValue} />}
       {this.props.showCityDialog && <CityDialogContainer newValue = {this.state.dialogValue} />}
-      {this.props.showSubdivisionDialog && <SubdivisionDialogContainer newValue = {this.state.dialogValue} />}
+      {/*this.props.showSubdivisionDialog && <SubdivisionDialogContainer newValue = {this.state.dialogValue} />*/}
+      {this.state.showSubDialog && <SubdivisionDialogContainer
+        newValue = {this.state.dialogValue}
+        open = {this.state.showSubDialog}
+        closeDialog = {this.subdivisionDialog}
+      />}
       {this.props.dups.length > 0  &&
       this.state.dupsDialogActivate &&
       <DupsDialogContainer
