@@ -288,7 +288,7 @@ class App extends Component {
           // main: lightBlue[100],
           // main: '#f44336',
           // main: teal[600],
-          main: '#8c6c5f',
+          main: blue[400],
           // main: teal[400],
           // contrastText: '#000'
 
