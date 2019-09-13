@@ -50,13 +50,13 @@ class Header extends React.Component {
     return (
       <AppBar className={classes.AppBar} >
         <Toolbar>
-          <IconButton
+          {/*<IconButton
             color="inherit"
             aria-label="Open drawer"
             onClick={this.props.toggleDrawer}
           >
             {this.props.navOpen? <CloseIcon /> : <MenuIcon />}
-          </IconButton>
+          </IconButton>*/}
           <Typography
             variant="h5"
             color="inherit"
@@ -93,7 +93,7 @@ class Header extends React.Component {
             open={open}
             onClose={this.handleClose}
           >
-            <MenuItem>Profile</MenuItem>
+            <MenuItem>Settings</MenuItem>
             <MenuItem onClick={this.props.signOut}>Log Out</MenuItem>
           </Menu>
         </Toolbar>
