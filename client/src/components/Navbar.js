@@ -22,14 +22,15 @@ import { Link } from "react-router-dom"
 // justify="center"
 const styles = theme => ({
   Paper: {
-    padding: 5,
+    // padding: 5,
     [theme.breakpoints.up("md")]: {
       // height: "84vh",
-      minHeight: '84vh',
-
+      // minHeight: '84vh',
     },
   },
-  icon: { fontSize:"1.2em" },
+  icon: { fontSize:"1.2em",
+    // color:theme.palette.secondary.dark
+  },
   navbarGrid: {
     // [theme.breakpoints.up("xs")]: {
     //   direction: "row",
@@ -56,7 +57,7 @@ function Navbar(props) {
             <Tooltip title="Welcome" placement="left">
               <div>
               <Link to={`/`}>
-                <IconButton color="secondary" className={classes.icon}>
+                <IconButton color='secondary'>
                   {/* <Dashboard /> */}
                   <Apps className={classes.icon}/>
                 </IconButton>
@@ -86,7 +87,7 @@ function Navbar(props) {
             <Tooltip title="Dashboard" placement="left">
               <div>
               <Link to={`/dashboard`}>
-                <IconButton color="secondary" className={classes.icon}>
+                <IconButton color='secondary' className={classes.icon}>
                   {/* <Dashboard /> */}
                   <i className="fas fa-tachometer-alt" />
                 </IconButton>
@@ -98,7 +99,7 @@ function Navbar(props) {
           <Grid item>
             <Tooltip title="Starts Entry" placement="left">
               <Link to={`/projectmgmt`}>
-                <IconButton color="secondary">
+                <IconButton color='secondary'>
                   <Home className={classes.icon}/>
                 {/* <i className="fas fa-home"></i> */}
                 </IconButton>
@@ -109,7 +110,7 @@ function Navbar(props) {
           <Grid item>
             <Tooltip title="Investigation" placement="left">
               <div>
-              <IconButton color="secondary" className={classes.icon} disabled>
+              <IconButton disabled>
                 <i className="fas fa-house-damage classes.icon"></i>
               </IconButton>
               </div>
@@ -119,9 +120,9 @@ function Navbar(props) {
           <Grid item>
             <Tooltip title="Clients" placement="left">
               <div>
-              <IconButton color="secondary" disabled>
+              <IconButton disabled>
                 {/* <SupervisorAccount /> */}
-                <BusinessCenter className={classes.icon}/>
+                <BusinessCenter className={classes.icon} />
                 {/* <i className="fas fa-user-tie"></i> */}
               </IconButton>
               </div>

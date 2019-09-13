@@ -1,5 +1,7 @@
 export default {
   addresses: [],
+  // projectSearchResults: [],
+  // currentProject: {},
   dups: [],
   clients: [],
   cities: [],

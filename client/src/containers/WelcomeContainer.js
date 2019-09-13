@@ -1,5 +1,5 @@
 import { connect } from "react-redux";
-import Welcome from "../components/Welcome";
+import Welcome from "../components/Welcome2";
 import {  } from "../actions";
 
 function mapStateToProps(state) {

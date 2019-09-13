@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { withStyles } from "@material-ui/core/styles";
+import { withWidth } from "@material-ui/core";
 import {
   AppBar,
   Toolbar,
@@ -15,7 +16,8 @@ import CloseIcon from '@material-ui/icons/Close';
 
 const styles = theme => ({
   root: {},
-  AppBar: {marginBottom: 10, zIndex: theme.zIndex.drawer+1,},
+  // AppBar: {marginBottom: 10, zIndex: theme.zIndex.drawer+1,},
+  AppBar: {height: 60},
   grow: {flexGrow: 1,},
   icon: { fontSize:"1.5em" },
 });
@@ -41,15 +43,15 @@ class Header extends React.Component {
 
   render() {
 
-    const { classes } = this.props;
+    const { classes, width } = this.props;
     const { anchorEl } = this.state;
     const open = Boolean(anchorEl);
 
     return (
-      <AppBar position='fixed' className={classes.AppBar} >
+      <AppBar className={classes.AppBar} >
         <Toolbar>
           <IconButton
-            color="secondary"
+            color="inherit"
             aria-label="Open drawer"
             onClick={this.props.toggleDrawer}
           >
@@ -57,14 +59,14 @@ class Header extends React.Component {
           </IconButton>
           <Typography
             variant="h5"
-            color="secondary"
+            color="inherit"
             className={classes.grow}
           >
-            Copeland Engineering Webtools
+            {width === "sm"||width === "xs" ? "CE Tools" : "Copeland Engineering Webtools"}
           </Typography>
           <Typography
             variant="body2"
-            color="secondary"
+            color="inherit"
           >
             Welcome {this.props.session.first_name}
           </Typography>
@@ -72,7 +74,7 @@ class Header extends React.Component {
             aria-owns={open ? 'menu-navbar' : undefined}
             aria-haspopup="true"
             onClick={this.handleMenu}
-            color="secondary"
+            color="inherit"
           >
 
             <AccountCircle className={classes.icon}/>
@@ -104,4 +106,4 @@ Header.propTypes = {
   classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(Header);
+export default withWidth()(withStyles(styles)(Header));

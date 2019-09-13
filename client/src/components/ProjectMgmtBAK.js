@@ -31,6 +31,8 @@ import Delete from '@material-ui/icons/Delete';
 import Edit from '@material-ui/icons/Edit';
 import Save from '@material-ui/icons/Save';
 import Cancel from '@material-ui/icons/Cancel';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import Lock from '@material-ui/icons/Lock';
 import LockOpen from '@material-ui/icons/LockOpen';
 
@@ -46,7 +48,12 @@ import AlertDialogContainer from '../containers/AlertDialogContainer';
 import ProjectCreateContainer from '../containers/ProjectCreateContainer';
 import DupsDialogContainer from '../containers/DupsDialogContainer';
 
-// import classNames from 'classnames';
+import classNames from 'classnames';
+import Drawer from '@material-ui/core/Drawer';
+
+// import ProjectSearchContainer from '../containers/ProjectSearchContainer'
+// import { TRELLO_PARAMS } from '../envVars'
+const drawerWidth = '33.3%';
 
 const styles = theme => ({
   // container: { marginBottom: 70, },
@@ -80,11 +87,25 @@ const styles = theme => ({
     }),
     // paddingRight: 100,
   },
-
+  contentShift: {
+    transition: theme.transitions.create('margin', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    paddingRight: `calc(${drawerWidth} )`,
+  },
 });
 
 // object property to handle the react-select control.  Had to pull it outside MUI styles function.
 // Wasn't working when embedded there.
+const createSelectAutoFillProps = {
+  option: (provided) => ({ ...provided, fontSize: 12, }),
+  input: (provided) => ({ ...provided, color: 'white' }),
+  singleValue: (provided) => ({ ...provided, color: 'white', }),
+  placeholder: (provided) => ({ ...provided, color: 'white' }),
+  control: (provided) => ({ ...provided, minHeight: 10, height: 35, color: 'white', backgroundColor: '#484848', fontSize: 12, marginBottom: 10 }),
+};
+
 const createSelectProps = {
   option: (provided) => ({ ...provided, fontSize: 12, }),
   input: (provided) => ({ ...provided, color: 'black', }),
@@ -196,7 +217,7 @@ class ProjectMgmt extends Component {
       trello_card_id: '',
       createTrelloCard: false,
       rememberData: false,
-      toggleQuickEntry: true,
+      toggleQuickEntry: false,
       search: {
         pendingOnly: true,
         jobNumber: '',
@@ -1070,7 +1091,7 @@ class ProjectMgmt extends Component {
           else
             return (
               <TableCell key={id} padding='none' classes={{root: classes.tableCellEntryProps}}>
-                <CreatableSelect styles={createSelectProps}
+                <CreatableSelect styles={createSelectProps} //styles={createSelectAutoFillProps}
                   isClearable
                   isSearchable
                   // getOptionLabel={({name}) => name}
@@ -1111,7 +1132,7 @@ class ProjectMgmt extends Component {
           else
             return (
               <TableCell key={id} padding='none' classes={{root: classes.tableCellEntryProps}}>
-                <Select styles={createSelectProps}
+                <Select styles={createSelectProps} //styles={createSelectAutoFillProps}
                   id='requestor'
                   isClearable
                   isSearchable
@@ -1142,7 +1163,7 @@ class ProjectMgmt extends Component {
           else
             return (
               <TableCell key={id} padding='none' classes={{root: classes.tableCellEntryProps}}>
-                <CreatableSelect styles={createSelectProps}
+                <CreatableSelect styles={createSelectProps} //styles={createSelectAutoFillProps}
                   isClearable
                   placeholder=''
                   onChange={
@@ -1185,7 +1206,7 @@ class ProjectMgmt extends Component {
           else
             return (
               <TableCell key={id} padding='none' classes={{root: classes.tableCellEntryProps}}>
-                <CreatableSelect styles={createSelectProps}
+                <CreatableSelect styles={createSelectProps} //styles={createSelectAutoFillProps}
                   isClearable
                   placeholder=''
                   onChange={
@@ -1233,7 +1254,7 @@ class ProjectMgmt extends Component {
 
             return (
               <TableCell key={id} padding='none' classes={{root: classes.tableCellEntryProps}}>
-                <CreatableSelect styles={createSelectProps}
+                <CreatableSelect styles={createSelectProps} //styles={createSelectAutoFillProps}
                   isClearable
                   placeholder=''
                   onChange={
@@ -1540,21 +1561,23 @@ class ProjectMgmt extends Component {
 
     return (
       <div>
-      {!this.state.toggleQuickEntry &&
+      <main
+        className={classNames(classes.content, {
+          [classes.contentShift]: this.state.toggleQuickEntry,
+        })}
+      >
+
       <Paper className={classes.bodyPaper}>
         <Grid container justify='space-between'>
           <Grid item >
             <Typography variant='h5'>Project Management</Typography>
           </Grid>
           <Grid item >
-            <Button
-              aria-label='Switch Mode'
-              variant="contained"
-              color="secondary"
-              onClick={ this.handleQuickEntry }
+            <Fab variant='extended' color='secondary' aria-label='Add' onClick={ this.handleQuickEntry }
             >
-              Easy Mode
-            </Button>
+              { this.state.toggleQuickEntry? <ChevronRightIcon /> : <ChevronLeftIcon /> }
+              <Typography color='default'>Quick Entry</Typography>
+            </Fab>
           </Grid>
         </Grid>
 
@@ -1773,14 +1796,14 @@ class ProjectMgmt extends Component {
                 </Paper>
               </Grid>
               <Grid item  xs={12}>
-                <AppBar position='static' >
+                <AppBar position='static' color='secondary'>
                   <Grid container justify='space-around'>
                     <Grid item xs={12}>
                       <Tabs
                         value = {this.state.currentTab}
                         onChange={this.handleMuiTabChange}
-                        // indicatorColor='primary'
-                        // textColor='primary'
+                        indicatorColor='primary'
+                        textColor='primary'
                         variant='fullWidth'
                       >
                           <Tab value='main' label='Main Info'
@@ -1856,10 +1879,6 @@ class ProjectMgmt extends Component {
               </Grid>
             </Grid>
       </Paper>
-    }
-    { this.state.toggleQuickEntry &&
-      <ProjectCreateContainer toggleQuickEntry = {this.state.toggleQuickEntry} handleQuickEntry = {this.handleQuickEntry}/>
-    }
       {this.props.showClientDialog && <ClientDialogContainer
         newValue = {this.state.dialogValue}
       />}
@@ -1884,7 +1903,9 @@ class ProjectMgmt extends Component {
         selectAllowed = {true}
       />}
       <AlertDialogContainer />
+      </main>
 
+      <ProjectCreateContainer toggleQuickEntry = {this.state.toggleQuickEntry} handleQuickEntry = {this.handleQuickEntry}/>
       </div>
     );
   }
@@ -1896,3 +1917,282 @@ ProjectMgmt.propTypes = {
 };
 
 export default withStyles(styles)(ProjectMgmt);
+
+// <Drawer
+//   variant='persistent'
+//   anchor='right'
+//   open={this.state.toggleQuickEntry}
+//   className={ {width: 500, flexShrink: 0} }
+//   classes={{
+//     paper: {width: 500}
+//   }}
+// >
+//   <Grid container className={{width: 500}}>
+//     <Grid item className={{width: 500}}>
+//       <br />
+//       <br />
+//       <br />
+//       <br />
+//       <Typography variant="h6" color="inherit" noWrap>
+//         I am a drawer!
+//       </Typography>
+//       <IconButton onClick={this.handleQuickEntry}>
+//         <ChevronRightIcon />
+//       </IconButton>
+//     </Grid>
+//   </Grid>
+// </Drawer>
+
+// <ExpansionPanel>
+// <ExpansionPanelSummary expandIcon={<ExpandMore />} classes={{root: classes.panelSummaryProps, expandIcon: classes.panelSummaryProps}}>
+//   Project Search - NOT READY
+// </ExpansionPanelSummary>
+// <ExpansionPanelDetails>
+// <Paper className={classes.Paper}>
+//   <form>
+//   <Grid container spacing={24}>
+//     <Grid item xs={12} md={3}>
+//       <CreatableSelect
+//         isClearable
+//         // isSearchable
+//         // getOptionLabel={({name}) => name}
+//         // getOptionValue={({id}) => id}
+//         placeholder='Client...'
+//         onChange={
+//           (selected) => {
+//             this.setState( {
+//               client_id: selected?selected.value:null,
+//               client: selected?selected.name:null
+//             } )
+//           }
+//         }
+//         // onInputChange={this.handleInputChange}
+//         options={
+//           this.props.clients.map(client => {
+//             return {
+//               value: client.id.toString(),
+//               label: `(${client.id}) ${client.name}`,
+//               name: client.name
+//             }
+//           })
+//         }
+//         onCreateOption={this.createClient}
+//       />
+//     </Grid>
+//     <Grid item xs={12} md={2}>
+//       <Select
+//         id='requestor'
+//         isClearable
+//         isSearchable
+//         options={this.props.contacts}
+//         getOptionLabel={({full_name}) => full_name}
+//         getOptionValue={({id}) => id}
+//         placeholder='Requestor...'
+//         onChange={
+//           (selected) => {
+//             this.setState( {
+//               requestor_id: selected?selected.id:null,
+//               requestor: selected?selected.full_name:null
+//             } )
+//           }
+//         }
+//       />
+//     </Grid>
+//     <Grid item xs={12} md={3}>
+//       <CreatableSelect
+//         isClearable
+//         placeholder='Subdivision...'
+//         onChange={
+//           (selected) => {
+//             this.setState( {
+//               subdivision_id: selected?selected.value:null,
+//               subdivision: selected?selected.name:null
+//             } )
+//           }
+//         }
+//         options={
+//           this.props.subdivisions.map(sub => {
+//             return {
+//               value: sub.id.toString(),
+//               label: `(${sub.id}) ${sub.subdivision}`,
+//               name: sub.subdivision
+//
+//             }
+//           })
+//         }
+//         onCreateOption={this.createSubdivision}
+//       />
+//     </Grid>
+//     <Grid item xs={12} md={2}>
+//       <CreatableSelect
+//         isClearable
+//         placeholder='City...'
+//         onChange={
+//           (selected) => {
+//             this.setState( {
+//               city_id: selected?selected.value:null,
+//               city: selected?selected.label:null
+//             } )
+//           }
+//         }
+//         options={
+//           this.props.cities.map(city => {
+//             return {
+//               value: city.id.toString(),
+//               label: city.city
+//             }
+//           })
+//         }
+//         onCreateOption={this.createCity}
+//       />
+//     </Grid>
+//     <Grid item xs={12} md={2}>
+//       <Select
+//         id='trelloList'
+//         isClearable
+//         isSearchable
+//         options={this.props.trelloListLookup}
+//         getOptionLabel={({name}) => name}
+//         getOptionValue={({code}) => code}
+//         placeholder='Trello List...'
+//         onChange={
+//           (selected) => {
+//             this.setState( {
+//               trello_list_id: selected?selected.code:null,
+//               trello_list: selected?selected.name:null
+//             } )
+//           }
+//         }
+//       />
+//     </Grid>
+//   </Grid>
+//
+//   </form>
+// </Paper>
+// </ExpansionPanelDetails>
+// </ExpansionPanel>
+
+
+// <ExpansionPanel defaultExpanded={true} style={{marginTop: 10}}>
+//   <ExpansionPanelSummary expandIcon={<ExpandMore />} classes={{root: classes.panelSummaryProps, expandIcon: classes.panelSummaryProps}}>
+//     Project Entry
+//   </ExpansionPanelSummary>
+//   <ExpansionPanelDetails>
+//   </ExpansionPanelDetails>
+// </ExpansionPanel>
+
+// Old Auto-fill code
+// <Grid item xs={12}><Typography variant='button' align='center'>Auto-fill fields</Typography></Grid>
+// <Grid item xs={12} md={2}>
+//   <CreatableSelect styles={createSelectAutoFillProps}
+//     isClearable
+//     // isSearchable
+//     // getOptionLabel={({name}) => name}
+//     // getOptionValue={({id}) => id}
+//     placeholder='Client...'
+//     onChange={
+//       (selected) => {
+//         this.setState( {
+//           client_id: selected?selected.value:null,
+//           client: selected?selected.name:null
+//         } )
+//       }
+//     }
+//     // onInputChange={this.handleInputChange}
+//     options={
+//       this.props.clients.map(client => {
+//         return {
+//           value: client.id.toString(),
+//           label: `(${client.id}) ${client.name}`,
+//           name: client.name
+//         }
+//       })
+//     }
+//     onCreateOption={this.createClient}
+//   />
+// </Grid>
+// <Grid item xs={12} md={2}>
+//   <Select styles={createSelectAutoFillProps}
+//     id='requestor'
+//     isClearable
+//     isSearchable
+//     options={this.props.contacts}
+//     getOptionLabel={({full_name}) => full_name}
+//     getOptionValue={({id}) => id}
+//     placeholder='Requestor...'
+//     onChange={
+//       (selected) => {
+//         this.setState( {
+//           requestor_id: selected?selected.id:null,
+//           requestor: selected?selected.full_name:null
+//         } )
+//       }
+//     }
+//   />
+// </Grid>
+// <Grid item xs={12} md={2}>
+//   <CreatableSelect styles={createSelectAutoFillProps}
+//     isClearable
+//     placeholder='Subdivision...'
+//     onChange={
+//       (selected) => {
+//         this.setState( {
+//           subdivision_id: selected?selected.value:null,
+//           subdivision: selected?selected.name:null
+//         } )
+//       }
+//     }
+//     options={
+//       this.props.subdivisions.map(sub => {
+//         return {
+//           value: sub.id.toString(),
+//           label: `(${sub.id}) ${sub.subdivision}`,
+//           name: sub.subdivision
+//
+//         }
+//       })
+//     }
+//     onCreateOption={this.createSubdivision}
+//   />
+// </Grid>
+// <Grid item xs={12} md={2}>
+//   <CreatableSelect styles={createSelectAutoFillProps}
+//     isClearable
+//     placeholder='City...'
+//     onChange={
+//       (selected) => {
+//         this.setState( {
+//           city_id: selected?selected.value:null,
+//           city: selected?selected.label:null
+//         } )
+//       }
+//     }
+//     options={
+//       this.props.cities.map(city => {
+//         return {
+//           value: city.id.toString(),
+//           label: city.city
+//         }
+//       })
+//     }
+//     onCreateOption={this.createCity}
+//   />
+// </Grid>
+// <Grid item xs={12} md={2}>
+//   <Select styles={createSelectAutoFillProps}
+//     id='trelloList'
+//     isSearchable
+//     options={this.props.trelloListLookup}
+//     getOptionLabel={({name}) => name}
+//     getOptionValue={({code}) => code}
+//     placeholder='Trello List...'
+//     onChange={
+//       (selected) => {
+//         this.setState( {
+//           trello_list_id: selected?selected.code:null,
+//           trello_list: selected?selected.name:null
+//         } )
+//       }
+//     }
+//   />
+// </Grid>

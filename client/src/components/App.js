@@ -1,12 +1,14 @@
-import React, { Component } from "react";
-import "../css/App.css";
-import { BrowserRouter, Route, Switch, Redirect } from "react-router-dom";
+import React, { Component, Fragment } from "react";
+// import "../css/App.css";
+import { BrowserRouter, Route, Switch } from "react-router-dom";
+// import { BrowserRouter, Route, Switch, Redirect } from "react-router-dom";
 import Navbar from "./Navbar";
 import ProjectMgmtContainer from "../containers/ProjectMgmtContainer";
 import SignUpSignInContainer from "../containers/SignUpSignInContainer";
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { withStyles } from '@material-ui/core/styles';
+// import { styled } from '@material-ui/styles';
 import HeaderContainer from "../containers/HeaderContainer";
 import Footer from "./Footer";
 // import Body from "./Body";
@@ -18,6 +20,7 @@ import AlertDialogContainer from "../containers/AlertDialogContainer";
 // import Main from "./Main";
 import Drawer from '@material-ui/core/Drawer';
 import WelcomeContainer from "../containers/WelcomeContainer";
+import UnderConstruction from "../components/UnderConstruction";
 
 import red from '@material-ui/core/colors/red';
 import pink from '@material-ui/core/colors/pink';
@@ -35,28 +38,37 @@ import yellow from '@material-ui/core/colors/yellow';
 import amber from '@material-ui/core/colors/amber';
 import orange from '@material-ui/core/colors/orange';
 import grey from '@material-ui/core/colors/grey';
+import blueGrey from '@material-ui/core/colors/blueGrey';
+import brown from '@material-ui/core/colors/brown';
+import deepOrange from '@material-ui/core/colors/deepOrange';
 
 
 const styles = theme => ({
-  canvas: {
-    // backgroundColor: "#303030",
-  },
   root: {
     // width:"75%",
     margin: "auto",
+    height: '100%',
+    paddingTop: 60
+    // flexGrow: 1
   },
   appBody: {
-    width: "95%",
-    margin: "auto"
+    // width: "80%",
+    margin: "auto",
+    minHeight: "100%",
+    paddingTop: 60,  // ensures the app is crowned by header
+    paddingBottom: 100,  // ensures the app doesn't go behind footer.
+    // zIndex: theme.zIndex.drawer+1,
+    // overflow: 'auto',
   },
   appBodyWide: {
     width: '100%',
     margin: "auto"
   },
   appHeight: {
-    height: "100%"
+    minHeight: "100%",
+    // height: "100%"
   },
-  Paper: { padding: 20, marginTop: 10, marginBottom: 10 },
+  // Paper: { padding: 20, marginTop: 10, marginBottom: 10 },
   navWidth: {
     [theme.breakpoints.up("xs")]: {
       width: "100%",
@@ -66,6 +78,29 @@ const styles = theme => ({
     }
   },
   toolbar2: theme.mixins.toolbar,
+  navBar: {
+    marginTop: 60,  // used to avoid toolbar going behind header.
+  },
+  tParent: {
+    minHeight: '100%'
+  },
+  tChild: {
+    backgroundColor: pink[200],
+    overflow: 'auto',
+    paddingBottom: 60,
+    // height: 1500
+  },
+  tFooter: {
+    backgroundColor: grey[800],
+    height: 60,
+    position: 'relative',
+    marginTop: -60,
+    clear: 'both'
+  },
+  tReset: {
+    // minHeight: '100%'
+  }
+
 });
 
 class App extends Component {
@@ -137,42 +172,40 @@ class App extends Component {
   renderApp(classes) {
     return (
       <BrowserRouter>
-        <div className={classes.root}>
-          <HeaderContainer toggleDrawer = {this.toggleDrawer} navOpen = {this.state.open}/>
-          <Grid container className={classes.appBody}>
-            <Drawer
-              open={this.state.open}
-              variant='persistent'
-              // anchor='left'
-            >
-              <div className={classes.toolbar2} />
-              <Navbar />
-            </Drawer>
-            <Grid item xs={12}>
-              <div className={classes.toolbar2} />
-              <Switch>
-                <Route path="/projectmgmt" component={ProjectMgmtContainer} />
-                <Route path="/dashboard" render={() =>
-                  <Grid container justify='center' alignItems='center'>
-                    <Grid item>
-                      <h1>The Dashboard</h1>
-                    </Grid>
+        <Fragment>
+        <HeaderContainer toggleDrawer = {this.toggleDrawer} navOpen = {this.state.open}/>
+        <Grid container className={classes.appBody}>
+          <Drawer
+            open={this.state.open}
+            variant='persistent'
+            classes={{
+              paper: classes.navBar,
+            }}
+            // anchor='left'
+          >
+            <Navbar />
+          </Drawer>
+          <Grid item xs={12} >
+            <Switch>
+              <Route path="/projectmgmt" component={ProjectMgmtContainer} />
+              <Route path="/underconstruction" component={UnderConstruction} />
+              <Route path="/dashboard" render={() =>
+                <Grid container justify='center' alignItems='center'>
+                  <Grid item>
+                    <h1>The Dashboard</h1>
                   </Grid>
-                } />
-                <Route path="/" render={() =>
-                  <Grid container justify='center' alignItems='center'>
-                    <Grid item>
-                      <h1>Welcome Screen</h1>
-                    </Grid>
-                  </Grid>
-                } />
-                // <Route path="/" component={WelcomeContainer} />
-                <Route render={() => <h1>NOT FOUND!</h1>} />
-              </Switch>
-            </Grid>
+                </Grid>
+              } />
+
+              <Route path="/" render={() =>
+                <WelcomeContainer toggleWelcomeScreen={this.toggleWelcomeScreen} /> }
+              />
+              <Route render={() => <h1>NOT FOUND!</h1>} />
+            </Switch>
           </Grid>
-          <Footer />
-        </div>
+        </Grid>
+        <Footer />
+        </Fragment>
       </BrowserRouter>
     );
   }
@@ -216,20 +249,59 @@ class App extends Component {
   //   );
   // }
 
+  // testFooter(classes) {
+  //   return (
+  //     <Fragment>
+  //     <div className={classes.tParent}>
+  //       <div className={classes.tChild}>
+  //         <p>This is some content</p>
+  //       </div>
+  //     </div>
+  //     <footer className={classes.tFooter}>
+  //       I am a footer
+  //     </footer>
+  //     </Fragment>
+  //   )
+  //
+  // }
+
   render() {
     const { classes } = this.props;
 
     const theme = createMuiTheme({
       typography: {
         useNextVariants: true,
+        fontFamily: '"Roboto", "Walter Turncoat", "Arial", "Rock Salt", "Helvetica", sans-serif, cursive',
+        // fontFamily: '\"Roboto\", \"Red Hat Text\", \"Walter Turncoat\", \"Henny Penny\", \"Gayathri\", \"Nanum Pen Script\", \"Flamenco\", \"Arial\", \"Rock Salt\", \"Sedgwick Ave\", \"Helvetica\", sans-serif, cursive'
       },
       palette: {
         primary: {
-          main: grey[900]
+          // main: grey[500],
+          // main: '#3f51b5',
+          // main: lightBlue[600],
+          // main: blueGrey[100],
+          // main: blue[600],
+          main: blueGrey[400],
+          // contrastText: '#fff'
         },
         secondary: {
-          main: teal[300]
+          // main: lightBlue[100],
+          // main: '#f44336',
+          // main: teal[600],
+          main: '#8c6c5f',
+          // main: teal[400],
+          // contrastText: '#000'
+
         },
+
+        // primary: blueGrey,
+        // secondary: lightGreen,
+        // error: red,
+        contrastThreshold: 3,
+        tonalOffset: 0.2,
+
+        // primary: grey,
+        // secondary: blue,
         // primary: {
         //   light: '#484848',
         //   main: '#212121',
@@ -264,6 +336,7 @@ class App extends Component {
 
 
     let whatToRender = '';
+    // let whatToRender2 = '';
     // localStorage.removeItem('token');
 
     const theToken = localStorage.getItem('token');
@@ -281,16 +354,21 @@ class App extends Component {
       whatToRender = this.renderSignUpSignIn();
     }
 
+    // whatToRender2 = this.testFooter(classes);
     return (
-      <div className={classes.canvas}>
+      <Fragment>
         <CssBaseline />
         <MuiThemeProvider theme={theme}>
-          {whatToRender}
+          {
+            whatToRender
+            // whatToRender2
+          }
           <AlertDialogContainer />
         </MuiThemeProvider>
-      </div>
+      </Fragment>
     );
 
+    // return whatToRender2
   }
 
 }

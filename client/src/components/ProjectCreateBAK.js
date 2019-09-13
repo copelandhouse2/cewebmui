@@ -1,28 +1,54 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 
+import Drawer from '@material-ui/core/Drawer';
 import Grid from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import Tab from '@material-ui/core/Tab';
+import Tabs from '@material-ui/core/Tabs';
 import Select from 'react-select';
 import CreatableSelect from 'react-select/lib/Creatable';
 import Checkbox from '@material-ui/core/Checkbox';
 import TextField from '@material-ui/core/TextField';
+import MenuItem from '@material-ui/core/MenuItem';
+import AppBar from '@material-ui/core/AppBar';
+
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import Divider from '@material-ui/core/Divider';
+import Fab from '@material-ui/core/Fab';
+import Add from '@material-ui/icons/Add';
 
 import ClientDialogContainer from '../containers/ClientDialogContainer';
-// import ContactDialogContainer from '../containers/ContactDialogContainer';
+import ContactDialogContainer from '../containers/ContactDialogContainer';
 import CityDialogContainer from '../containers/CityDialogContainer';
 import SubdivisionDialogContainer from '../containers/SubdivisionDialogContainer';
 import AlertDialogContainer from '../containers/AlertDialogContainer';
 import DupsDialogContainer from '../containers/DupsDialogContainer';
 
-import InputLabel from '@material-ui/core/InputLabel';
-import FormControl from '@material-ui/core/FormControl';
+const drawerWidth = '33%';
 
 const styles = theme => ({
   root: {
     display: 'flex',
+  },
+  appBar: {
+    transition: theme.transitions.create(['margin', 'width'], {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+  },
+  appBarShift: {
+    width: `calc(100% - ${drawerWidth}px)`,
+    transition: theme.transitions.create(['margin', 'width'], {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+    marginRight: drawerWidth,
   },
   menuButton: {
     marginLeft: 12,
@@ -31,36 +57,41 @@ const styles = theme => ({
   hide: {
     display: 'none',
   },
+  drawer: {
+    width: drawerWidth,
+    flexShrink: 1,
+
+  },
+  drawerPaper: {
+    width: drawerWidth,
+    marginTop: 70,
+    // zIndex: theme.zIndex.appBar+1,
+    paddingTop: 10,
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingBottom: 80,
+
+    // marginTop: 10
+    // height: '85%'
+    // minHeight: '100%'
+  },
+  // drawerHeader: {
+  //   display: 'flex',
+  //   alignItems: 'center',
+  //   padding: '0px 8px',
+  //   ...theme.mixins.toolbar,
+  //   justifyContent: 'flex-start',
+  // },
   container: {
-    // padding: 10,
-    // overflowY: 'scroll',
-    // overflowX: 'hidden',
-    width: '80%',
-    // paddingRight: '10%',
-    // paddingLeft: '20%',
-    margin: 'auto',
-    // flexGrow: 1,
-  },
-  appBar: {
-    marginTop: 60,
-    // width: '80%',
-    // margin: 'auto',
-
-    backgroundColor: theme.palette.secondary.light,
-    padding: '10px 20px',
-  },
-  inputLabelProps: {
-    shrink: true,
-    style: {fontSize: 16, color: 'blue'}
-  },
-  // inputProps: { fontSize: 12 },
-  inputProps: { padding: 8,
-    fontSize: 14,      // default fontSize=16
-    // backgroundColor: '#e8e8e8',
-    borderRadius: 6,
-    '&:hover': {backgroundColor: '#dedede', }
+    padding: 10,
+    overflowY: 'scroll',
+    overflowX: 'hidden',
 
   },
+  inputLabelProps: { fontSize: 14, shrink: true,
+    '&:hover': { color: 'black'}
+  },
+  inputProps: { fontSize: 12 },
   zIndexLift: { zIndex: 1000, },
 
   selectFieldWrapper: {
@@ -80,36 +111,20 @@ const styles = theme => ({
     fontWeight: 'bold',
     borderRadius: 4
   },
-  titleContainer: {
-    padding: '10px 10% 5px 10%',
-    backgroundColor: theme.palette.secondary.light,
-    // paddingLeft:'10%'
-  },
-  titleText: {
-    color: theme.palette.secondary.contrastText
-  }
 //, padding: 8, minHeight: 20
 });
 
-// const createSelectProps = {
-//   option: (provided) => ({ ...provided, fontSize: 14, color: 'black', }),
-//   input: (provided) => ({ ...provided, color: 'black', }),
-//   singleValue: (provided) => ({ ...provided, color: 'black', }),
-//   label: (provided) => ({ ...provided, color: 'black', }),
-//   control: (provided, state) => ({ ...provided,  minHeight: 10, height: 35, color: 'black', backgroundColor: '#e8e8e8', fontSize: 12, borderWidth: 0,
-//     borderBottomWidth: state.isFocused? 2:1, borderBottomStyle: 'solid', borderBottomColor: 'black', borderRadius: 0,
-//     ':hover': {borderBottomWidth: state.isFocused? 2:1, borderBottomStyle: 'solid', borderBottomColor: 'black', backgroundColor: '#dedede'},
-//   }),
-// };
-
 const createSelectProps = {
-  option: (provided) => ({ ...provided, fontSize: 12 }),
-  input: (provided) => ({ ...provided, color: 'black'}),
-  singleValue: (provided) => ({ ...provided, color: 'black'}),  //default fontSize=14
-  control: (provided, state) => ({ ...provided,  minHeight: 0, height:35, fontSize: 14, borderWidth: 1, backgroundColor: 'inherit',
-  ':hover': {backgroundColor: '#dedede', borderColor: 'blueGrey'},
+  option: (provided) => ({ ...provided, fontSize: 14, color: 'black', }),
+  input: (provided) => ({ ...provided, color: 'black', }),
+  singleValue: (provided) => ({ ...provided, color: 'black', }),
+  label: (provided) => ({ ...provided, color: 'black', }),
+  control: (provided, state) => ({ ...provided,  minHeight: 10, height: 35, color: 'black', backgroundColor: '#e8e8e8', fontSize: 12, borderWidth: 0,
+    borderBottomWidth: state.isFocused? 2:1, borderBottomStyle: 'solid', borderBottomColor: 'black', borderRadius: 0,
+    ':hover': {borderBottomWidth: state.isFocused? 2:1, borderBottomStyle: 'solid', borderBottomColor: 'black', backgroundColor: '#dedede'},
   }),
 };
+
 
 //marginTop:1, minHeight: 10, height: 56,
 
@@ -202,49 +217,49 @@ class ProjectCreate extends Component {
     this.fields = [
       {name: 'title', title: 'Project Information', width: 12},
       // {label: 'Job Number', name: 'job_number', id: '', type: 'text', width: 12, isDisabled: true, required: false, list: []},
-      {label: 'Address', name: 'address1', id: '', type: 'text', width: 3, isDisabled: false, required: true, list: []},
-      {label: 'Client', name: 'client', id: 'client_id', type: 'text', width: 3, isDisabled: false, required: true, list: [], zIndex: 1000},
-      {label: 'Subdivision', name: 'subdivision', id: 'subdivision_id', type: 'text', width: 3, isDisabled: true, required: false, list: [], zIndex: 990},
-      {label: 'City', name: 'city', id: 'city_id', type: 'text', width: 2, isDisabled: true, required: false, list: [], zIndex: 980},
-      {label: 'Due Date', name: 'due_date', id: '', type: 'date', width: 2, isDisabled: false, required: false, list: []},
-      {label: 'Phase', name: 'phase', id: '', type: 'text', width: 1, isDisabled: false, required: false, list: []},
-      {label: 'Section', name: 'section', id: '', type: 'text', width: 1, isDisabled: false, required: false, list: []},
-      {label: 'Block', name: 'block', id: '', type: 'text', width: 1, isDisabled: false, required: false, list: []},
-      {label: 'Lot', name: 'lot', id: '', type: 'text', width: 1, isDisabled: false, required: false, list: []},
-      {label: 'Requestor', name: 'requestor', id: 'requestor_id', type: 'text', width: 2, isDisabled: true, required: false, list: [], zIndex: 970},
+      {label: 'Address', name: 'address1', id: '', type: 'text', width: 6, isDisabled: false, required: true, list: []},
+      {label: 'Client', name: 'client', id: 'client_id', type: 'text', width: 6, isDisabled: false, required: true, list: [], zIndex: 1000},
+      {label: 'Requestor', name: 'requestor', id: 'requestor_id', type: 'text', width: 6, isDisabled: true, required: false, list: [], zIndex: 990},
+      {label: 'Subdivision', name: 'subdivision', id: 'subdivision_id', type: 'text', width: 6, isDisabled: true, required: false, list: [], zIndex: 980},
+      {label: 'City', name: 'city', id: 'city_id', type: 'text', width: 6, isDisabled: true, required: false, list: [], zIndex: 970},
+      {label: 'Due Date', name: 'due_date', id: '', type: 'date', width: 6, isDisabled: false, required: false, list: []},
+      {label: 'Phase', name: 'phase', id: '', type: 'text', width: 3, isDisabled: false, required: false, list: []},
+      {label: 'Section', name: 'section', id: '', type: 'text', width: 3, isDisabled: false, required: false, list: []},
+      {label: 'Block', name: 'block', id: '', type: 'text', width: 3, isDisabled: false, required: false, list: []},
+      {label: 'Lot', name: 'lot', id: '', type: 'text', width: 3, isDisabled: false, required: false, list: []},
 
       {name: 'title', title: 'Design Details', width: 12},
-      {label: 'Plan Type', name: 'plan_type', id: '', type: 'text', width: 1, isDisabled: false, required: false, list: []},
-      {label: 'Elevation', name: 'elevation', id: '', type: 'text', width: 1, isDisabled: false, required: false, list: []},
-      {label: 'Garage Swing', name: 'garage_swing', id: '', type: 'text', width: 2, isDisabled: false, required: false, list: this.props.garageSwingLookup, zIndex: 960},
-      {label: 'Masonry', name: 'masonry', id: '', type: 'text', width: 2, isDisabled: false, required: false, list: this.props.masonryLookup, zIndex: 950},
-      {label: 'Garage Type', name: 'garage_type', id: '', type: 'text', width: 2, isDisabled: false, required: false, list: this.props.garageTypeLookup, zIndex: 940},
-      {label: 'Covered Patio', name: 'covered_patio', id: '', type: 'text', width: 2, isDisabled: false, required: false, list: this.props.coveredPatioLookup, zIndex: 930},
-      {label: 'Bay Window', name: 'bay_window', id: '', type: 'text', width: 2, isDisabled: false, required: false, list: this.props.ynLookup, zIndex: 920},
-      {label: 'Master Shower Drop', name: 'master_shower_drop', id: '', type: 'text', width: 2, isDisabled: false, required: false, list: this.props.ynLookup, zIndex: 910},
-      {label: 'Garage Ext', name: 'garage_extension', id: '', type: 'number', width: 2, isDisabled: false, required: false, list: []},
-      {label: 'Addl Options', name: 'additional_options', id: '', type: 'text', width: 3, isDisabled: false, required: false, list: []},
-      {label: 'Notes', name: 'comments', id: '', type: 'text', width: 3, isDisabled: false, required: false, list: []},
+      {label: 'Plan Type', name: 'plan_type', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: []},
+      {label: 'Elevation', name: 'elevation', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: []},
+      {label: 'Garage Swing', name: 'garage_swing', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.garageSwingLookup, zIndex: 960},
+      {label: 'Masonry', name: 'masonry', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.masonryLookup, zIndex: 950},
+      {label: 'Garage Type', name: 'garage_type', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.garageTypeLookup, zIndex: 940},
+      {label: 'Covered Patio', name: 'covered_patio', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.coveredPatioLookup, zIndex: 930},
+      {label: 'Bay Window', name: 'bay_window', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.ynLookup, zIndex: 920},
 
       {name: 'title', title: 'Soils', width: 12},
-      {label: 'Lab', name: 'geo_lab', id: '', type: 'text', width: 2, isDisabled: false, required: false, list: this.props.geos, zIndex: 1210},  // high z-index to clear scope below.
-      {label: 'Report #', name: 'geo_report_num', id: '', type: 'text', width: 2, isDisabled: false, required: false, list: []},
-      {label: 'Report Date', name: 'geo_report_date', id: '', type: 'date', width: 2, isDisabled: false, required: false, list: []},
-      {label: 'PI', name: 'geo_pi', id: '', type: 'text', width: 1, isDisabled: false, required: false, list: []},
-      {label: 'EmC', name: 'em_center', id: '', type: 'number', width: 1, isDisabled: false, required: false, list: []},
-      {label: 'EmE', name: 'em_edge', id: '', type: 'number', width: 1, isDisabled: false, required: false, list: []},
-      {label: 'YmC', name: 'ym_center', id: '', type: 'number', width: 1, isDisabled: false, required: false, list: []},
-      {label: 'YmE', name: 'ym_edge', id: '', type: 'number', width: 1, isDisabled: false, required: false, list: []},
-      {label: 'Soil Notes', name: 'soil_notes', id: '', type: 'text', width: 3, isDisabled: false, required: false, list: []},
+      {label: 'Lab', name: 'geo_lab', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.geos, zIndex: 910},
+      {label: 'Report #', name: 'geo_report_num', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: []},
+      {label: 'Report Date', name: 'geo_report_date', id: '', type: 'date', width: 6, isDisabled: false, required: false, list: []},
+      {label: 'PI', name: 'geo_pi', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: []},
+      {label: 'EmC', name: 'em_center', id: '', type: 'number', width: 3, isDisabled: false, required: false, list: []},
+      {label: 'EmE', name: 'em_edge', id: '', type: 'number', width: 3, isDisabled: false, required: false, list: []},
+      {label: 'YmC', name: 'ym_center', id: '', type: 'number', width: 3, isDisabled: false, required: false, list: []},
+      {label: 'YmE', name: 'ym_edge', id: '', type: 'number', width: 3, isDisabled: false, required: false, list: []},
+      {label: 'Soil Notes', name: 'soil_notes', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: []},
 
       {name: 'title', title: 'Other', width: 12},
-      {label: 'Scope', name: 'scope', id: '', type: 'text', width: 3, isDisabled: false, required: false, list: this.props.scopeLookup, zIndex: 1200},  // high z-index to get over appbar
-      {label: 'Trello List', name: 'trello_list', id: 'trello_list_id', type: 'text', width: 3, isDisabled: false, required: false, list: this.props.trelloListLookup, zIndex: 1200},
-      {label: 'Trello Card', name: 'trello_card_id', id: '', type: 'text', width: 2, isDisabled: false, required: false, list: []},
+      {label: 'Master Shower Drop', name: 'master_shower_drop', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.ynLookup, zIndex: 900},
+      {label: 'Garage Ext', name: 'garage_extension', id: '', type: 'number', width: 6, isDisabled: false, required: false, list: []},
+      {label: 'Addl Options', name: 'additional_options', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: []},
+      {label: 'Notes', name: 'comments', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: []},
+      {label: 'Scope', name: 'scope', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.scopeLookup, zIndex: 1010},
+      {label: 'Trello List', name: 'trello_list', id: 'trello_list_id', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.trelloListLookup, zIndex: 1010},
+      {label: 'Trello Card', name: 'trello_card_id', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: []},
       // {label: 'FDN Type', name: 'foundation_type', id: '', type: 'text', width: 4, isDisabled: false, required: false, list: []},
-      // {label: 'Garage Entry', name: 'garage_entry', id: '', type: 'text', width: 3, isDisabled: false, required: false, list: this.props.garageEntryLookup},
-      // {label: 'Garage Drop', name: 'garage_drop', id: '', type: 'number', width: 3, isDisabled: false, required: false, list: []},
-      // {label: 'Bath 1', name: 'bath1_shower_drop', id: '', type: 'text', width: 3, isDisabled: false, required: false, list: this.props.ynLookup},
+      // {label: 'Garage Entry', name: 'garage_entry', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.garageEntryLookup},
+      // {label: 'Garage Drop', name: 'garage_drop', id: '', type: 'number', width: 6, isDisabled: false, required: false, list: []},
+      // {label: 'Bath 1', name: 'bath1_shower_drop', id: '', type: 'text', width: 6, isDisabled: false, required: false, list: this.props.ynLookup},
       // {label: 'Default List', name: 'trello_list', id: 'trello_list_id', type: 'text', width: 4, isDisabled: false, required: false, list: this.props.trelloListLookup},
     ]
 
@@ -277,12 +292,10 @@ class ProjectCreate extends Component {
             this.searchForExisting('LOT')
           }}
         );  // fill in value.
-        break;
       case 'scope':
         selected.code === 'FDN'?
             this.setState({ [field.name]: selected.code, foundation_type: 'POST TENSION' }) :  // fill in value.
             this.setState({ [field.name]: null, foundation_type: null });  // clear out
-            break;
       default:
         selected?  // if selected
           field.id?  // then if field has an id
@@ -501,14 +514,12 @@ class ProjectCreate extends Component {
           this.searchForExisting('LOT');
         }
         break;
-      default:
-        break;
     };
 
   }
 
   getVolFieldEntry = (theState) => {
-    const { classes, theme } = this.props;
+    const { classes } = this.props;
 
     const fieldEntry = this.fields.map((field, id) => {
 
@@ -516,9 +527,9 @@ class ProjectCreate extends Component {
         case 'title':
           return (
             <Grid key={id} container justify='center'>
-              <Grid item xs={12} style={ {marginTop: 20, marginBottom: 20, borderTop: '1px solid black'} }>
-                <Typography align='left' style={{fontWeight: 500}}>
-                  {field.title}
+              <Grid item xs={12}>
+                <Typography variant='overline' align='center' >
+                  <b>{field.title}</b>
                 </Typography>
               </Grid>
             </Grid>
@@ -538,11 +549,12 @@ class ProjectCreate extends Component {
           return (
             <Grid item key={id} xs={12} md={field.width} style={ {zIndex: field.zIndex } } //className={classes.zIndexLift}
             >
-              <FormControl fullWidth={true} variant='outlined' >
-                <InputLabel shrink={true} style={ {color: theme.palette.primary.dark, backgroundColor: '#fafafa', padding: '0px 4px'} }>
+              <div className={ classes.selectFieldWrapper } >
+                <div className={classes.selectLabel}>
                   {field.label+' *'}
-                </InputLabel>
-                <CreatableSelect styles={createSelectProps} //styles={createSelectAutoFillProps}                  isClearable
+                </div>
+                <CreatableSelect  styles={createSelectProps} //styles={createSelectAutoFillProps}
+                  isClearable
                   isSearchable
                   onChange={
                     (selected) => {
@@ -566,18 +578,19 @@ class ProjectCreate extends Component {
                     , label: this.state.client
                     , name: this.state.client} }
                 />
-              </FormControl>
+              </div>
 
             </Grid>
           )
         case 'requestor':
           return (
             <Grid item key={id} xs={12} md={field.width} style={ {zIndex: field.zIndex } }>
-              <FormControl fullWidth={true} variant='outlined' >
-                <InputLabel shrink={true} style={ {color: theme.palette.primary.dark, backgroundColor: '#fafafa', padding: '0px 4px'} }>
+              <div className={classes.selectFieldWrapper}>
+                <div className={classes.selectLabel}>
                   {field.label}
-                </InputLabel>
-                <Select styles={createSelectProps} //styles={createSelectAutoFillProps}                  id='requestor'
+                </div>
+                <Select styles={createSelectProps} //styles={createSelectAutoFillProps}
+                  id='requestor'
                   isClearable
                   isSearchable
                   options={this.props.contacts}
@@ -595,18 +608,19 @@ class ProjectCreate extends Component {
                   value={ {id: this.state.requestor_id? this.state.requestor_id.toString() : ''
                     , full_name: this.state.requestor} }
                 />
-              </FormControl>
+              </div>
             </Grid>
           )
         case 'subdivision':
           return (
             <Grid item key={id} xs={12} md={field.width} style={ {zIndex: field.zIndex } } //className={classes.zIndexLift1}>
             >
-              <FormControl fullWidth={true} variant='outlined' >
-                <InputLabel shrink={true} style={ {color: theme.palette.primary.dark, backgroundColor: '#fafafa', padding: '0px 4px'} }>
+              <div className={classes.selectFieldWrapper}>
+                <div className={classes.selectLabel}>
                   {field.label}
-                </InputLabel>
-                <CreatableSelect styles={createSelectProps} //styles={createSelectAutoFillProps}                  isClearable
+                </div>
+                <CreatableSelect styles={createSelectProps} //styles={createSelectAutoFillProps}
+                  isClearable
                   // placeholder={field.label}
                   onChange={
                     (selected) => {
@@ -638,16 +652,16 @@ class ProjectCreate extends Component {
                     , label: this.state.subdivision
                     , name: this.state.subdivision} }
                 />
-              </FormControl>
+              </div>
             </Grid>
           )
         case 'city':
           return (
             <Grid item key={id} xs={12} md={field.width} style={ {zIndex: field.zIndex } }>
-              <FormControl fullWidth={true} variant='outlined' >
-                <InputLabel shrink={true} style={ {color: theme.palette.primary.dark, backgroundColor: '#fafafa', padding: '0px 4px'} }>
+              <div className={classes.selectFieldWrapper}>
+                <div className={classes.selectLabel}>
                   {field.label}
-                </InputLabel>
+                </div>
                 <CreatableSelect styles={createSelectProps} //styles={createSelectAutoFillProps}
                   isClearable
                   // placeholder={field.label}
@@ -672,7 +686,7 @@ class ProjectCreate extends Component {
                     , label: this.state.city
                     , name: this.state.city} }
                 />
-              </FormControl>
+              </div>
             </Grid>
           )
         case 'geo_lab':
@@ -685,11 +699,10 @@ class ProjectCreate extends Component {
 
           return (
             <Grid item key={id} xs={12} md={field.width} style={ {zIndex: field.zIndex } }>
-
-              <FormControl fullWidth={true} variant='outlined' >
-                <InputLabel shrink={true} style={ {color: theme.palette.primary.dark, backgroundColor: '#fafafa', padding: '0px 4px'} }>
+              <div className={classes.selectFieldWrapper}>
+                <div className={classes.selectLabel}>
                   {field.label}
-                </InputLabel>
+                </div>
                 <CreatableSelect styles={createSelectProps} //styles={createSelectAutoFillProps}
                   isClearable
                   // placeholder={field.label}
@@ -716,8 +729,7 @@ class ProjectCreate extends Component {
                   onCreateOption={this.createCity}
                   value={ currentValue }
                 />
-                </FormControl>
-
+              </div>
             </Grid>
           )
         default:
@@ -733,27 +745,31 @@ class ProjectCreate extends Component {
                 field.list.find(option => option.code === theState[field.name]) :
                 {code: '', name: ''};
             }
+
+            // console.log('switch stmt, field: '+field.name, currentValue);
             return (
               <Grid item key={id} xs={12} md={field.width} style={ {zIndex: field.zIndex } }>
-                <FormControl fullWidth={true} variant='outlined' >
-                  <InputLabel shrink={true} style={ {color: theme.palette.primary.dark, backgroundColor: '#fafafa', padding: '0px 4px'} }>
+                <div className={classes.selectFieldWrapper}>
+                  <div className={classes.selectLabel}>
                     {field.label}
-                  </InputLabel>
+                  </div>
                   <Select styles={createSelectProps}
                     isClearable
+                    // isSearchable
                     options={field.list}
                     getOptionLabel={({name}) => name}
                     getOptionValue={({code}) => code}
-                    value={currentValue}
+                    // placeholder={field.label}
+                    value={ currentValue }
+                    // value={ {code: eval(`theState.${field.name}`)||'', name: curName} }
                     onChange={
                       (selected) => {
                         this.handleListChange(selected, field);
                       }
                     }
                   />
-                </FormControl>
+                </div>
               </Grid>
-
             )
           }
           else  // fields that do not have a list.
@@ -767,7 +783,7 @@ class ProjectCreate extends Component {
                   id={field.name}
                   value={ eval(`theState.${field.name}`)||'' }
                   fullWidth = {true}
-                  variant='outlined'
+                  variant='filled'
                   label={field.label}
                   // helperText={field.label}
                   // placeholder={field.label}
@@ -793,13 +809,7 @@ class ProjectCreate extends Component {
                     },
                     readOnly: field.isDisabled,
                   }}
-                  // InputLabelProps={
-                  //   classes.inputLabelProps
-                  // }
-                  InputLabelProps={{
-                    shrink: true,
-                    style: { color: theme.palette.primary.dark, backgroundColor: '#fafafa' },
-                  }}
+                  InputLabelProps={{ fontSize: 24, shrink: true, }}
                 />
               </Grid>
             )
@@ -808,38 +818,54 @@ class ProjectCreate extends Component {
     return fieldEntry
   };    // getVolFieldEntry() closure
 
-  render() {
+  getCustFieldEntry = (theState) => {
     const { classes } = this.props;
-    // console.log('Theme', theme.spacing.unit);
+
+    return (
+      <Grid container alignItems='center' style={ {height: 600} }>
+        <Grid item xs={12} style={ {height: 100} }>
+        <Typography variant='h2' align='center' ><b>Coming soon...</b></Typography>
+        </Grid>
+      </Grid>
+    )
+
+  }
+  render() {
+    const { classes, theme } = this.props;
 
     return (
       <div>
-      <Grid container
-        justify='space-between'
-        className={classes.titleContainer}
+      <Drawer
+        variant='persistent'
+        anchor='right'
+        open={this.props.toggleQuickEntry}
+        classes={{
+          paper: classes.drawerPaper,
+        }}
+        className={classes.drawer}
       >
-        <Grid item xs={8}>
-          <Typography variant='h6' className={classes.titleText}>
-            Volume Foundation / Framing
-          </Typography>
-        </Grid>
-        <Grid item>
-          <Button title='Advanced Mode'
-            variant="contained"
-            color="secondary"
-            size='small'
-            onClick={(e) => this.props.handleQuickEntry()}
+        <AppBar position='static' color='secondary'>
+          <Tabs
+            value = {this.state.currentTab}
+            onChange={this.handleTabChange}
+            indicatorColor='primary'
+            textColor='primary'
+            variant='fullWidth'
           >
-            Advanced Mode
-          </Button>
-        </Grid>
-      </Grid>
-        <Grid container spacing={8}
+              <Tab value='volume' label='Volume Quick Entry'
+                classes={{ labelContainer: classes.tabContainerProps, }}
+              />
+              <Tab value='custom' label='Custom Quick Entry'
+                classes={{ labelContainer: classes.tabContainerProps, }}
+              />
+          </Tabs>
+        </AppBar>
+        <Grid container spacing={16}
           className={classes.container}
         >
-
-          { this.getVolFieldEntry(this.state) }
-          <Grid container justify="flex-end" style={{marginTop: 20}} spacing={16}>
+          { this.state.currentTab ==='volume' && this.getVolFieldEntry(this.state) }
+          { this.state.currentTab === 'custom' && this.getCustFieldEntry(this.state) }
+          <Grid container justify="space-between" spacing={24} style={{marginTop: 10}}>
             <Grid item>
               <Button title='Clear the fields'
                 variant="contained"
@@ -881,7 +907,7 @@ class ProjectCreate extends Component {
             </Grid>
           </Grid>
         </Grid>
-      {/*</Drawer>*/}
+      </Drawer>
       {this.props.showClientDialog && <ClientDialogContainer newValue = {this.state.dialogValue} />}
       {this.props.showCityDialog && <CityDialogContainer newValue = {this.state.dialogValue} />}
       {/*this.props.showSubdivisionDialog && <SubdivisionDialogContainer newValue = {this.state.dialogValue} />*/}
@@ -912,3 +938,16 @@ ProjectCreate.propTypes = {
 };
 
 export default withStyles(styles, { withTheme: true })(ProjectCreate);
+
+
+// <div className={classes.drawerHeader}>
+//   <Fab
+//     size='small'
+//     color='secondary'
+//     aria-label='Add'
+//     onClick={this.props.handleQuickEntry}
+//   >
+//     {theme.direction === 'rtl' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+//   </Fab>
+// </div>
+// <Divider />

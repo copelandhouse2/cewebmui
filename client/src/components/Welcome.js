@@ -29,6 +29,10 @@ import bg3 from '../img/slab.jpg';
 import bg4 from '../img/wall.jpg';
 import bg5 from '../img/wall.jpg';
 
+import setup from '../img/setup.svg'
+import volume from '../img/volume.svg'
+import custom from '../img/custom.svg'
+
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -40,10 +44,10 @@ import Fade from '@material-ui/core/Fade';
 const images = [
   {
     url: `${slab}`,
+    // url: `${volume}`,
     title: 'Volume Foundation',
     // width: '15%',
-    width: 200,
-
+    width: 200
   },
   {
   url: `${framing}`,
@@ -140,13 +144,16 @@ const styles = theme => ({
     flexWrap: 'wrap',
     minWidth: 500,
     minHeight: 900,
+    marginTop: 10,
+    // height: '100%',
+    // paddingTop: 60,
+    // paddingBottom: 100,
     // height: 780,
     width: '100%',
     backgroundColor: theme.palette.common.black,
     // backgroundImage: `url(${background})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center 50%',
-    marginTop: 10,
     opacity: 1,
     transitionProperty: 'opacity',
     transitionDuration: '1s',
@@ -163,11 +170,14 @@ const styles = theme => ({
     backgroundImage: `url(${background})`,
     backgroundSize: '100% 100%',
     backgroundPosition: 'center 50%',
-    marginTop: 10,
     opacity: 1,
     transitionProperty: 'opacity',
     transitionDuration: '5s',
     transitionTimingFunction: 'ease-in-out',
+
+    height: '100%',
+    // marginTop: 10,
+
   },
   image: {
     position: 'relative',
@@ -226,7 +236,17 @@ const styles = theme => ({
     position: 'relative',
     // padding: `${theme.spacing(2)}px ${theme.spacing(4)}px ${theme.spacing(1) + 6}px`,
     padding: `16px 10px`,
-    // opacity: 0.5,
+    fontFamily: 'Walter Turncoat',
+    fontSize: 24,
+    // opacity: 0.8,
+  },
+  ceTitle: {
+    position: 'relative',
+    // padding: `${theme.spacing(2)}px ${theme.spacing(4)}px ${theme.spacing(1) + 6}px`,
+    padding: `16px 10px`,
+    fontFamily: 'Sedgwick Ave Display',
+    fontSize: 78,
+    opacity: 0.6,
   },
   imageMarked: {  // this is for the little line
     height: 3,
@@ -312,7 +332,7 @@ class Welcome extends Component {
             component="span"
             variant="subtitle1"
             color="inherit"
-            className={classes.imageTitle}
+            className={classes.ceTitle}
           >
             click anywhere to begin
           </Typography>
