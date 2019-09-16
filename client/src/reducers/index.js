@@ -4,6 +4,11 @@ function session(state = {}, action) {
   if (action.type === "SESSION_LOADED") {
     return action.value;
   }
+  if (action.type === "SETTINGS_UPDATED") {
+    console.log('state, action.value', state, action.value);
+    state.settings = action.value;
+    return state;
+  }
   return state;
 }
 
@@ -196,6 +201,13 @@ function pitaLookup(state = [], action) {
   return state;
 }
 
+function dwellingTypeLookup(state = [], action) {
+  if (action.type === "DWELLINGTYPE_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
 function showClientDialog(state = false, action) {
   if (action.type === "SHOW_CLIENT_DIALOG") {
     return !state;
@@ -245,6 +257,6 @@ const rootReducer = combineReducers({
   , showCityDialog, showContactDialog, recordStatusLookup, projectStatusLookup
   , scopeLookup, classificationLookup, masonryLookup, ynLookup, fndTypeLookup, garageTypeLookup
   , garageEntryLookup, garageSwingLookup, floorTypeLookup, roofTypeLookup
-  , coveredPatioLookup, pitaLookup, geos, geoMasterData
+  , coveredPatioLookup, dwellingTypeLookup, pitaLookup, geos, geoMasterData
 });
 export default rootReducer;

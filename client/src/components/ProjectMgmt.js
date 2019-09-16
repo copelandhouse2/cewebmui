@@ -189,6 +189,7 @@ class ProjectMgmt extends Component {
       num_stories: null,
       square_footage: null,
       pita_factor: null,
+      dwelling_type: 'PT 1 UNIT',
       // Trello and Box
       box_folder: '',
       trello_list_id: '',
@@ -261,8 +262,9 @@ class ProjectMgmt extends Component {
         {label: 'Masonry', name: 'masonry', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
         {label: 'Covered Patio', name: 'covered_patio', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
         {label: 'Bay Window', name: 'bay_window', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
+        {label: 'Dwelling', name: 'dwelling_type', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
         {label: 'FDN Type', name: 'foundation_type', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: [], nextTab:'garage'},
-        {label: '', name: 'overflow', id: '', type: 'text', width: '12%', isDisabled: false, required: false, list: []},
+        {label: '', name: 'overflow', id: '', type: 'text', width: '4%', isDisabled: false, required: false, list: []},
       ]},
       {name: 'garage', fields: [
         {label: 'Garage Type', name: 'garage_type', id: '', type: 'text', width: '12%', isDisabled: false, required: false, list: []},
@@ -439,6 +441,7 @@ class ProjectMgmt extends Component {
         num_stories: null,
         square_footage: null,
         pita_factor: null,
+        dwelling_type: 'PT 1 UNIT',
         box_folder: '',
         // Trello List
         trello_list_id: '',
@@ -746,6 +749,7 @@ class ProjectMgmt extends Component {
       num_stories: project.num_stories,
       square_footage: project.square_footage,
       pita_factor: project.pita_factor,
+      dwelling_type: project.dwelling_type,
       // Trello and Box
       box_folder: project.box_folder,
       trello_list_id: project.trello_list_id,
@@ -945,6 +949,9 @@ class ProjectMgmt extends Component {
           break;
         case 'roof_type':
           field.list = this.props.roofTypeLookup;
+          break;
+        case 'dwelling_type':
+          field.list = this.props.dwellingTypeLookup;
           break;
         // case 'pita_factor':
         //   field.list = this.props.pitaLookup;

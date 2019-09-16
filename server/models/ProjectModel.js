@@ -91,7 +91,7 @@ const ProjectModel = {
     , s.bath1_shower_drop, s.bath2_shower_drop, s.bath3_shower_drop, s.geo_lab, s.geo_report_num, date_format(s.geo_report_date, '%Y-%m-%d') geo_report_date
     , s.geo_pi, s.em_center, s.em_edge, s.ym_center, s.ym_edge, s.soil_notes, s.additional_options, s.comments, s.status, s.project_status, s.scope, s.classification, date_format(s.onboard_date, '%Y-%m-%d') onboard_date, date_format(s.start_date, '%Y-%m-%d') start_date
     , date_format(s.due_date, '%Y-%m-%d') due_date, date_format(s.final_due_date, '%Y-%m-%d') final_due_date, date_format(s.transmittal_date, '%Y-%m-%d') transmittal_date, s.main_contact, s.billing_contact, s.builder_contact, s.foundation_type, s.floor_type
-    , s.roof_type, s.num_stories, s.square_footage, s.pita_factor, s.trello_list_id, l.name trello_list, s.trello_card_id, s.box_folder
+    , s.roof_type, s.num_stories, s.square_footage, s.pita_factor, s.dwelling_type, s.trello_list_id, l.name trello_list, s.trello_card_id, s.box_folder
     , s.created_by, s.last_updated_by, s.creation_date, s.last_updated_date
     , cl.name client, co.full_name requestor`
     + ' from projects s'
@@ -126,7 +126,7 @@ const ProjectModel = {
     , s.bath1_shower_drop, s.bath2_shower_drop, s.bath3_shower_drop, s.geo_lab, s.geo_report_num, date_format(s.geo_report_date, '%Y-%m-%d') geo_report_date
     , s.geo_pi, s.em_center, s.em_edge, s.ym_center, s.ym_edge, s.soil_notes, s.additional_options, s.comments, s.status, s.project_status, s.scope, s.classification, date_format(s.onboard_date, '%Y-%m-%d') onboard_date, date_format(s.start_date, '%Y-%m-%d') start_date
     , date_format(s.due_date, '%Y-%m-%d') due_date, date_format(s.final_due_date, '%Y-%m-%d') final_due_date, date_format(s.transmittal_date, '%Y-%m-%d') transmittal_date, s.main_contact, s.billing_contact, s.builder_contact, s.foundation_type, s.floor_type
-    , s.roof_type, s.num_stories, s.square_footage, s.pita_factor, s.trello_list_id, l.name trello_list, s.trello_card_id, s.box_folder
+    , s.roof_type, s.num_stories, s.square_footage, s.pita_factor, s.dwelling_type, s.trello_list_id, l.name trello_list, s.trello_card_id, s.box_folder
     , s.created_by, s.last_updated_by, s.creation_date, s.last_updated_date
     , cl.name client, co.full_name requestor`
       + ' from projects s'
@@ -172,7 +172,7 @@ const ProjectModel = {
     , s.bath1_shower_drop, s.bath2_shower_drop, s.bath3_shower_drop, s.geo_lab, s.geo_report_num, date_format(s.geo_report_date, '%Y-%m-%d') geo_report_date
     , s.geo_pi, s.em_center, s.em_edge, s.ym_center, s.ym_edge, s.soil_notes, s.additional_options, s.comments, s.status, s.project_status, s.scope, s.classification, date_format(s.onboard_date, '%Y-%m-%d') onboard_date, date_format(s.start_date, '%Y-%m-%d') start_date
     , date_format(s.due_date, '%Y-%m-%d') due_date, date_format(s.final_due_date, '%Y-%m-%d') final_due_date, date_format(s.transmittal_date, '%Y-%m-%d') transmittal_date, s.main_contact, s.billing_contact, s.builder_contact, s.foundation_type, s.floor_type
-    , s.roof_type, s.num_stories, s.square_footage, s.pita_factor, s.trello_list_id, l.name trello_list, s.trello_card_id, s.box_folder
+    , s.roof_type, s.num_stories, s.square_footage, s.pita_factor, s.dwelling_type, s.trello_list_id, l.name trello_list, s.trello_card_id, s.box_folder
     , s.created_by, s.last_updated_by, s.creation_date, s.last_updated_date
     , cl.name client, co.full_name requestor`
     + ' from projects s'
@@ -224,11 +224,11 @@ const ProjectModel = {
     , bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num, geo_report_date
     , geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, comments, status, project_status, scope, classification, onboard_date
     , start_date, due_date, final_due_date, transmittal_date, main_contact, billing_contact, builder_contact, foundation_type, floor_type
-    , roof_type, num_stories, square_footage, pita_factor, trello_list_id, trello_card_id, box_folder
+    , roof_type, num_stories, square_footage, pita_factor, dwelling_type, trello_list_id, trello_card_id, box_folder
     , created_by, last_updated_by }
     = start;
 
-  // console.log("start", start);
+  console.log("dwelling_type", dwelling_type);
   // console.log("job_number", job_number);
   // console.log("city", city);
   // console.log("user_id", owner_id);
@@ -248,9 +248,9 @@ const ProjectModel = {
   , bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num,  geo_report_date
   , geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, comments, status, project_status, scope, classification, onboard_date
   , start_date, due_date, final_due_date, transmittal_date, main_contact, billing_contact, builder_contact, foundation_type, floor_type
-  , roof_type, num_stories, square_footage, pita_factor, trello_list_id, trello_card_id, box_folder
+  , roof_type, num_stories, square_footage, pita_factor, dwelling_type, trello_list_id, trello_card_id, box_folder
   , created_by, last_updated_by)
-   VALUES(?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?)
+   VALUES(?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?)
    ON DUPLICATE KEY UPDATE job_number = ?, revision = ?, revision_desc = ?, client_id = ?, user_id = ?, contact_id = ?, city = ?, subdivision = ?, address1 = ?, address2 = ?
   , phase = ?, section = ?, lot = ?, block = ?, fnd_height_fr = ?, fnd_height_fl = ?, fnd_height_rr = ?, fnd_height_rl = ?
   , plan_type = ?, elevation = ?, masonry = ?, garage_type = ?, garage_entry = ?, garage_swing = ?, garage_drop = ?, garage_extension = ?
@@ -258,7 +258,7 @@ const ProjectModel = {
   , geo_lab = ?, geo_report_num = ?,  geo_report_date = ?, geo_pi = ?, em_center = ?, em_edge = ?, ym_center = ?, ym_edge = ?, soil_notes = ?
   , additional_options = ?, comments = ?, status = ?, project_status = ?, scope = ?, classification = ?, onboard_date = ?, start_date = ?
   , due_date = ?, final_due_date = ?, transmittal_date = ?, main_contact = ?, billing_contact = ?, builder_contact = ?, foundation_type = ?, floor_type = ?
-  , roof_type = ?, num_stories = ?, square_footage = ?, pita_factor = ?, trello_list_id = ?, trello_card_id = ?, box_folder = ?
+  , roof_type = ?, num_stories = ?, square_footage = ?, pita_factor = ?, dwelling_type = ?, trello_list_id = ?, trello_card_id = ?, box_folder = ?
   , last_updated_by = ?`;
 
   const values = [address_id, job_number, revision, revision_desc, client_id, owner_id, requestor_id, city, subdivision, address1, address2 // 11
@@ -268,7 +268,7 @@ const ProjectModel = {
   , geo_report_date, geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, comments, status // 10
   , project_status, scope, classification, onboard_date, start_date, due_date, final_due_date, transmittal_date, main_contact // 9
   , billing_contact, builder_contact, foundation_type, floor_type, roof_type, num_stories, square_footage // 7
-  , pita_factor, trello_list_id, trello_card_id, box_folder // 4
+  , pita_factor, dwelling_type, trello_list_id, trello_card_id, box_folder // 5
   , created_by, last_updated_by // 2
 
   , job_number, revision, revision_desc, client_id, owner_id, requestor_id, city, subdivision, address1, address2, phase, section, lot, block // 14
@@ -277,8 +277,8 @@ const ProjectModel = {
   , bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num, geo_report_date // 6
   , geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, comments, status, project_status // 10
   , scope, classification, onboard_date, start_date, due_date, final_due_date, transmittal_date, main_contact, billing_contact, builder_contact // 10
-  , foundation_type, floor_type, roof_type, num_stories, square_footage, pita_factor, trello_list_id, trello_card_id, box_folder // 9
-  , last_updated_by // 1
+  , foundation_type, floor_type, roof_type, num_stories, square_footage, pita_factor, dwelling_type, trello_list_id, trello_card_id  // 9
+  , box_folder, last_updated_by // 2
   ];
 
     // console.log('Model addProject: SQL', SQLstmt);

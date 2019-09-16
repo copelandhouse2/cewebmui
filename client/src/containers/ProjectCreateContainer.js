@@ -23,6 +23,7 @@ function mapStateToProps(state) {
     garageEntryLookup: state.garageEntryLookup,
     garageSwingLookup: state.garageSwingLookup,
     coveredPatioLookup: state.coveredPatioLookup,
+    dwellingTypeLookup: state.dwellingTypeLookup,
     showClientDialog: state.showClientDialog,
     showContactDialog: state.showContactDialog,
     showSubdivisionDialog: state.showSubdivisionDialog,

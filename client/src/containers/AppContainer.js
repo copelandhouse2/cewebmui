@@ -8,6 +8,7 @@ import { loadPending, loadSession, loadCities
 function mapStateToProps(state) {
   return {
     session: state.session,
+    settings: state.settings,
     cities: state.cities,
     clients: state.clients,
     subdivisions: state.subdivisions,

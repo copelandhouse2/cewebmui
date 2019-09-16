@@ -2,6 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import { withStyles } from "@material-ui/core/styles";
 import { withWidth } from "@material-ui/core";
+import SettingsContainer from '../containers/SettingsContainer';
 import {
   AppBar,
   Toolbar,
@@ -27,6 +28,7 @@ class Header extends React.Component {
   state = {
     auth: true,
     anchorEl: null,
+    settings: false,
   };
 
   handleChange = event => {
@@ -41,6 +43,10 @@ class Header extends React.Component {
     this.setState({ anchorEl: null });
   };
 
+  handleSettings = () => {
+    // this.setState({ settings: !this.state.settings });
+  };
+
   render() {
 
     const { classes, width } = this.props;
@@ -48,6 +54,7 @@ class Header extends React.Component {
     const open = Boolean(anchorEl);
 
     return (
+      <div>
       <AppBar className={classes.AppBar} >
         <Toolbar>
           {/*<IconButton
@@ -93,11 +100,15 @@ class Header extends React.Component {
             open={open}
             onClose={this.handleClose}
           >
-            <MenuItem>Settings</MenuItem>
+            <MenuItem onClick={this.handleSettings}>Settings</MenuItem>
             <MenuItem onClick={this.props.signOut}>Log Out</MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>
+      <SettingsContainer
+        open={this.state.settings}
+        handleClose={this.handleSettings}/>
+      </div>
     );
   }
 }

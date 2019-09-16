@@ -192,7 +192,7 @@ export const commit = (request, response) => {
         , bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num, geo_report_date
         , geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, comments, status, project_status, scope, classification, due_date, final_due_date
         , start_date, onboard_date, transmittal_date, main_contact, billing_contact, builder_contact, foundation_type, floor_type
-        , roof_type, num_stories, square_footage, pita_factor, trello_list, trello_list_id, trello_card_id, box_folder
+        , roof_type, num_stories, square_footage, pita_factor, dwelling_type, trello_list, trello_list_id, trello_card_id, box_folder
         , created_by, last_updated_by
       } = request.body[i];
 

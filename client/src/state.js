@@ -25,6 +25,7 @@ export default {
   floorTypeLookup: [],
   roofTypeLookup: [],
   coveredPatioLookup: [],
+  dwellingTypeLookup: [],
   pitaLookup: [],
   geos: [],
   geoMasterData: [],
@@ -40,7 +41,10 @@ export default {
     full_name: "",
     role: "",
     client_id: null,
-    client_name: ""
+    client_name: "",
+    settings: {
+      accentColor: '#42a5f5',  //blue[400]
+    },
   },
   message: {
     ok: true,

@@ -11,6 +11,7 @@ export function loadSession(username) {
       // console.log('response', response);
       return response.json();
     }).then((session) => {
+      session.settings = {accentColor: '#42a5f5'}
       dispatch(sessionLoaded(session));
       dispatch(loadPending(session.id));
     });
@@ -20,6 +21,24 @@ function sessionLoaded(session) {
   return {
     type: "SESSION_LOADED",
     value: session
+  };
+}
+
+export function updateSettings(settings) {
+  console.log('the settings', settings);
+  return function (dispatch) {
+    dispatch({
+      type: "SETTINGS_UPDATED",
+      value: settings
+    });
+    // dispatch(settingsUpdated(settings));
+  }
+}
+
+function settingsUpdated(settings) {
+  return {
+    type: "SETTINGS_UPDATED",
+    value: settings
   };
 }
 
@@ -530,6 +549,12 @@ function lookupLoaded(lookupList, type) {
   if (type === 'PITA') {
     return {
       type: "PITA_LOADED",
+      value: lookupList
+    };
+  }
+  if (type === 'DWELLING_TYPE') {
+    return {
+      type: "DWELLINGTYPE_LOADED",
       value: lookupList
     };
   }

@@ -28,6 +28,7 @@ function mapStateToProps(state) {
     roofTypeLookup: state.roofTypeLookup,
     coveredPatioLookup: state.coveredPatioLookup,
     pitaLookup: state.pitaLookup,
+    dwellingTypeLookup: state.dwellingTypeLookup,
     showClientDialog: state.showClientDialog,
     showContactDialog: state.showContactDialog,
     showSubdivisionDialog: state.showSubdivisionDialog,

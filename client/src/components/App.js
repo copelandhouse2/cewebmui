@@ -134,6 +134,7 @@ class App extends Component {
     this.props.getLookup('ROOF_TYPE');
     this.props.getLookup('COVERED_PATIO');
     this.props.getLookup('PITA');
+    this.props.getLookup('DWELLING_TYPE');
 
     this.props.loadGeotechs();
     // 1 = MLALABS
@@ -268,6 +269,9 @@ class App extends Component {
   render() {
     const { classes } = this.props;
 
+    const settings = this.props.session.settings;
+    // console.log('Apps.js settings', settings);
+
     const theme = createMuiTheme({
       typography: {
         useNextVariants: true,
@@ -285,11 +289,9 @@ class App extends Component {
           // contrastText: '#fff'
         },
         secondary: {
-          // main: lightBlue[100],
-          // main: '#f44336',
-          // main: teal[600],
           main: blue[400],
-          // main: teal[400],
+          // main: blue[400],
+          // main: '#f44336',
           // contrastText: '#000'
 
         },

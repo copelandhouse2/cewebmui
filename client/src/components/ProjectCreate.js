@@ -174,6 +174,7 @@ class ProjectCreate extends Component {
       classification: 'VOLUME',
       foundation_type: 'POST TENSION',
       scope: 'FDN',
+      dwelling_type: 'PT 1 UNIT',
       // Trello and Box
       box_folder: '',
       trello_list_id: '5a908f0604afe40bdc89fb43',
@@ -238,6 +239,7 @@ class ProjectCreate extends Component {
       {label: 'Soil Notes', name: 'soil_notes', id: '', type: 'text', width: 3, isDisabled: false, required: false, list: []},
 
       {name: 'title', title: 'Other', width: 12},
+      {label: 'Dwelling', name: 'dwelling_type', id: '', type: 'text', width: 3, isDisabled: false, required: false, list: this.props.dwellingTypeLookup, zIndex: 1200},  // high z-index to get over appbar
       {label: 'Scope', name: 'scope', id: '', type: 'text', width: 3, isDisabled: false, required: false, list: this.props.scopeLookup, zIndex: 1200},  // high z-index to get over appbar
       {label: 'Trello List', name: 'trello_list', id: 'trello_list_id', type: 'text', width: 3, isDisabled: false, required: false, list: this.props.trelloListLookup, zIndex: 1200},
       {label: 'Trello Card', name: 'trello_card_id', id: '', type: 'text', width: 2, isDisabled: false, required: false, list: []},
@@ -279,9 +281,12 @@ class ProjectCreate extends Component {
         );  // fill in value.
         break;
       case 'scope':
-        selected.code === 'FDN'?
-            this.setState({ [field.name]: selected.code, foundation_type: 'POST TENSION' }) :  // fill in value.
-            this.setState({ [field.name]: null, foundation_type: null });  // clear out
+        selected? // if selected
+          selected.code === 'FDN'? // was FDN selected?
+              this.setState({ [field.name]: selected.code, foundation_type: 'POST TENSION' }) :  // fill in value.
+              this.setState({ [field.name]: selected.code, foundation_type: null }) :  // user selected something other than FDN
+          this.setState({ [field.name]: null, foundation_type: null });  // clear out
+
             break;
       default:
         selected?  // if selected
@@ -382,6 +387,8 @@ class ProjectCreate extends Component {
         showSubDialog: false,
         due_date: null,  // actual due date of the project.
         foundation_type: 'POST TENSION',
+        scope: 'FDN',
+        dwelling_type: 'PT 1 UNIT',
         // Trello and Box
         box_folder: '',
         trello_list_id: '5a908f0604afe40bdc89fb43',
