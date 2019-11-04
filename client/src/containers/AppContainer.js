@@ -2,17 +2,15 @@ import App from "../components/App";
 import { connect } from "react-redux";
 import { loadPending, loadSession, loadCities
   , loadClients, loadSubdivisions, loadJobNumberSeqs, loadContacts, getLookup
-  , authenticate, loadGeotechs, loadGeoMasterData }
+  , authenticate, loadGeotechs, loadGeoMasterData, loadControls, loadRelationships }
   from "../actions";
 
 function mapStateToProps(state) {
   return {
     session: state.session,
-    settings: state.settings,
     cities: state.cities,
     clients: state.clients,
     subdivisions: state.subdivisions,
-    jobnumberseqs: state.jobnumberseqs
 
   };
 }
@@ -51,6 +49,12 @@ function mapDispatchToProps(dispatch) {
     },
     loadGeoMasterData: function (id) {
       dispatch(loadGeoMasterData(id));
+    },
+    loadControls: function () {
+      dispatch(loadControls());
+    },
+    loadRelationships: function () {
+      dispatch(loadRelationships());
     },
   };
 }

@@ -25,7 +25,7 @@ function sessionLoaded(session) {
 }
 
 export function updateSettings(settings) {
-  console.log('the settings', settings);
+  // console.log('action: the settings', settings);
   return function (dispatch) {
     dispatch({
       type: "SETTINGS_UPDATED",
@@ -39,6 +39,62 @@ function settingsUpdated(settings) {
   return {
     type: "SETTINGS_UPDATED",
     value: settings
+  };
+}
+
+export function loadControls() {
+  // console.log('loadSession', username);
+  return function (dispatch) {
+    fetch(`/controls`)
+    .then( (response) => {
+      return response.json();
+    }).then((controls) => {
+      dispatch(controlsLoaded(controls));
+    });
+  };
+}
+function controlsLoaded(controls) {
+  return {
+    type: "CONTROLS_LOADED",
+    value: controls
+  };
+}
+
+export function loadRelationships() {
+  // console.log('loadSession', username);
+  return function (dispatch) {
+    fetch(`/relationships`)
+    .then( (response) => {
+      return response.json();
+    }).then((relationships) => {
+      dispatch(relationshipsLoaded(relationships));
+    });
+  };
+}
+function relationshipsLoaded(relationships) {
+  return {
+    type: "RELATIONSHIPS_LOADED",
+    value: relationships
+  };
+}
+
+export function loadTopMenu() {
+  // console.log('loadSession', username);
+  return function (dispatch) {
+    fetch(`/controls`)
+    .then( (response) => {
+      console.log('loadTopMenu response', response);
+      return response.json();
+    }).then((menu) => {
+      console.log('action loadTopMenu', menu);
+      dispatch(menuLoaded(menu));
+    });
+  };
+}
+function menuLoaded(menu) {
+  return {
+    type: "MENU_LOADED",
+    value: menu
   };
 }
 
@@ -835,5 +891,45 @@ function geoMasterDataLoaded(masterData) {
   return {
     type: "GEO_MASTER_DATA_LOADED",
     value: masterData
+  };
+}
+
+// Loading the list of geotechs
+export function loadChildControls(parent_id) {
+  // console.log('In masterData');
+  return function (dispatch, getState) {
+    const { avffControls, avffRelationships } = getState();
+    let a = avffRelationships.filter(child => child.parent_id === parent_id);
+    let c = [];
+    for (let i = 0; i < a.length; i++) {
+      let b = avffControls.find(control => control.id === a[i].control_id);
+      c.push({ ...a[i], ...b });
+    }
+
+    let parent = null;
+    if (parent_id === null) {
+      parent = {id: null, name: 'top', label: 'Main', entity_type: 'MENU'};
+    } else {
+      parent = avffControls.find(control => control.id === parent_id);
+    }
+    let currentControls = { ...parent, children: c };
+
+    // console.log('load Child Controls', currentControls);
+
+    dispatch(currentControlsLoaded(currentControls));
+
+  };
+}
+function currentControlsLoaded(currentControls) {
+  return {
+    type: "CURRENT_CONTROLS_LOADED",
+    value: currentControls
+  };
+}
+
+export function assignNewProjectScope(scope) {
+  return {
+    type: "INITIAL_SCOPE_LOADED",
+    value: scope
   };
 }

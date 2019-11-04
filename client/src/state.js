@@ -1,7 +1,7 @@
 export default {
   addresses: [],
   // projectSearchResults: [],
-  // currentProject: {},
+  currentProject: {},
   dups: [],
   clients: [],
   cities: [],
@@ -57,4 +57,8 @@ export default {
   showContactDialog: false,
   showSubdivisionDialog: false,
   showCityDialog: false,
+  avffControls:[],
+  avffRelationships:[],
+  currentControls: {},
+
 };

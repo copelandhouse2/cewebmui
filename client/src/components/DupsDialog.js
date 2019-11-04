@@ -50,14 +50,19 @@ const styles = theme => ({
     // textShadow: 5,
 
   },
-  headerColumn: {
-    fontSize: 14,
-    textAlign: 'center',
-    // backgroundColor: theme.palette.secondary.light,
-    fontWeight: 600,
-    color: theme.palette.primary.light,
-
-  },
+  // headerColumn: {
+  //   fontSize: 14,
+  //   textAlign: 'center',
+  //   // background: theme.palette.secondary.dark,
+  //   fontWeight: 600,
+  //   // color: theme.palette.primary.main,
+  //   // padding: 0,
+  //   // margin: 0,
+  //   width: '100%',
+  //   height: '100%'
+  //   // backgroundColor: theme.palette.primary.main
+  //
+  // },
   jobNumColumn: {
     fontSize: 12,
     textAlign: 'center',
@@ -77,6 +82,15 @@ const styles = theme => ({
     color: theme.palette.error.main,
     fontWeight: 500,
     paddingTop: 10,
+  },
+  parentDivOfGrid: {
+    '& $div.react-grid-HeaderCell': {
+      backgroundColor: theme.palette.primary.main,
+      color: theme.palette.primary.contrastText,
+      textAlign: 'center',
+      fontSize: 14
+
+    }
   },
 });
 
@@ -156,9 +170,9 @@ class DupsDialog extends Component {
 
   headerColFormatter = (value) => {
     return (
-      <Typography className={this.props.classes.headerColumn}>
+      <div className={this.props.classes.headerColumn}>
         {value}
-      </Typography>
+      </div>
     )
   }
 
@@ -268,6 +282,7 @@ class DupsDialog extends Component {
         className={classes.container}
         >
           <Paper>
+          <div className={classes.parentDivOfGrid}>
           <ReactDataGrid
             columns={this.columns}
             // rowGetter={i => this.props.dups[i]}
@@ -275,7 +290,7 @@ class DupsDialog extends Component {
             rowsCount={this.props.dups.length + 1}
             minHeight={300}
             selectAllRenderer={null}
-            headerRenderer={this.HeaderRenderer}
+            // headerRenderer={this.HeaderRenderer}
             // toolbar={true}
             // showCheckbox={false}
             rowSelection={{
@@ -289,6 +304,7 @@ class DupsDialog extends Component {
             }}
 
           />
+          </div>
           </Paper>
 
           {!this.props.selectAllowed &&

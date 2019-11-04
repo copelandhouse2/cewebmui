@@ -24,75 +24,74 @@ Date.prototype.isDstObserved = () => {
 const timeout = (ms) => {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+// a function used by list and listPending to get the scope of each project.  Called by
+// Promise.all below.
+const getScope = async proj => {
+    const scopeData = await ProjectModel.getScopeItems(proj.id);
+    const returnData = {...proj, scope_items: scopeData};
+    return returnData;
+};
+
 // function to get the list of addresses.
-export const list = (request, response) => {
+export const list = async (request, response) => {
 
-  // Listing from mongoDB
-  // AddressModel.find({}).exec()
-  // .then(addresses => {
-  //   return response.json(addresses);
-  // });
+  // The main section.  First get projects, then loop on projects
+  // with map function to get the scope items.
+  try {
+    const projects = await ProjectModel.getProjects(request.params);
+    const projectData = await Promise.all(projects.map(proj => getScope(proj)));
+    // console.log('list SEARCHed projects with scope:', projectData);
+    return response.json(projectData);
 
-  ProjectModel.getProjects(request.params, function (err, rows, fields) {
-    // console.log('getProjects', request.params);
-    // console.log('getProjects', rows);
+  } catch (err) {
+    return response.json(err);
 
-    if (!err) {
-      // console.log('Data retrieved... Projects');
-      return response.json(rows);
-    }
-    else {
-      // console.log('Projects: Error while performing Query.', err);
-      return response.json(err);
-    }
-  });
+  }
 }
 
 // function to get the list of addresses.
-export const listPending = (request, response) => {
+export const listPending = async (request, response) => {
 
-  ProjectModel.getPendingProjects(request.params.userID, function (err, rows, fields) {
-    // console.log('Pending Projects: err', err);
-    // console.log('Pending Projects: rows', rows);
-    // console.log('Pending Projects: fields', fields);
-    if (!err) {
-      // console.log('Data retrieved... Pending rows');
-      return response.json(rows);
-    }
-    else {
-      // console.log('Projects: Error while performing Query.');
-      return response.json(err);
-    }
-  });
-}
+  // The main section.  First get projects, then loop on projects
+  // with map function to get the scope items.
+  try {
+    const projects = await ProjectModel.getPendingProjects(request.params.userID);
+    const projectData = await Promise.all(projects.map(proj => getScope(proj)));
+    // console.log('list PENDING projects with scope:', projectData);
+    return response.json(projectData);
 
-export const listDups = async (request, response) => {
+  } catch (err) {
+    return response.json(err);
 
-  // ProjectModel.getDups(request.params, function (err, rows, fields) {
-  //   console.log('getDups', request.params);
-  //   console.log('getDups', rows);
-  //
+  }
+  // ProjectModel.getPendingProjects(request.params.userID, function (err, rows, fields) {
+  //   // console.log('Pending Projects: err', err);
+  //   // console.log('Pending Projects: rows', rows);
+  //   // console.log('Pending Projects: fields', fields);
   //   if (!err) {
-  //     console.log('Data retrieved... Dups');
+  //     // console.log('Data retrieved... Pending rows');
   //     return response.json(rows);
   //   }
   //   else {
-  //     console.log('Projects: Error while performing Query.', err);
+  //     // console.log('Projects: Error while performing Query.');
   //     return response.json(err);
   //   }
   // });
 
+}
+
+export const listDups = async (request, response) => {
+
   try {
     // console.log('in db update.  Params:', id, tCardID);
     const dups = await ProjectModel.getDups(request.params);
-    console.log('listDups', request.params);
-    console.log('listDups', dups);
+    // console.log('listDups', request.params);
+    // console.log('listDups', dups);
     return response.json(dups);
 
   } catch (err) {
     // console.log('MySQL Update record Error: ', `${err.errno}:${err.code} - ${err.sqlMessage}`);
-    // errors.push(err);
-    // throw new Error(err);
     return response.json(err);
 
   }
@@ -100,13 +99,6 @@ export const listDups = async (request, response) => {
 
 // function to get details of one address
 export const show = (request, response) => {
-
-  // AddressModel.findById(request.params.id).exec()
-  // .then(address => {
-  //   return response.json(address);
-  // });
-
-  // return response.json(addresses.find(address => address._id == request.params.id));
 
   ProjectModel.getProjectByID(request.params.id, function (err, rows, fields) {
     if (!err) {
@@ -122,17 +114,50 @@ export const show = (request, response) => {
 }
 
 // function to create a address
-export const create = (request, response) => {
-  ProjectModel.addProject(request.body, function(err, result) {
-    if (err) {
-      console.log('Controller Create Err', err);
-      return response.json(err);  // If there is an error.
-    }
-    // console.log('Controller callback: result', result);
-    const insertID = response.json(result);
-    return insertID;
+export const create = async (request, response) => {
 
-  });  // end of callback function and addProject
+  var errors = [];
+  var addRecordResponse;
+  try {
+    addRecordResponse = await ProjectModel.addProject(request.body);
+    console.log('new DB record created / updated: ', addRecordResponse.insertId);
+  } catch (err) {
+    console.log('Record create error:', err);
+    errors.push(err);
+  }
+
+  // Project was created.  Now create scope entries
+  if (addRecordResponse.insertId || request.body.address_id) {
+    // for (let i = 0, len = request.body.scope_items.length; i < len; i++) {
+    //   try {
+    //     const addScopeResponse = await ProjectModel.addProjectScope(request.body.scope_items);
+    //     console.log('new DB scope record created / updated: ', request.body.scope_items.scope);
+    //   } catch (err) {
+    //     console.log('Scope record create error:', err);
+    //     errors.push(err);
+    //   }
+    // }
+    console.log('In the scope section.');
+
+  }
+
+  // ProjectModel.addProject(request.body, function(err, result) {
+  //   if (err) {
+  //     console.log('Controller Create Err', err);
+  //     return response.json(err);  // If there is an error.
+  //   }
+  //   // console.log('Controller callback: result', result);
+  //   const insertID = response.json(result);
+  //   return insertID;
+  //
+  // });  // end of callback function and addProject
+
+
+  if (errors.length > 0) {
+    return errors[0]
+  }
+  return addRecordResponse.insertID;
+
 }
 
 // function to create a address

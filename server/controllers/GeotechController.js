@@ -7,6 +7,11 @@ export const listGeos = (request, response) => {
 
   // geotechs is global seed data variable.  Should already have values.
   // This enables us to skip the async call below and return values quickly.
+
+  // however commented out so that we can add geotechs on the fly.  Otherwise
+  // everytime I added a geotech, I would have to restart the app.  Need to
+  // figure out way to pull data once and store in server variables, but be
+  // able to refresh these variables.
   // console.log('seedData', geotechs);
   // if (geotechs) { return response.json(geotechs) };
 

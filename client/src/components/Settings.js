@@ -54,7 +54,8 @@ class Settings extends Component {
 
   handleChangeComplete = color => {
     // console.log('color', color);
-    this.props.updateSettings({accentColor: color.hex });
+    // this.props.updateSettings({accentColor: color.hex });
+    this.props.updateAccentColor(color.hex);
   };
 
   render() {
@@ -118,12 +119,6 @@ class Settings extends Component {
             variant = 'contained' color='secondary'
           >
             Close
-          </Button>
-          <Button
-            onClick = {this.handleSubmit}
-            variant = 'contained' color='secondary'
-          >
-            Save
           </Button>
         </DialogActions>
       </Dialog>

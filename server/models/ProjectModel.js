@@ -11,7 +11,7 @@ const sqlPromise = (SQLstmt, values) => {
 };
 
 const ProjectModel = {
-  getProjects: function(params, callback) {
+  getProjects: function(params, callback = null) {
 
     // Stripping the first character (:)
     Object.keys(params).forEach(key => params[key] = params[key].slice(0,5) === ':null'? '' : params[key].slice(1));
@@ -112,11 +112,16 @@ const ProjectModel = {
     + ' order by job_number';
 
     // console.log('ProjectModel: SQL', SQLstmt, values);
-
-    return sql().query(SQLstmt, values, callback);
+    if (callback) {
+      // console.log('getProjects: in the callback version');
+      return sql().query(SQLstmt, values, callback);
+    } else {
+      // console.log('getProjects: in the promise version');
+      return sqlPromise(SQLstmt, values);
+    }
   },
 
-  getPendingProjects: function(userID, callback) {
+  getPendingProjects: function(userID, callback = null) {
     // const SQLstmt = 'select id, city, state_prov, country from cities';
     // let SQLstmt = 'SELECT s.*, cl.name client, co.full_name requestor'
     //   + ' from projects s'
@@ -139,7 +144,30 @@ const ProjectModel = {
       + ' order by s.job_number';
 
     // console.log('ProjectModel: userID, SQL', userID, SQLstmt);
-    return sql().query(SQLstmt, [userID], callback);
+
+    if (callback) {
+      // console.log('getPendingProjects: in the callback version');
+      return sql().query(SQLstmt, [userID], callback);
+    } else {
+      // console.log('getPendingProjects: in the promise version');
+      return sqlPromise(SQLstmt, [userID]);
+    }
+    // return sql().query(SQLstmt, [userID], callback);
+  },
+
+  getScopeItems: function(projectID, callback = null) {
+    let SQLstmt = `SELECT s.id scope_id, s.scope`
+      + ' from projects_scope s'
+      + ' where project_id = ?';
+
+    if (callback) {
+      // console.log('getScopeItems: in the callback version');
+      return sql().query(SQLstmt, [projectID], callback);
+    } else {
+      // console.log('getScopeItems: in the promise version');
+      return sqlPromise(SQLstmt, [projectID]);
+    }
+    // return sql().query(SQLstmt, [userID], callback);
   },
 
   getDups: function(params, callback = null) {
@@ -228,7 +256,7 @@ const ProjectModel = {
     , created_by, last_updated_by }
     = start;
 
-  console.log("dwelling_type", dwelling_type);
+  // console.log("dwelling_type", dwelling_type);
   // console.log("job_number", job_number);
   // console.log("city", city);
   // console.log("user_id", owner_id);
@@ -279,6 +307,86 @@ const ProjectModel = {
   , scope, classification, onboard_date, start_date, due_date, final_due_date, transmittal_date, main_contact, billing_contact, builder_contact // 10
   , foundation_type, floor_type, roof_type, num_stories, square_footage, pita_factor, dwelling_type, trello_list_id, trello_card_id  // 9
   , box_folder, last_updated_by // 2
+  ];
+
+    // console.log('Model addProject: SQL', SQLstmt);
+    // console.log('Model addProject: Values', values);
+    if (callback) {
+      // console.log('Model addProject: in the callback version')
+      return sql().query(SQLstmt, values, callback);
+    } else {
+      // console.log('Model addProject: in the promise version')
+      return sqlPromise(SQLstmt, values);
+    }
+
+  },
+
+  // This function handles BOTH ADD and UPDATE.
+  // Basically an UPSERT feature.
+  addProjectScope: function(scope_items, callback = null){
+
+  //inserting into mysql
+  const {scope_id, project_id, scope, job_number, revision, revision_desc, scope_status  // 7
+    , onboard_date, start_date, due_date, final_due_date, transmittal_date  // 5
+    , trello_list_id, trello_card_id, box_folder  // 3
+    , plan_type, elevation, masonry, garage_type, garage_entry, garage_swing  // 6
+    , garage_drop, garage_extension, covered_patio, bay_window // 4
+    , master_shower_drop, bath1_shower_drop, bath2_shower_drop, bath3_shower_drop  // 4
+    , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl  // 4
+    , foundation_type, floor_type, roof_type, num_stories, square_footage, dwelling_type // 6
+    , additional_options, comments  // 2
+    , record_status, created_by, last_updated_by } // 3  Total as of Sep 23, 2019 = 44
+    = scope_items;
+
+  // console.log("dwelling_type", dwelling_type);
+  // console.log("job_number", job_number);
+  // console.log("city", city);
+  // console.log("user_id", owner_id);
+  // console.log('addProject: Values', values)
+
+  const SQLstmt = `INSERT INTO projects_scope (id, project_id, scope, job_number, revision, revision_desc, scope_status
+    , onboard_date, start_date, due_date, final_due_date, transmittal_date
+    , trello_list_id, trello_card_id, box_folder
+    , plan_type, elevation, masonry, garage_type, garage_entry, garage_swing
+    , garage_drop, garage_extension, covered_patio, bay_window
+    , master_shower_drop, bath1_shower_drop, bath2_shower_drop, bath3_shower_drop
+    , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl
+    , foundation_type, floor_type, roof_type, num_stories, square_footage, dwelling_type
+    , additional_options, comments
+    , record_status, created_by, last_updated_by)
+   VALUES(?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?)
+   ON DUPLICATE KEY UPDATE project_id = ?, scope = ?, job_number = ?, revision = ?, revision_desc = ?, scope_status = ?
+     , onboard_date = ?, start_date = ?, due_date = ?, final_due_date = ?, transmittal_date = ?
+     , trello_list_id = ?, trello_card_id = ?, box_folder = ?
+     , plan_type = ?, elevation, masonry = ?, garage_type = ?, garage_entry = ?, garage_swing = ?
+     , garage_drop = ?, garage_extension = ?, covered_patio = ?, bay_window = ?
+     , master_shower_drop = ?, bath1_shower_drop = ?, bath2_shower_drop = ?, bath3_shower_drop = ?
+     , fnd_height_fr = ?, fnd_height_fl = ?, fnd_height_rr = ?, fnd_height_rl = ?
+     , foundation_type = ?, floor_type = ?, roof_type = ?, num_stories = ?, square_footage = ?, dwelling_type = ?
+     , additional_options = ?, comments = ?
+     , record_status = ?, last_updated_by = ?`;
+
+  const values = [scope_id, project_id, scope, job_number, revision, revision_desc, scope_status  // 7
+    , onboard_date, start_date, due_date, final_due_date, transmittal_date  // 5
+    , trello_list_id, trello_card_id, box_folder  // 3
+    , plan_type, elevation, masonry, garage_type, garage_entry, garage_swing  // 6
+    , garage_drop, garage_extension, covered_patio, bay_window // 4
+    , master_shower_drop, bath1_shower_drop, bath2_shower_drop, bath3_shower_drop  // 4
+    , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl  // 4
+    , foundation_type, floor_type, roof_type, num_stories, square_footage, dwelling_type // 6
+    , additional_options, comments  // 2
+    , record_status, created_by, last_updated_by // 3
+
+    , project_id, scope, job_number, revision, revision_desc, scope_status  // 6
+    , onboard_date, start_date, due_date, final_due_date, transmittal_date  // 5
+    , trello_list_id, trello_card_id, box_folder  // 3
+    , plan_type, elevation, masonry, garage_type, garage_entry, garage_swing  // 6
+    , garage_drop, garage_extension, covered_patio, bay_window // 4
+    , master_shower_drop, bath1_shower_drop, bath2_shower_drop, bath3_shower_drop  // 4
+    , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl  // 4
+    , foundation_type, floor_type, roof_type, num_stories, square_footage, dwelling_type // 6
+    , additional_options, comments  // 2
+    , record_status, last_updated_by // 2
   ];
 
     // console.log('Model addProject: SQL', SQLstmt);

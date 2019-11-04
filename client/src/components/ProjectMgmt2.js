@@ -37,7 +37,7 @@ import LockOpen from '@material-ui/icons/LockOpen';
 // import ExpandMore from '@material-ui/icons/ExpandMore';
 
 import Select from 'react-select';
-import CreatableSelect from 'react-select/lib/Creatable';
+import CreatableSelect from 'react-select/creatable';
 import ClientDialogContainer from '../containers/ClientDialogContainer';
 import ContactDialogContainer from '../containers/ContactDialogContainer';
 import CityDialogContainer from '../containers/CityDialogContainer';
@@ -45,8 +45,6 @@ import SubdivisionDialogContainer from '../containers/SubdivisionDialogContainer
 import AlertDialogContainer from '../containers/AlertDialogContainer';
 import ProjectCreateContainer from '../containers/ProjectCreateContainer';
 import DupsDialogContainer from '../containers/DupsDialogContainer';
-
-import ReactDataGrid from 'react-data-grid';
 
 // import classNames from 'classnames';
 
@@ -82,27 +80,7 @@ const styles = theme => ({
     }),
     // paddingRight: 100,
   },
-  jobNumColumn: {
-    fontSize: 12,
-    textAlign: 'center',
-    color: theme.palette.secondary.dark,
-    fontWeight: 500,
-  },
-  centerColumn: {
-    fontSize: 12,
-    textAlign: 'center',
-  },
-  column: {
-    fontSize: 12,
-  },
-  parentDivOfGrid: {
-    '& $div.react-grid-HeaderCell': {
-      backgroundColor: theme.palette.primary.main,
-      color: theme.palette.primary.contrastText,
-      textAlign: 'center',
-      fontSize: 12
-    }
-  },
+
 });
 
 // object property to handle the react-select control.  Had to pull it outside MUI styles function.
@@ -233,8 +211,6 @@ class ProjectMgmt extends Component {
         status: '',
       },
       dupsDialogActivate: false,
-      selectedIndexes: [],
-
     };
 
     this.tabs = [
@@ -351,98 +327,23 @@ class ProjectMgmt extends Component {
       ]},
     ]
 
-    this.fields = [
-        {name: 'Edit', key: 'edit', id: '', type: 'text', width: '3%', isDisabled: false, required: false, list: []},
-        {name: 'Delete', key: 'delete', id: '', type: 'text', width: '3%', isDisabled: false, required: false, list: []},
-        {name: 'Job Number', key: 'job_number', id: '', type: 'number', width: '9%', isDisabled: true, required: false, list: []},
-        {name: 'Unlock', key: 'jobNumUnlock', id: '', type: 'text', width: '1%', isDisabled: false, required: false, list: []},
-        {name: 'Address', key: 'address1', id: '', type: 'text', width: '14%', isDisabled: false, required: true, list: []},
-        {name: 'Rev', key: 'revision', id: '', type: 'text', width: '3%', isDisabled: false, required: false, list: []},
-        {name: 'Rev Desc', key: 'revision_desc', id: '', type: 'text', width: '12%', isDisabled: false, required: false, list: []},
-        // {name: 'Address 2', key: 'address2', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
-        {name: 'Client', key: 'client', id: 'client_id', type: 'text', width: '10%', isDisabled: false, required: true, list: []},
-        {name: 'Requestor', key: 'requestor', id: 'requestor_id', type: 'text', width: '10%', isDisabled: true, required: false, list: []},
-        {name: 'Subdivision', key: 'subdivision', id: 'subdivision_id', type: 'text', width: '10%', isDisabled: true, required: false, list: []},
-        {name: 'City', key: 'city', id: 'city_id', type: 'text', width: '10%', isDisabled: true, required: false, list: []},
-        // {name: 'Proj Status', key: 'project_status', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
-        {name: 'Classification', key: 'classification', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
-        {name: 'Scope', key: 'scope', id: '', width: '10%', type: 'text', isDisabled: false, required: false, list: []},
-        {name: 'Due Date', key: 'due_date', id: '', type: 'date', width: '7%', isDisabled: false, required: false, list: []},
-        {name: 'Onboard Date', key: 'onboard_date', id: '', type: 'date', width: '7%', isDisabled: false, required: false, list: []},
-        {name: 'Start Date', key: 'start_date', id: '', type: 'date', width: '7%', isDisabled: false, required: false, list: []},
-        {name: 'Final Due Date', key: 'final_due_date', id: '', type: 'date', width: '7%', isDisabled: false, required: false, list: []},
-        {name: 'Transmittal Date', key: 'transmittal_date', id: '', type: 'date', width: '7%', isDisabled: false, required: false, list: []},
-        {name: 'Main Contact', key: 'main_contact', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
-        {name: 'Billing', key: 'billing_contact', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
-        {name: 'Builder', key: 'builder_contact', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
-        {name: 'Box Folder', key: 'box_folder', id: '', type: 'text', width: '15%', isDisabled: false, required: false, list: []},
-        {name: 'Phase', key: 'phase', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
-        {name: 'Section', key: 'section', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
-        {name: 'Block', key: 'block', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
-        {name: 'Lot', key: 'lot', id: '', type: 'text', width: '5%', isDisabled: false, required: false, list: []},
-        {name: 'Plan Type', key: 'plan_type', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
-        {name: 'Elevation', key: 'elevation', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
-        {name: 'Masonry', key: 'masonry', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
-        {name: 'Covered Patio', key: 'covered_patio', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
-        {name: 'Bay Window', key: 'bay_window', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
-        {name: 'Dwelling', key: 'dwelling_type', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
-        {name: 'Garage Type', key: 'garage_type', id: '', type: 'text', width: '12%', isDisabled: false, required: false, list: []},
-        {name: 'Garage Entry', key: 'garage_entry', id: '', type: 'text', width: '12%', isDisabled: false, required: false, list: []},
-        {name: 'Garage Swing', key: 'garage_swing', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
-        {name: 'Garage Ext', key: 'garage_extension', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
-        {name: 'Garage Drop', key: 'garage_drop', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
-        {name: 'Master', key: 'master_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
-        {name: 'Bath 1', key: 'bath1_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
-        {name: 'Bath 2', key: 'bath2_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
-        {name: 'Bath 3', key: 'bath3_shower_drop', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
-        {name: 'Lab', key: 'geo_lab', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
-        {name: 'Report #', key: 'geo_report_num', id: '', type: 'text', width: '8%', isDisabled: false, required: false, list: []},
-        {name: 'Report Date', key: 'geo_report_date', id: '', type: 'date', width: '7%', isDisabled: false, required: false, list: []},
-        {name: 'PI', key: 'geo_pi', id: '', type: 'text', width: '4%', isDisabled: false, required: false, list: []},
-        {name: 'EmC', key: 'em_center', id: '', type: 'number', width: '4%', isDisabled: false, required: false, list: []},
-        {name: 'EmE', key: 'em_edge', id: '', type: 'number', width: '4%', isDisabled: false, required: false, list: []},
-        {name: 'YmC', key: 'ym_center', id: '', type: 'number', width: '4%', isDisabled: false, required: false, list: []},
-        {name: 'YmE', key: 'ym_edge', id: '', type: 'number', width: '4%', isDisabled: false, required: false, list: []},
-        {name: 'Soil Notes', key: 'soil_notes', id: '', type: 'text', width: '13%', isDisabled: false, required: false, list: []},
-        {name: 'Front RT', key: 'fnd_height_fr', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
-        {name: 'Front LT', key: 'fnd_height_fl', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
-        {name: 'Rear RT', key: 'fnd_height_rr', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
-        {name: 'Rear LT', key: 'fnd_height_rl', id: '', type: 'number', width: '8%', isDisabled: false, required: false, list: []},
-        {name: 'FDN Type', key: 'foundation_type', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
-        {name: 'Floor Type', key: 'floor_type', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
-        {name: 'Roof Type', key: 'roof_type', id: '', type: 'text', width: '10%', isDisabled: false, required: false, list: []},
-        {name: 'Stories', key: 'num_stories', id: '', type: 'number', width: '5%', isDisabled: false, required: false, list: []},
-        {name: 'SQFT', key: 'square_footage', id: '', type: 'number', width: '5%', isDisabled: false, required: false, list: []},
-        {name: 'PITA', key: 'pita_factor', id: '', type: 'number', width: '6%', isDisabled: false, required: false, list: []},
-        {name: 'Addl Options', key: 'additional_options', id: '', type: 'text', width: '25%', isDisabled: false, required: false, list: []},
-        {name: 'Notes', key: 'comments', id: '', type: 'text', width: '25%', isDisabled: false, required: false, list: []},
-        {name: 'Default List', key: 'trello_list', id: 'trello_list_id', type: 'text', width: '20%', isDisabled: false, required: false, list: []},
-        {name: 'Card ID', key: 'trello_card_id', id: '', type: 'text', width: '20%', isDisabled: false, required: false, list: []},
-        // {name: 'Create?', key: 'createTrelloCard', id: '', type: 'checkbox', width: '3%', isDisabled: false, required: false, list: []},
-        {name: 'Status', key: 'status', id: '', type: 'text', width: '4%', isDisabled: false, required: false, list: []},
-        {name: 'Cancel', key: 'cancel', id: '', type: 'text', width: '3%', isDisabled: false, required: false, list: []},
-        {name: 'Add', key: 'add', id: '', type: 'text', width: '3%', isDisabled: false, required: false, list: []},
-      ];
-
-      this.theFields = [];
   }
 
   componentDidMount = () => {
-    // const tempFields = [].concat(
-    //   this.tabs.find(tab => tab.name === 'pre_key').fields,
-    //   this.tabs.find(tab => tab.name === 'main').fields,
-    //   this.tabs.find(tab => tab.name === 'lot').fields,
-    //   this.tabs.find(tab => tab.name === 'design').fields,
-    //   this.tabs.find(tab => tab.name === 'garage').fields,
-    //   this.tabs.find(tab => tab.name === 'soil').fields,
-    //   this.tabs.find(tab => tab.name === 'post_key').fields,
-    // );
-    //
-    this.theFields = this.fields.map(field => {
-      return {...field, width: 40, resizable: true, formatter: this.colFormatter}
-    });
-    // // console.log('tempFields', tempFields);
-    // console.log('theFields', this.theFields);
+    // this.props.loadContacts();
+    // this.props.getLookup('TRELLO_LIST');
+    // this.props.getLookup('PROJECT_STATUS');
+    // this.props.getLookup('SCOPE');
+    // this.props.getLookup('MASONRY');
+    // this.props.getLookup('YN');
+    // this.props.getLookup('FND_TYPE');
+    // this.props.getLookup('GARAGE_TYPE');
+    // this.props.getLookup('GARAGE_ENTRY');
+    // this.props.getLookup('GARAGE_SWING');
+    // this.props.getLookup('FLOOR_TYPE');
+    // this.props.getLookup('ROOF_TYPE');
+    // this.props.getLookup('COVERED_PATIO');
+    // this.props.getLookup('PITA');
 
   }
 
@@ -692,38 +593,6 @@ class ProjectMgmt extends Component {
     this.props.commitAddresses(this.props.session.id, this.props.addresses, this.state.search, false);
     // this.initState();
   };
-
-  headerColFormatter = (value) => {
-    return (
-      <div>
-        {value}
-      </div>
-    )
-  }
-
-  jobNumColFormatter = ({ value }) => {
-    return (
-      <Typography className={this.props.classes.jobNumColumn}>
-        {value? value : 'Current Entry'}
-      </Typography>
-    )
-  }
-
-  centerColFormatter = ({ value }) => {
-    return (
-      <Typography className={this.props.classes.centerColumn}>
-        {value}
-      </Typography>
-    )
-  }
-
-  colFormatter = ({ value }) => {
-    return (
-      <Typography className={this.props.classes.column}>
-        {value}
-      </Typography>
-    )
-  }
 
   // editStart = (id) => {
   //   this.setState({
@@ -1639,23 +1508,12 @@ class ProjectMgmt extends Component {
     return pending;
   };
 
-  onRowSelected = rows => {
-    // console.log('onRowSelected', rows, rows[0].rowIdx);
-    this.setState({
-      selectedIndexes:
-        // this.state.selectedIndexes.concat(rows.map(r => r.rowIdx))
-        // rows.map(r => r.rowIdx)
-        [rows[0].rowIdx]
-    });
-  };
-
   render() {
     const { classes } = this.props;
 
-    console.log('the Fields', this.theFields);
     // console.log('session', this.props.session);
     // console.log('Create Start Render: state', this.state);
-    // console.log('projects', this.props.addresses);
+    // console.log('starts', this.props.addresses);
     // console.log('trelloList', this.props.trelloListLookup);
     // this.props.dups.length > 0? console.log('possible dups', this.props.dups) : null;
 
@@ -1702,7 +1560,7 @@ class ProjectMgmt extends Component {
               color="secondary"
               onClick={ this.handleQuickEntry }
             >
-              Go to Field View
+              Easy Mode
             </Button>
           </Grid>
         </Grid>
@@ -1922,33 +1780,6 @@ class ProjectMgmt extends Component {
                 </Paper>
               </Grid>
               <Grid item  xs={12}>
-
-              <Paper>
-              <div className={classes.parentDivOfGrid}>
-              <ReactDataGrid
-                columns={this.theFields}
-                rowGetter={i => this.props.addresses[i]}
-                rowsCount={this.props.addresses.length + 1}
-                minHeight={300}
-                // selectAllRenderer={null}
-                // headerRenderer={this.HeaderRenderer}
-                // toolbar={true}
-                // showCheckbox={false}
-                // rowSelection={{
-                //   showCheckbox: true,
-                //   enableShiftSelect: true,
-                //   onRowsSelected: this.onRowSelected,
-                //   // onRowsDeselected: this.onRowsDeselected,
-                //   selectBy: {
-                //     indexes: this.state.selectedIndexes
-                //   }
-                // }}
-
-              />
-              </div>
-              </Paper>
-
-
                 <AppBar position='static' >
                   <Grid container justify='space-around'>
                     <Grid item xs={12}>

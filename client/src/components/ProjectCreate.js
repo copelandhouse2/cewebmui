@@ -6,7 +6,7 @@ import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import Select from 'react-select';
-import CreatableSelect from 'react-select/lib/Creatable';
+import CreatableSelect from 'react-select/creatable';
 import Checkbox from '@material-ui/core/Checkbox';
 import TextField from '@material-ui/core/TextField';
 
@@ -443,10 +443,26 @@ class ProjectCreate extends Component {
 
   commitPendingAddresses = () => {
     // console.log('In Commit Start',this.props.session.id);
-    this.setState({status: 'PENDING'}, ()=> {
-      this.props.commitAddresses(this.props.session.id, [this.state], this.state.search, true);
-      this.initState();
-    });
+    if (this.state.address1 !== '' && this.state.client_id !== null) {
+      // console.log('In the if', this.state);
+
+      this.setState({status: 'PENDING'}, ()=> {
+        this.props.commitAddresses(this.props.session.id, [this.state], this.state.search, true);
+        this.initState();
+      });
+    }
+    else {
+      this.props.loadMessage(
+        { ok:false,
+          status: 'Missing Data',
+          statusText: "Missing Address or Client.  Please fill in"
+        }, "ERROR");
+    }
+
+    // this.setState({status: 'PENDING'}, ()=> {
+    //   this.props.commitAddresses(this.props.session.id, [this.state], this.state.search, true);
+    //   this.initState();
+    // });
     // this.initState();
   };
 
@@ -837,7 +853,7 @@ class ProjectCreate extends Component {
             size='small'
             onClick={(e) => this.props.handleQuickEntry()}
           >
-            Advanced Mode
+            Go To Table View
           </Button>
         </Grid>
       </Grid>

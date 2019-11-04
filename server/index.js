@@ -18,6 +18,8 @@ import LookupRoutes from "./routes/LookupRoutes";
 import ContactRoutes from "./routes/ContactRoutes";
 import UserRoutes from "./routes/UserRoutes";
 import GeotechRoutes from "./routes/GeotechRoutes";
+import AvffRoutes from "./routes/AvffRoutes";
+
 import bodyParser from "body-parser";
 import path from "path";
 
@@ -85,6 +87,7 @@ app.use(JobNumberSeqRoutes);
 app.use(LookupRoutes);
 app.use(UserRoutes);
 app.use(GeotechRoutes);
+app.use(AvffRoutes);
 
 const port = env.REACT_APP_MODE === 'PROD'?
   env.REACT_APP_PORT || 3001 : env.REACT_APP_PORT_TEST || 5001;

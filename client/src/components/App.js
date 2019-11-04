@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from "react";
 // import "../css/App.css";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
-// import { BrowserRouter, Route, Switch, Redirect } from "react-router-dom";
 import Navbar from "./Navbar";
 import ProjectMgmtContainer from "../containers/ProjectMgmtContainer";
 import SignUpSignInContainer from "../containers/SignUpSignInContainer";
@@ -22,25 +21,25 @@ import Drawer from '@material-ui/core/Drawer';
 import WelcomeContainer from "../containers/WelcomeContainer";
 import UnderConstruction from "../components/UnderConstruction";
 
-import red from '@material-ui/core/colors/red';
-import pink from '@material-ui/core/colors/pink';
-import purple from '@material-ui/core/colors/purple';
-import deepPurple from '@material-ui/core/colors/deepPurple';
-import indigo from '@material-ui/core/colors/indigo';
-import blue from '@material-ui/core/colors/blue';
-import lightBlue from '@material-ui/core/colors/lightBlue';
-import cyan from '@material-ui/core/colors/cyan';
-import teal from '@material-ui/core/colors/teal';
-import green from '@material-ui/core/colors/green';
-import lightGreen from '@material-ui/core/colors/lightGreen';
-import lime from '@material-ui/core/colors/lime';
-import yellow from '@material-ui/core/colors/yellow';
-import amber from '@material-ui/core/colors/amber';
-import orange from '@material-ui/core/colors/orange';
-import grey from '@material-ui/core/colors/grey';
+// import red from '@material-ui/core/colors/red';
+// import pink from '@material-ui/core/colors/pink';
+// import purple from '@material-ui/core/colors/purple';
+// import deepPurple from '@material-ui/core/colors/deepPurple';
+// import indigo from '@material-ui/core/colors/indigo';
+// import blue from '@material-ui/core/colors/blue';
+// import lightBlue from '@material-ui/core/colors/lightBlue';
+// import cyan from '@material-ui/core/colors/cyan';
+// import teal from '@material-ui/core/colors/teal';
+// import green from '@material-ui/core/colors/green';
+// import lightGreen from '@material-ui/core/colors/lightGreen';
+// import lime from '@material-ui/core/colors/lime';
+// import yellow from '@material-ui/core/colors/yellow';
+// import amber from '@material-ui/core/colors/amber';
+// import orange from '@material-ui/core/colors/orange';
+// import grey from '@material-ui/core/colors/grey';
 import blueGrey from '@material-ui/core/colors/blueGrey';
-import brown from '@material-ui/core/colors/brown';
-import deepOrange from '@material-ui/core/colors/deepOrange';
+// import brown from '@material-ui/core/colors/brown';
+// import deepOrange from '@material-ui/core/colors/deepOrange';
 
 
 const styles = theme => ({
@@ -84,32 +83,30 @@ const styles = theme => ({
   tParent: {
     minHeight: '100%'
   },
-  tChild: {
-    backgroundColor: pink[200],
-    overflow: 'auto',
-    paddingBottom: 60,
-    // height: 1500
-  },
-  tFooter: {
-    backgroundColor: grey[800],
-    height: 60,
-    position: 'relative',
-    marginTop: -60,
-    clear: 'both'
-  },
-  tReset: {
-    // minHeight: '100%'
-  }
+  // tChild: {
+  //   backgroundColor: pink[200],
+  //   overflow: 'auto',
+  //   paddingBottom: 60,
+  //   // height: 1500
+  // },
+  // tFooter: {
+  //   backgroundColor: grey[800],
+  //   height: 60,
+  //   position: 'relative',
+  //   marginTop: -60,
+  //   clear: 'both'
+  // },
 
 });
 
 class App extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
       authenticated: localStorage.getItem('token') || false,
       open: false,
-      welcome: true
+      welcome: true,
+      accentColor: this.props.session.settings.accentColor,
     };
   }
 
@@ -139,6 +136,15 @@ class App extends Component {
     this.props.loadGeotechs();
     // 1 = MLALABS
     this.props.loadGeoMasterData(1);
+    this.props.loadControls();
+    this.props.loadRelationships();
+
+  }
+
+  updateAccentColor = (color) => {
+    this.setState({
+      accentColor: color,
+    });
   }
 
   handleSignOut = () => {
@@ -174,7 +180,7 @@ class App extends Component {
     return (
       <BrowserRouter>
         <Fragment>
-        <HeaderContainer toggleDrawer = {this.toggleDrawer} navOpen = {this.state.open}/>
+        <HeaderContainer toggleDrawer = {this.toggleDrawer} navOpen = {this.state.open} updateAccentColor={this.updateAccentColor}/>
         <Grid container className={classes.appBody}>
           <Drawer
             open={this.state.open}
@@ -188,7 +194,9 @@ class App extends Component {
           </Drawer>
           <Grid item xs={12} >
             <Switch>
-              <Route path="/projectmgmt" component={ProjectMgmtContainer} />
+              <Route path="/volumeproject" component={ProjectMgmtContainer} />
+              <Route path="/customproject" component={ProjectMgmtContainer} />
+              <Route path="/search" component={ProjectMgmtContainer} />
               <Route path="/underconstruction" component={UnderConstruction} />
               <Route path="/dashboard" render={() =>
                 <Grid container justify='center' alignItems='center'>
@@ -270,9 +278,9 @@ class App extends Component {
     const { classes } = this.props;
 
     const settings = this.props.session.settings;
-    // console.log('Apps.js settings', settings);
+    // console.log('Apps.js session', this.props.session);
 
-    const theme = createMuiTheme({
+    let theme = createMuiTheme({
       typography: {
         useNextVariants: true,
         fontFamily: '"Roboto", "Walter Turncoat", "Arial", "Rock Salt", "Helvetica", sans-serif, cursive',
@@ -289,7 +297,7 @@ class App extends Component {
           // contrastText: '#fff'
         },
         secondary: {
-          main: blue[400],
+          main: this.state.accentColor,
           // main: blue[400],
           // main: '#f44336',
           // contrastText: '#000'

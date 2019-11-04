@@ -1,5 +1,5 @@
 import { connect } from "react-redux";
-import ProjectMgmt from "../components/ProjectMgmt";
+import ProjectMgmt from "../components/ProjectMgmt2";
 import { loadProjects, createAddress, deleteAddress, commitAddresses
   , showHideClientDialog, showHideContactDialog, showHideSubdivisionDialog
   , showHideCityDialog, showHideGeotechDialog, loadContacts

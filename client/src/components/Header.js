@@ -44,7 +44,7 @@ class Header extends React.Component {
   };
 
   handleSettings = () => {
-    // this.setState({ settings: !this.state.settings });
+    this.setState({ settings: !this.state.settings, anchorEl: null });
   };
 
   render() {
@@ -107,7 +107,9 @@ class Header extends React.Component {
       </AppBar>
       <SettingsContainer
         open={this.state.settings}
-        handleClose={this.handleSettings}/>
+        handleClose={this.handleSettings}
+        updateAccentColor={this.props.updateAccentColor}
+      />
       </div>
     );
   }
