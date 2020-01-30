@@ -1,7 +1,7 @@
 import express from "express";
 // import { list, show, create, update, delete } from "../controllers/AddressController";
 import { list, show, showByName, create, signUp, signIn
-  , authenticate, update, remove }
+  , authenticate, update, remove, getSettings, updateSettings }
   from "../controllers/UserController";
 
 const router = express.Router();
@@ -10,7 +10,8 @@ const router = express.Router();
 router.get("/users", list);
 
 //Getting the data... just one entity
-router.get("/users/:id", show);
+
+router.get("/users/settings/:userID", getSettings);
 
 //Getting the data... just one entity
 router.get("/users/:username", showByName);
@@ -29,6 +30,9 @@ router.get("/authenticate/:authToken", authenticate);
 
 //putting update entries to the database
 router.put("/users/:id", update);
+
+//putting update entries to the database
+router.put("/users/settings/:userID", updateSettings);
 
 //deleting entries from the database
 router.delete("/users/:id", remove);

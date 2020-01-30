@@ -1,13 +1,13 @@
 import { sql } from "../mysqldb";
 
-const ClientModel = { 
+const ClientModel = {
   getClients: function(callback) {
-    const SQLstmt = 'select id, name, full_name, compliance_dl, active, notes from clients';
+    const SQLstmt = 'select id, id code, name, name client, full_name, compliance_dl, active, notes from clients';
     return sql().query(SQLstmt, callback);
   },
 
   getClientByID: function(id, callback){
-    const SQLstmt = 'select id, name, full_name, compliance_dl, active, notes from clients where id=?';
+    const SQLstmt = 'select id, id code, name, name client, full_name, compliance_dl, active, notes from clients where id=?';
     return sql().query(SQLstmt, [id], callback);
   },
 

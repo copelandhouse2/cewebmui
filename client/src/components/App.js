@@ -1,9 +1,6 @@
 import React, { Component, Fragment } from "react";
 // import "../css/App.css";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
-import Navbar from "./Navbar";
-import ProjectMgmtContainer from "../containers/ProjectMgmtContainer";
-import SignUpSignInContainer from "../containers/SignUpSignInContainer";
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { withStyles } from '@material-ui/core/styles';
@@ -18,29 +15,17 @@ import AlertDialogContainer from "../containers/AlertDialogContainer";
 // import CitySubContainer from "./containers/CitySubContainer";
 // import Main from "./Main";
 import Drawer from '@material-ui/core/Drawer';
+
+import Navbar from "./Navbar";
+import ProjectMgmtContainer from "../containers/ProjectMgmtContainer";
+import SignUpSignInContainer from "../containers/SignUpSignInContainer";
 import WelcomeContainer from "../containers/WelcomeContainer";
 import UnderConstruction from "../components/UnderConstruction";
+import ProjectCustomContainer from "../containers/ProjectCustomContainer";
 
-// import red from '@material-ui/core/colors/red';
-// import pink from '@material-ui/core/colors/pink';
-// import purple from '@material-ui/core/colors/purple';
-// import deepPurple from '@material-ui/core/colors/deepPurple';
-// import indigo from '@material-ui/core/colors/indigo';
-// import blue from '@material-ui/core/colors/blue';
-// import lightBlue from '@material-ui/core/colors/lightBlue';
-// import cyan from '@material-ui/core/colors/cyan';
-// import teal from '@material-ui/core/colors/teal';
-// import green from '@material-ui/core/colors/green';
-// import lightGreen from '@material-ui/core/colors/lightGreen';
-// import lime from '@material-ui/core/colors/lime';
-// import yellow from '@material-ui/core/colors/yellow';
-// import amber from '@material-ui/core/colors/amber';
-// import orange from '@material-ui/core/colors/orange';
-// import grey from '@material-ui/core/colors/grey';
+// import AppContainer from "../containers/AppContainer";
+
 import blueGrey from '@material-ui/core/colors/blueGrey';
-// import brown from '@material-ui/core/colors/brown';
-// import deepOrange from '@material-ui/core/colors/deepOrange';
-
 
 const styles = theme => ({
   root: {
@@ -99,6 +84,19 @@ const styles = theme => ({
 
 });
 
+// const promiseFn = theFunction => {
+//   return new Promise((resolve, reject) => {
+//       const response = theFunction;
+//       console.log('Promise', response);
+//       if (response) {
+//         resolve(response);
+//       } else {
+//         reject(response);
+//       }
+//       // resolve(theFunction);
+//   })
+// };
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -106,17 +104,29 @@ class App extends Component {
       authenticated: localStorage.getItem('token') || false,
       open: false,
       welcome: true,
-      accentColor: this.props.session.settings.accentColor,
+      authInProgress: false
+      // settings: !this.props.session.settings?{accent_color: '#42a5f5'}:this.props.session.settings,
+      // accent_color: this.props.session.settings.accent_color
     };
   }
 
   componentDidMount() {
-    // this.props.loadSession('cmcopeland@copeland-eng.com');
+    // console.log('CDM App.js')
+    const theToken = localStorage.getItem('token');
+    if (theToken !== null) {
+      this.setState({ authInProgress: true}, () =>
+      {
+        // console.log('CDM... authenticating ', theToken)
+        this.props.authenticate();
+      })
+
+    };
+
     this.props.loadClients();
     this.props.loadCities();
     this.props.loadSubdivisions();
     this.props.loadContacts();
-
+    // this.props.loadRequestors();  // a subset of contacts
     this.props.getLookup('TRELLO_LIST');
     this.props.getLookup('PROJECT_STATUS');
     this.props.getLookup('SCOPE');
@@ -141,10 +151,33 @@ class App extends Component {
 
   }
 
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const { session } = nextProps;
+    // console.log('in getDerivedStateFromProps', session);
+    if (!session.authInProgress) {
+      return {authInProgress: false} ;
+    }
+    return null;
+  }
+
   updateAccentColor = (color) => {
-    this.setState({
-      accentColor: color,
-    });
+    let settings = {...this.props.session.userSettings};
+
+    settings = Object.assign({id: null, created_by: this.props.session.id}, settings,
+      {accent_color: color, last_updated_by: this.props.session.id});
+    // settings[created_by] = typeof settings.created_by === 'undefined'? this.props.session.id:settings.created_by;
+
+    // this.setState({ settings: settings }, () => {
+    //   console.log('in setState callback');
+    //   this.props.updateSettings(this.state.settings);
+    // });
+    // let session = {...this.props.session};
+    // session.settings.accentColor = color;
+    // console.log('updateColor', session);
+    // this.props.updateSettings(session);
+    // console.log('in updateAccentColor', this.props.session, settings);
+    this.props.updateSettings(this.props.session, settings);
+
   }
 
   handleSignOut = () => {
@@ -164,6 +197,7 @@ class App extends Component {
   toggleDrawer = () => {
     this.setState({ open: !this.state.open });
   };
+
 
   renderSignUpSignIn() {
     return (
@@ -195,7 +229,7 @@ class App extends Component {
           <Grid item xs={12} >
             <Switch>
               <Route path="/volumeproject" component={ProjectMgmtContainer} />
-              <Route path="/customproject" component={ProjectMgmtContainer} />
+              <Route path="/customproject" component={ProjectCustomContainer} />
               <Route path="/search" component={ProjectMgmtContainer} />
               <Route path="/underconstruction" component={UnderConstruction} />
               <Route path="/dashboard" render={() =>
@@ -209,6 +243,7 @@ class App extends Component {
               <Route path="/" render={() =>
                 <WelcomeContainer toggleWelcomeScreen={this.toggleWelcomeScreen} /> }
               />
+
               <Route render={() => <h1>NOT FOUND!</h1>} />
             </Switch>
           </Grid>
@@ -275,10 +310,17 @@ class App extends Component {
   // }
 
   render() {
-    const { classes } = this.props;
 
-    const settings = this.props.session.settings;
-    // console.log('Apps.js session', this.props.session);
+    const { classes, session } = this.props;
+    const settings = session.userSettings;
+
+    // console.log('Render Apps.js', session);
+
+    // if (session.authInProgress) return null;
+    if (this.state.authInProgress) {
+      // console.log('still authenticating');
+      return null;
+    }
 
     let theme = createMuiTheme({
       typography: {
@@ -297,7 +339,10 @@ class App extends Component {
           // contrastText: '#fff'
         },
         secondary: {
-          main: this.state.accentColor,
+          // main: this.state.accentColor,
+          main: !settings?'#42a5f5':settings.accent_color,
+          // main: this.state.accent_color,
+          // main: '#42a5f5',
           // main: blue[400],
           // main: '#f44336',
           // contrastText: '#000'
@@ -349,17 +394,17 @@ class App extends Component {
     // let whatToRender2 = '';
     // localStorage.removeItem('token');
 
-    const theToken = localStorage.getItem('token');
+    // const theToken = localStorage.getItem('token');
     // console.log('App Start', this.props.session);
     // console.log('App Start token', theToken);
 
     // console.log('authenticated', this.props.session.authenticated)
-    if (this.props.session.authenticated) {
-        whatToRender = this.renderApp(classes);
+
+    // if (!session.authInProgress && session.authenticated) {
+    if (session.authenticated) {
+      whatToRender = this.renderApp(classes);
     }
-    else if (theToken !== null) {
-      this.props.authenticate();
-    }
+
     else {
       whatToRender = this.renderSignUpSignIn();
     }

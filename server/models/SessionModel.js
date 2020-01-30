@@ -1,8 +1,18 @@
 import { sql } from "../mysqldb";
 
+const sqlPromise = (SQLstmt, values) => {
+  return new Promise((resolve, reject) => {
+    sql().query(SQLstmt, values, (err, response) => {
+      if (err) reject(err);
+      // console.log('resolve for sql query: ', response);
+      resolve(response);
+    });
+  });
+};
+
 const SessionModel = {
 
-getSession: function(username, callback) {
+getSession: function(username, callback = null) {
 
   const SQLstmt = 'select u.id, u.username, u.auth_key, u.approved, true authenticated, co.id contact_id, co.first_name, co.full_name, co.role, cl.id client_id, cl.name'
     + ' from users u'
@@ -11,8 +21,12 @@ getSession: function(username, callback) {
     + ' where u.username = ?';
 
   // console.log("query", SQLstmt);
+  if (callback) {
+    return sql().query(SQLstmt, [username], callback);
+  } else {
+    return sqlPromise(SQLstmt, [username]);
+  }
 
-  return sql().query(SQLstmt, [username], callback);
 }
 
 };

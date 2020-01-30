@@ -1,12 +1,17 @@
 export default {
   addresses: [],
-  // projectSearchResults: [],
-  currentProject: {},
+  search: {
+    recents: '1',
+    recentsResults: [],
+    find: null,
+    findResults: [],
+  },
   dups: [],
   clients: [],
   cities: [],
   subdivisions: [],
   contacts: [],
+  requestors: [], // subset of contacts where requestor = 'Y'
   jobnumberseqs: [],
   stateLookup: [],
   countryLookup: [],
@@ -30,6 +35,7 @@ export default {
   geos: [],
   geoMasterData: [],
   session: {
+    authInProgress: true,
     id: null,
     username: "",
     auth_key: "",
@@ -42,8 +48,9 @@ export default {
     role: "",
     client_id: null,
     client_name: "",
-    settings: {
-      accentColor: '#42a5f5',  //blue[400]
+    currentMenuID: null,
+    userSettings: {
+      accent_color: '#42a5f5',
     },
   },
   message: {
@@ -59,6 +66,12 @@ export default {
   showCityDialog: false,
   avffControls:[],
   avffRelationships:[],
-  currentControls: {},
+  currentMenu: {},
+  currentViews: [],  // could load multiple views.  SINGLE view is default.
+  currentProject: {},
+  saveType: [
+    {name: 'save', code: 'save'},
+    {name: 'commit', code: 'commit'}
+  ]
 
 };

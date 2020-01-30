@@ -1,15 +1,17 @@
 import { sql } from "../mysqldb";
 
-const ContactModel = { 
+const SQL_CONTACT_SELECT = `select id, id code, user_id, client_id, first_name, last_name, full_name, full_name name
+    , email, mobile, other, requestor, role, active, comments, concat('(',id,') ',full_name) label from contacts`;
+
+const ContactModel = {
   getContacts: function(callback) {
-    const SQLstmt = 'select id, user_id, client_id, first_name, last_name, full_name, email, mobile'
-    + ', other, role, active, comments from contacts';
+    const SQLstmt = SQL_CONTACT_SELECT;
     return sql().query(SQLstmt, callback);
   },
 
   getContactByID: function(id, callback){
-    const SQLstmt = 'select id, user_id, client_id, first_name, last_name, full_name, email, mobile'
-    + ', other, role, active, comments from contacts where id = ?';
+    const SQLstmt = SQL_CONTACT_SELECT
+    + ' where id = ?';
     return sql().query(SQLstmt, [id], callback);
   },
 
@@ -17,17 +19,17 @@ const ContactModel = {
   // Basically an UPSERT feature.
   addContact: function(contact, callback){
     const SQLstmt = 'insert into contacts'
-      + ' (id, user_id, client_id, first_name, last_name, full_name, email, mobile, other, role, active, comments'
+      + ' (id, user_id, client_id, first_name, last_name, full_name, email, mobile, other, requestor, role, active, comments'
       + ', created_by, last_updated_by)'
-      + ' values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      + ' values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
       + ' on duplicate key update user_id = ?, client_id = ?, first_name = ?, last_name = ?, full_name = ?'
-      + ', email = ?, mobile = ?, other = ?, role = ?, active = ?, comments = ?, last_updated_by = ?';
+      + ', email = ?, mobile = ?, other = ?, requestor = ?, role = ?, active = ?, comments = ?, last_updated_by = ?';
 
     const values = [contact.id, contact.user_id, contact.client_id, contact.first_name, contact.last_name
-      , contact.first_name+' '+contact.last_name, contact.email, contact.mobile, contact.other, contact.role
+      , contact.first_name+' '+contact.last_name, contact.email, contact.mobile, contact.other, contact.requestor, contact.role
       , contact.active, contact.comments, contact.created_by, contact.last_updated_by
       , contact.user_id, contact.client_id, contact.first_name, contact.last_name, contact.first_name+' '+contact.last_name
-      , contact.email, contact.mobile, contact.other, contact.role, contact.active, contact.comments
+      , contact.email, contact.mobile, contact.other, contact.requestor, contact.role, contact.active, contact.comments
       , contact.last_updated_by];
     return sql().query(SQLstmt, values, callback);
   },

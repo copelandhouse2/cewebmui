@@ -11,7 +11,11 @@ import Grid from '@material-ui/core/Grid';
 import Select from 'react-select';
 // import PropTypes from 'prop-types';
 // import { resolve } from 'url';
-import '@babel/polyfill';
+// import '@babel/polyfill';
+
+// to setup draggable dialog.  Unfortunately, blocking Textfield edit.
+// import Paper from '@material-ui/core/Paper';
+// import Draggable from 'react-draggable';
 
 const styles = theme => ({
   root: {
@@ -48,16 +52,21 @@ const styles = theme => ({
   },
 });
 
-var counter = 0;
-var saveProp;
 var subdivision_id;
+
+// function PaperComponent(props) {
+//   return (
+//     <Draggable>
+//       <Paper {...props} />
+//     </Draggable>
+//   );
+// }
 
 class SubdivisionDialog extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      id: null,
       subdivision: this.props.newValue,  // only seed data.
       city_id: '',
       city: '',
@@ -69,16 +78,8 @@ class SubdivisionDialog extends Component {
 
   }
 
-  componentWillMount = () => {
-    // console.log(counter, 'props in CWM', this.props);
-  }
-
-  componentWillUnmount = () => {
-    // console.log(counter, 'component unmounting', this.props, this.state);
-  }
-
   componentDidMount = () => {
-    // console.log(counter, 'props in CDM', this.props.newValue);
+
   }
 
 
@@ -91,6 +92,7 @@ class SubdivisionDialog extends Component {
     },
       ()=> {
         this.props.createSubdivision(this.state);
+        // this.setState({ id: this.setSubdivisionID() });
       }
     )
     // console.log('after the setState and createSubdivision');
@@ -141,8 +143,8 @@ class SubdivisionDialog extends Component {
   };
 
   render() {
-    counter = counter + 1;
-    if (counter === 1) {saveProp = this.props.newValue};
+    // counter = counter + 1;
+    // if (counter === 1) {saveProp = this.props.newValue};
     // console.log(counter, 'props', this.props, saveProp);
 
     // console.group('Subdivision Dialog Render');
@@ -156,6 +158,8 @@ class SubdivisionDialog extends Component {
     return (
       <Dialog fullWidth = {false}
         open={this.props.open}
+        // PaperComponent={PaperComponent}
+        aria-labelledby="sub-dialog"
       >
         <DialogTitle>Create Subdivision</DialogTitle>
         <DialogContent className={classes.container}>
@@ -165,7 +169,7 @@ class SubdivisionDialog extends Component {
                 id='id'
                 label=''
                 value={this.setSubdivisionID()}
-                // value={this.state.id||'NA'}
+                // value={this.state.id||'Nothing'}
                 // variant='filled'
                 InputProps={{
                   classes: {
@@ -209,7 +213,16 @@ class SubdivisionDialog extends Component {
         <DialogActions>
           <Button
             // onClick = {this.handleClose}
-            onClick = {() => {this.props.closeDialog('',subdivision_id, this.state.subdivision)}}
+            onClick = {() => {
+              const values = { subdivision_id: subdivision_id
+                , subdivision: this.state.subdivision
+                , city_id: this.state.city_id
+                , city: this.state.city };
+              console.log('Sub Dialog Close', values);
+              // this.props.closeDialog('',subdivision_id, this.state.subdivision);
+              this.props.closeDialog('',values);
+
+            }}
             variant = 'contained' color='secondary'
           >
             Close

@@ -1,15 +1,15 @@
 import { sql } from "../mysqldb";
 
-const SubdivisionModel = { 
+const SubdivisionModel = {
   getSubdivisions: function(callback) {
-    const SQLstmt = 'select s.id, s.subdivision, s.city_id, c.city'
+    const SQLstmt = 'select s.id, s.id code, s.subdivision, s.subdivision name, s.city_id, c.city'
      + ' from subdivisions s'
      + ' left join cities c on s.city_id = c.id';
     return sql().query(SQLstmt, callback);
   },
 
   getSubdivisionByID: function(id, callback){
-    const SQLstmt = 'select s.id, s.subdivision, s.city_id, c.city'
+    const SQLstmt = 'select s.id, s.id code, s.subdivision, s.city_id, c.city'
      + ' from subdivisions s'
      + ' left join cities c on s.city_id = c.id'
      + ' where s.id = ?';

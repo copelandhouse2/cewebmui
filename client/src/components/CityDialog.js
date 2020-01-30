@@ -13,6 +13,10 @@ import AlertDialogContainer from '../containers/AlertDialogContainer';
 import Grid from '@material-ui/core/Grid';
 import Select from 'react-select';
 
+// to setup draggable dialog.  Unfortunately, blocking Textfield edit.
+// import Paper from '@material-ui/core/Paper';
+// import Draggable from 'react-draggable';
+
 
 const styles = theme => ({
   root: {
@@ -48,6 +52,16 @@ const styles = theme => ({
     // textShadow: 5,
   },
 });
+
+var city_id;
+
+// function PaperComponent(props) {
+//   return (
+//     <Draggable>
+//       <Paper {...props} />
+//     </Draggable>
+//   );
+// }
 
 class CityDialog extends Component {
   constructor(props) {
@@ -109,6 +123,7 @@ class CityDialog extends Component {
   setCityID = () => {
     const city = this.props.cities.find(x => x.city === this.state.city)
     if (typeof city === 'undefined') return 'NA'
+    city_id = city.id;
     return city.id;
   };
 
@@ -126,7 +141,9 @@ class CityDialog extends Component {
 
     return (
       <Dialog fullWidth = {false}
-        open={this.props.showCityDialog}
+        open={this.props.open}
+        // PaperComponent={PaperComponent}
+        aria-labelledby="city-dialog"
       >
         <DialogTitle>Create City</DialogTitle>
         <DialogContent className={classes.container}>
@@ -199,7 +216,14 @@ class CityDialog extends Component {
 
         <DialogActions>
           <Button
-            onClick = {this.handleClose}
+            // onClick = {this.handleClose}
+            onClick = {() => {
+              const values = { city_id: city_id
+                , city: this.state.city };
+              console.log('City Dialog Close', values);
+              // this.props.closeDialog('',subdivision_id, this.state.subdivision);
+              this.props.closeDialog('',values);
+            }}
             variant = 'contained' color='secondary'
           >
             Close

@@ -5,15 +5,24 @@
 // Loading the list of addresses
 export function loadSession(username) {
   // console.log('loadSession', username);
-  return function (dispatch) {
+  return function (dispatch, getState) {
+    const {search} = getState();
+    // console.log('loadSession', search);
     fetch(`/session/${username}`)
     .then( (response) => {
       // console.log('response', response);
       return response.json();
     }).then((session) => {
-      session.settings = {accentColor: '#42a5f5'}
+      // console.log('loadSession response', session)
+      // settings are hardcoded right now.
+      // session.settings = {accentColor: '#42a5f5', }
       dispatch(sessionLoaded(session));
-      dispatch(loadPending(session.id));
+      // console.log('sessionLoaded done', session);
+      dispatch(getUserSettings(session));
+      // console.log('getUserSettings done', session);
+      // dispatch(loadPending(session.id));
+      dispatch(loadRecents(search.recents));
+
     });
   };
 }
@@ -24,22 +33,59 @@ function sessionLoaded(session) {
   };
 }
 
-export function updateSettings(settings) {
-  // console.log('action: the settings', settings);
+// Adding the calls to fetch 1 entity.
+function getUserSettings(session) {
+  // console.log('getUserSettings', session);
   return function (dispatch) {
-    dispatch({
-      type: "SETTINGS_UPDATED",
-      value: settings
+    fetch(`/users/settings/${session.id}`)
+    .then( (response) => {
+      return response.json();
+    }).then((settings) => {
+      // console.log('getUserSettings.then', settings);
+      dispatch(getUserSettingsDone(session, settings));
     });
-    // dispatch(settingsUpdated(settings));
-  }
+  };
+}
+function getUserSettingsDone(session, settings) {
+  const newSession = {...session, userSettings: {...settings}};
+  return {
+    type: "SESSION_LOADED",
+    value: newSession
+  };
 }
 
-function settingsUpdated(settings) {
-  return {
-    type: "SETTINGS_UPDATED",
-    value: settings
+export function updateSettings(session, settings) {
+  return function (dispatch) {
+    // console.log('in commitAddress function', userID, create);
+    fetch(`/users/settings/${session.id}`, {
+      method: "PUT",
+      headers: {"Content-Type": "application/json"}
+      , body: JSON.stringify(settings)
+    }).then((response) => {
+      return response.json();  // need to do this extra .then to convert json response into object to read.
+    }).then((response) => {
+      console.log('actions.updateSettings', response)
+      if (response.errno) {
+        // console.log('2nd .then create Address', response);
+        throw response;
+      };
+      // loadType === 'PENDING' ? dispatch(loadPending(userID)) : dispatch(loadProjects());
+      dispatch(getUserSettings(session));
+    }).catch(err => {
+      dispatch(loadMessage(
+        { ok:false,
+          status: `${err.errno}:${err.code}`,
+          statusText: err.sqlMessage
+        }, "ERROR"));
+    });
   };
+  // return function (dispatch) {
+  //   // dispatch({
+  //   //   type: "SETTINGS_UPDATED",
+  //   //   value: settings
+  //   // });
+  //   dispatch(settingsUpdated(settings));
+  // }
 }
 
 export function loadControls() {
@@ -139,6 +185,49 @@ function projectsLoaded(projects) {
   };
 }
 
+export function loadRecents(searchFilter = null) {
+  return function (dispatch, getState) {
+    const { search, session } = getState();
+    const searchVal = searchFilter?searchFilter:search.recents;
+    // console.log('In loadRecents', searchVal);
+    fetch(`/recents/v2.0/${session.id}/${searchVal}`)
+    .then( (response) => {
+      return response.json();
+    }).then((projects) => {
+      let updatedSearch = {...search};
+      updatedSearch.recents = searchVal;
+      updatedSearch.recentsResults = projects;
+      // console.log('.then loadRecents', updatedSearch);
+      dispatch(searchLoaded(updatedSearch));
+    });
+  };
+}
+
+export function loadFind(searchFilter) {
+  return function (dispatch, getState) {
+    const { search } = getState();
+
+    fetch(`/find/v2.0/${searchFilter}`)
+    .then( (response) => {
+      return response.json();
+    }).then((projects) => {
+      let updatedSearch = {...search};
+      updatedSearch.find = searchFilter;
+      updatedSearch.findResults = projects;
+      // console.log('.then loadFind', updatedSearch);
+      dispatch(searchLoaded(updatedSearch));
+    });
+  };
+}
+
+function searchLoaded(search) {
+    // console.log('searchLoaded', search);
+    return {
+    type: "SEARCH_UPDATED",
+    value: search
+  };
+}
+
 // Action to test for possible duplicates.  Right now 2 tests...
 // 1. address dup test
 // 2. Subdivision, phase, section, lot, block dup test
@@ -174,11 +263,11 @@ function dupsLoaded(dups) {
 }
 
 // Action to create the Address
-export function createAddress(c) {
+export function createAddress(c, v2 = false) {
   // console.log('Just in createAddress', c)
   return function (dispatch) {
-    // console.log('in function',userID, loadType)
-    fetch("/projects", {
+    console.log('createAddress', v2);
+    fetch(`/projects/${v2}`, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(c)
@@ -186,20 +275,28 @@ export function createAddress(c) {
       return response.json();  // need to do this extra .then to convert json response into object to read.
     }).then((response) => {
       if (response.errno) {
-        // console.log('.then create Address', response);  // now has insertId
+        console.log('Error: create Address', response);  // now has insertId
       }
-      // console.log('.then create Address', response);  // now has insertId
+      console.log('.then create Address', response);  // now has insertId
       // loadType === 'PENDING' ? dispatch(loadPending(userID)) : dispatch(loadProjects());
-      dispatch(loadProjects(c.search));
+      // dispatch(saveProject(response));
+      dispatch(loadRecents());
+      dispatch(loadMessage(
+        { ok:false,
+          status: `New / Updated Job #`,
+          statusText: response.job_number
+        }, 'INFO'));
+
+      // return response;
     });
   };
 }
 
 // Action to create the Address
-export function commitAddresses(userID, c, search, create) {
+export function commitAddresses(userID, c, search, create, v2 = false) {
   return function (dispatch) {
-    // console.log('in commitAddress function', userID, create);
-    fetch(`/commits/${userID}/${create}`, {
+    console.log('in commitAddress function', userID, create, v2);
+    fetch(`/commits/${userID}/${create}/${v2}`, {
       method: "PUT",
       headers: {"Content-Type": "application/json"}
       , body: JSON.stringify(c)
@@ -207,11 +304,17 @@ export function commitAddresses(userID, c, search, create) {
       return response.json();  // need to do this extra .then to convert json response into object to read.
     }).then((response) => {
       if (response.errno) {
-        // console.log('2nd .then create Address', response);
+        console.log('2nd .then ERROR commit Address', response);
         throw response;
       };
-      // loadType === 'PENDING' ? dispatch(loadPending(userID)) : dispatch(loadProjects());
-      dispatch(loadProjects(search));
+      console.log('2nd .then commit Address', response);
+      // dispatch(loadProjects(search));
+      dispatch(loadRecents());
+      dispatch(loadMessage(
+        { ok:false,
+          status: `New / Updated Job #`,
+          statusText: response.job_number
+        }, 'INFO'));
     }).catch(err => {
       dispatch(loadMessage(
         { ok:false,
@@ -312,6 +415,9 @@ export function loadContacts() {
       return response.json();
     }).then((contacts) => {
       dispatch(contactsLoaded(contacts));
+      const requestors = contacts.filter(c => c.requestor === 'Y');
+      // console.log('the requestors', requestors);
+      dispatch(requestorsLoaded(requestors));
     });
   };
 }
@@ -319,6 +425,12 @@ function contactsLoaded(contacts) {
   return {
     type: "CONTACTS_LOADED",
     value: contacts
+  };
+}
+function requestorsLoaded(requestors) {
+  return {
+    type: "REQUESTORS_LOADED",
+    value: requestors
   };
 }
 
@@ -627,6 +739,7 @@ export function authenticate() {
   // if (true) {
     // console.log('token is undefined');
     // return {false}
+    null;
   }
   else {
     // console.log('authenticate: In the else');
@@ -636,6 +749,7 @@ export function authenticate() {
         // console.log('authenticate response', response);
         return response.json();
     }).then((response) => {
+        // console.log('authenticate response.json 1', response);
         if (!response.ok) {
           dispatch(loadMessage(
             { ok:false,
@@ -644,7 +758,7 @@ export function authenticate() {
             }, "ERROR"));
             localStorage.removeItem('token');
         } else {
-          // console.log('authenticate response.json', user);
+          // console.log('authenticate response.json 2', response);
           dispatch(loadSession(response.data.username));
         }
     }).catch( err => {
@@ -656,11 +770,11 @@ export function authenticate() {
           }, "ERROR"));
         localStorage.removeItem('token');
 
-        // return false;
+        return false;
       });
     };
   }  // else statement
-  // return false;
+  // return retValue;
 }
 
 // Action to create the Account
@@ -894,35 +1008,41 @@ function geoMasterDataLoaded(masterData) {
   };
 }
 
-// Loading the list of geotechs
-export function loadChildControls(parent_id) {
-  // console.log('In masterData');
+// Loading the current Menu based on passed parent id.
+export function loadCurrentMenu(parent_id) {
+  // console.log('In loadCurrentMenu', parent_id);
   return function (dispatch, getState) {
     const { avffControls, avffRelationships } = getState();
-    let a = avffRelationships.filter(child => child.parent_id === parent_id);
-    let c = [];
-    for (let i = 0; i < a.length; i++) {
-      let b = avffControls.find(control => control.id === a[i].control_id);
-      c.push({ ...a[i], ...b });
-    }
+    if (avffControls.length > 0 && avffRelationships.length > 0) {
+      // console.log('loadCurrentMenu', avffControls, avffRelationships);
+      let a = avffRelationships.filter(child => child.parent_id === parent_id);
+      let c = [];
+      for (let i = 0; i < a.length; i++) {
+        let b = avffControls.find(control => control.id === a[i].control_id);
+        // Only take controls that are Menus / Actions.
+        ['MENU', 'ACTION'].includes(b.entity_type)? c.push({ ...b, ...a[i] }):null;
+      }
 
-    let parent = null;
-    if (parent_id === null) {
-      parent = {id: null, name: 'top', label: 'Main', entity_type: 'MENU'};
+      let parent = null;
+      if (parent_id === null) {
+        parent = {id: null, name: 'top', label: 'Main', entity_type: 'MENU'};
+      } else {
+        parent = avffControls.find(control => control.id === parent_id);
+      }
+      let currentControls = { ...parent, children: c };
+
+      // console.log('load Menu', currentControls);
+
+      dispatch(currentMenuLoaded(currentControls));
     } else {
-      parent = avffControls.find(control => control.id === parent_id);
+      console.log('one array missing');
     }
-    let currentControls = { ...parent, children: c };
-
-    // console.log('load Child Controls', currentControls);
-
-    dispatch(currentControlsLoaded(currentControls));
 
   };
 }
-function currentControlsLoaded(currentControls) {
+function currentMenuLoaded(currentControls) {
   return {
-    type: "CURRENT_CONTROLS_LOADED",
+    type: "CURRENT_MENU_LOADED",
     value: currentControls
   };
 }
@@ -931,5 +1051,61 @@ export function assignNewProjectScope(scope) {
   return {
     type: "INITIAL_SCOPE_LOADED",
     value: scope
+  };
+}
+
+export function updateProject(project) {
+  return {
+    type: "UPDATE_PROJECT",
+    value: project
+  };
+}
+
+export function clearProject() {
+  return {
+    type: "CLEAR_PROJECT",
+    value: {}
+  };
+}
+
+// loadCurrentView(parent_id)
+export function getChildren(controls, relationships, theParent) {
+  // console.log('In masterData');
+    let c_rship = relationships.filter(child => child.parent_id === theParent.id);
+    if (!c_rship) return [];
+
+    let children = [];
+    for (let i = 0; i < c_rship.length; i++) {
+      let c_control = controls.find(control => control.id === c_rship[i].control_id);
+      // only include children that are views, field groups, fields.
+      if (!['MENU', 'ACTION'].includes(c_control.entity_type)) {
+        children.push({ ...c_control, ...c_rship[i], children: getChildren(controls, relationships, c_control)})
+      }
+    }
+
+    // console.log('children', children);
+    return children;
+
+}
+// Loading the current Menu based on passed parent id.
+export function loadViews(rootId) {
+  // console.log('In masterData');
+  return function (dispatch, getState) {
+    const { avffControls, avffRelationships } = getState();
+
+    const rootData = avffControls.find(control => control.id === rootId);
+    const children = getChildren(avffControls, avffRelationships, rootData);
+
+    const rootTree = { ...rootData, children: [...children] }
+    // console.log('rootTree', rootTree);
+
+    dispatch(viewsLoaded(rootTree));
+
+  };
+}
+function viewsLoaded(rootTree) {
+  return {
+    type: "VIEWS_LOADED",
+    value: rootTree
   };
 }

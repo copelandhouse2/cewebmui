@@ -50,19 +50,20 @@ const styles = theme => ({
     // textShadow: 5,
 
   },
-  // headerColumn: {
-  //   fontSize: 14,
-  //   textAlign: 'center',
-  //   // background: theme.palette.secondary.dark,
-  //   fontWeight: 600,
-  //   // color: theme.palette.primary.main,
-  //   // padding: 0,
-  //   // margin: 0,
-  //   width: '100%',
-  //   height: '100%'
-  //   // backgroundColor: theme.palette.primary.main
-  //
-  // },
+  // this along with index.css .react-grid-HeaderCell entry,
+  // gives me desired header format.
+  headerColumn: {
+    fontSize: 14,
+    textAlign: 'center',
+    // background: theme.palette.secondary.dark,
+    fontWeight: 600,
+    color: theme.palette.secondary.contrastText,
+    paddingTop: 8,
+    marginTop: 0,
+    // width: '100%',
+    height: '100%',
+    backgroundColor: theme.palette.secondary.main
+  },
   jobNumColumn: {
     fontSize: 12,
     textAlign: 'center',
@@ -83,14 +84,14 @@ const styles = theme => ({
     fontWeight: 500,
     paddingTop: 10,
   },
+  // Reports browser error (still works though)
   parentDivOfGrid: {
-    '& $div.react-grid-HeaderCell': {
-      backgroundColor: theme.palette.primary.main,
-      color: theme.palette.primary.contrastText,
-      textAlign: 'center',
-      fontSize: 14
-
-    }
+    // '& $div.react-grid-HeaderRow': {
+    //   backgroundColor: theme.palette.primary.main,
+    //   color: theme.palette.primary.contrastText,
+    //   textAlign: 'center',
+    //   fontSize: 14
+    // }
   },
 });
 
@@ -213,7 +214,7 @@ class DupsDialog extends Component {
   handleSkip = () => {
     // console.log('In the handleSkip');
     this.props.onClose();
-    this.props.clearDups();
+    this.props.clearDups();  // in container
   }
 
   handleSelected = () => {
@@ -221,10 +222,10 @@ class DupsDialog extends Component {
     if (this.state.selectedIndexes[0]) {
       // console.log('In the if');
       this.props.onSelectAndClose(this.props.dups[this.state.selectedIndexes[0]-1], -1);
-      this.props.clearDups();
+      this.props.clearDups();  // in container
     } else {  // user selected first row (index = 0) which was the curent entry
       // console.log('In the else');
-      this.props.clearDups();
+      this.props.clearDups();  // in container
     }
   }
 

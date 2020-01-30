@@ -10,16 +10,20 @@ import TrelloModel from '../models/TrelloModel';
 // import { TRELLO_PARAMS } from '../../envVars';
 
 // code to test for daylight savings time or not.
-Date.prototype.stdTimezoneOffset = () => {
-    var jan = new Date(this.getFullYear(), 0, 1);
-    var jul = new Date(this.getFullYear(), 6, 1);
-    // console.log('timezone', jan, jul);
-    return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
-}
+// Date.prototype.stdTimezoneOffset = () => {
+//     var jan = new Date(this.getFullYear(), 0, 1);
+//     var jul = new Date(this.getFullYear(), 6, 1);
+//     // console.log('timezone', jan, jul);
+//     return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+// }
+//
+// Date.prototype.isDstObserved = () => {
+//     return this.getTimezoneOffset() < this.stdTimezoneOffset();
+// }
 
-Date.prototype.isDstObserved = () => {
-    return this.getTimezoneOffset() < this.stdTimezoneOffset();
-}
+const promiseFn = theFunction => {
+  return new Promise(resolve => resolve(theFunction))
+};
 
 const timeout = (ms) => {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -29,7 +33,7 @@ const timeout = (ms) => {
 // Promise.all below.
 const getScope = async proj => {
     const scopeData = await ProjectModel.getScopeItems(proj.id);
-    const returnData = {...proj, scope_items: scopeData};
+    const returnData = {...proj, scope: scopeData};
     return returnData;
 };
 
@@ -81,14 +85,31 @@ export const listPending = async (request, response) => {
 
 }
 
+export const listRecents = async (request, response) => {
+
+  // The main section.  First get projects, then loop on projects
+  // with map function to get the scope items.
+  try {
+    const projects = await ProjectModel.searchProjects(request.params);
+    const projectData = await Promise.all(projects.map(proj => getScope(proj)));
+    // console.log('list PENDING projects with scope:', projectData);
+    return response.json(projectData);
+
+  } catch (err) {
+    return response.json(err);
+
+  }
+}
+
 export const listDups = async (request, response) => {
 
   try {
     // console.log('in db update.  Params:', id, tCardID);
     const dups = await ProjectModel.getDups(request.params);
+    const projectData = await Promise.all(dups.map(proj => getScope(proj)));
     // console.log('listDups', request.params);
     // console.log('listDups', dups);
-    return response.json(dups);
+    return response.json(projectData);
 
   } catch (err) {
     // console.log('MySQL Update record Error: ', `${err.errno}:${err.code} - ${err.sqlMessage}`);
@@ -113,32 +134,64 @@ export const show = (request, response) => {
 
 }
 
+
 // function to create a address
 export const create = async (request, response) => {
 
+  // console.log('in ProjectController.create', request.body, request.params.v2);
+  console.log('in ProjectController.create', request.params);
   var errors = [];
   var addRecordResponse;
+
   try {
     addRecordResponse = await ProjectModel.addProject(request.body);
-    console.log('new DB record created / updated: ', addRecordResponse.insertId);
+    // console.log('new DB record created / updated: ', addRecordResponse);
   } catch (err) {
+    addRecordResponse = false;
     console.log('Record create error:', err);
     errors.push(err);
   }
 
+  // console.log('outside try', addRecordResponse);
   // Project was created.  Now create scope entries
-  if (addRecordResponse.insertId || request.body.address_id) {
-    // for (let i = 0, len = request.body.scope_items.length; i < len; i++) {
-    //   try {
-    //     const addScopeResponse = await ProjectModel.addProjectScope(request.body.scope_items);
-    //     console.log('new DB scope record created / updated: ', request.body.scope_items.scope);
-    //   } catch (err) {
-    //     console.log('Scope record create error:', err);
-    //     errors.push(err);
-    //   }
-    // }
-    console.log('In the scope section.');
+  // if (addRecordResponse) {
+  // console.log('just before scope section', errors.length, request.params.v2);
+  if (!errors.length && request.params.v2 === 'true') {  // version 2 changes
+    if (addRecordResponse.insertId || request.body.id) {
+      // console.log('In the scope section.');
+      let scopePromises = [];
+      request.body.scope.forEach((item, i) => {
+        item.project_id = request.body.id? request.body.id:addRecordResponse.insertId;
+        scopePromises.push(ProjectModel.addProjectScope(item));
+      });
 
+      try {
+        const scopeResponses = await Promise.all(scopePromises);
+        // console.log('scope records created / updated: ', scopeResponses);
+      } catch (err) {
+        console.log('Scope record create error:', err);
+        errors.push(err);
+      }
+
+    }
+  }
+
+  let project = {}
+  if (!errors.length) {
+    try {
+      const proj_id = request.body.id? request.body.id:addRecordResponse.insertId;
+      const p = await ProjectModel.getProjectByID(proj_id);
+      project = {...p[0], categoryID: request.body.categoryID};
+      if (request.params.v2 === 'true') {  // version 2 changes
+        const scope = await ProjectModel.getScopeItems(proj_id);
+        Object.assign(project, {scope: scope});
+        // project = {...p[0], scope: scope, categoryID: request.body.categoryID};
+      }
+      // console.log('Queried Project', project);
+    } catch (err) {
+      console.log('New Project Query error:', err);
+      errors.push(err);
+    }
   }
 
   // ProjectModel.addProject(request.body, function(err, result) {
@@ -151,24 +204,42 @@ export const create = async (request, response) => {
   //   return insertID;
   //
   // });  // end of callback function and addProject
-
-
-  if (errors.length > 0) {
-    return errors[0]
+  if (request.params.fromCommit) {
+    console.log('Create return... back to commit');
+    if (errors.length) {
+      console.log('Done with error(s)', errors);
+      return errors;
+    }
+    console.log('Project(s) committed');
+    // const proj = [];
+    // proj.push(project);
+    // console.log('This is the proj', proj)
+    return project;
+  } else {
+    console.log('Create return... back to browser');
+    if (errors.length) {
+      console.log('Done with error(s)', errors);
+      return response.json(errors);
+    }
+    console.log('Project(s) committed');
+    return response.json(project);
   }
-  return addRecordResponse.insertID;
+  // if (errors.length > 0) {
+  //   return errors[0]
+  // }
+  // return addRecordResponse.insertID;
 
 }
 
 // function to create a address
 export const commit = (request, response) => {
-  // console.log('Project Controller.commit request', request.body.length, request.params.create);
+  console.log('Project Controller.commit request', request.params);
 
   //Central time offsets.  Treating these like Globals for this function rightn now.
-  var CST_OFFSET = 360;  //starts fist sun in Nov
-  var CDT_OFFSET = 300;  // starts 2nd sun in Mar
-  // const tzoffset = dueDate.isDstObserved()? CDT_OFFSET : CST_OFFSET;
-  var tzOffset = CDT_OFFSET;
+  // var CST_OFFSET = 360;  //starts fist sun in Nov
+  // var CDT_OFFSET = 300;  // starts 2nd sun in Mar
+  // // const tzoffset = dueDate.isDstObserved()? CDT_OFFSET : CST_OFFSET;
+  // var tzOffset = CST_OFFSET;
   // console.log('query', SQLstmt);
   // sql().query(SQLstmt, values, function (err, result) {
 
@@ -190,27 +261,41 @@ export const commit = (request, response) => {
       // test to see if we need to create the project record first.  Support for Quick Entry Submit.
       var newRecord = null;
       if (request.params.create === 'true') {
+        const createReq = {body:request.body[i], params:{v2:request.params.v2, fromCommit:true} };
         try {
-          // console.log('getting ready to add record.');
-          const addRecordResponse = await ProjectModel.addProject(request.body[i]);
-          newRecord = await ProjectModel.getProjectByID(addRecordResponse.insertId)
-          // console.log('new DB record created', newRecord);
-          console.log('new DB record created');
-
+          // returns inserted / updated record.
+          newRecord = await create(createReq, response);
+          // console.log('2. new record', newRecord);
         } catch (err) {
           console.log('Record create error:', err);
           errors.push(err);
         }
+
+        // try {
+        //   // console.log('getting ready to add record.');
+        //   const addRecordResponse = await ProjectModel.addProject(request.body[i]);
+        //   newRecord = await ProjectModel.getProjectByID(addRecordResponse.insertId)
+        //   // console.log('new DB record created', newRecord);
+        //   console.log('new DB record created');
+        //
+        // } catch (err) {
+        //   console.log('Record create error:', err);
+        //   errors.push(err);
+        // }
       }
+
       // Get the variables.
-      // console.log('newRecord', newRecord[i]);
-      // console.log('request.body:',i,request.body[i]);
+      // var id, job_number;
+      // console.log('4. newRecord', newRecord);
+      // console.log('5. request.body:',i,request.body[i]);
+      // 1/28/2020 - newRecord should always be populated now and ELSE stmt
+      // could be deprecated.
       if (newRecord) {
-        var {id, job_number} = newRecord[i];
+        var {id, job_number} = newRecord;
       } else {
         var {id, job_number} = request.body[i];
       }
-      // console.log('the id, job_number: ', id, job_number);
+      // console.log('6. the id, job_number: ', id, job_number);
       const {revision, revision_desc, client_id, client, owner_id, requestor, requestor_id, city, subdivision, address1, address2, phase, section, lot, block
         , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation, masonry, garage_type
         , garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window, master_shower_drop
@@ -231,7 +316,7 @@ export const commit = (request, response) => {
           const cardInfo = await TrelloModel.get(`/1/cards/${trello_card_id}`);
           currentDesc = cardInfo.desc;
           // console.log('Pulled description', currentDesc);
-          console.log('Pulled description');
+          // console.log('Pulled description');
 
         } catch (err) {
           console.log('Record get error:', err);
@@ -276,12 +361,11 @@ export const commit = (request, response) => {
 
         var dueDate = '';
         if (due_date) {
-          dueDate = new Date(due_date);
-          const fivePMoffset = 1020;
-          // console.log('dueDate prior to offset', dueDate.toString(), tzOffset, fivePMoffset);
-          const offset = new Date().getTimezoneOffset();
-          dueDate.setMinutes(tzOffset+fivePMoffset);  // midnight + 17 hours for 5pm.
-          // console.log('dueDate after offset', dueDate.toString(), offset);
+          const hourOffset = 17 + (new Date().getTimezoneOffset() / 60);
+          const dateTime = `${due_date}T${hourOffset}:00:00Z`
+          dueDate = new Date(dateTime);
+
+          // console.log('Date info', due_date, dateTime, dueDate.toString(), hourOffset);
         }
 
         // Defining the trello card.  If trello list is set, then it will create / move
@@ -365,7 +449,7 @@ export const commit = (request, response) => {
                   // console.log('design due date', final_due_date);
                   if (final_due_date) {
                     const newDate = new Date(final_due_date);
-                    // const tzOffset = new Date(final_due_date).getTimezoneOffset();
+                    const tzOffset = new Date(final_due_date).getTimezoneOffset();
                     newDate.setMinutes(tzOffset);
                     // console.log('dates', final_due_date, newDate);
                     value = {
@@ -514,7 +598,7 @@ export const commit = (request, response) => {
                   // console.log('Onboard Date', onboard_date);
                   if (onboard_date) {
                     const newDate = new Date(onboard_date);
-                    // const tzOffset = new Date(onboard_date).getTimezoneOffset();
+                    const tzOffset = new Date(onboard_date).getTimezoneOffset();
                     newDate.setMinutes(tzOffset);
                     // console.log('dates', onboard_date, newDate);
                     value = {
@@ -563,7 +647,7 @@ export const commit = (request, response) => {
                   // console.log('Transmittal Date', transmittal_date);
                   if (transmittal_date) {
                     const newDate = new Date(transmittal_date);
-                    // const tzOffset = new Date(transmittal_date).getTimezoneOffset();
+                    const tzOffset = new Date(transmittal_date).getTimezoneOffset();
                     newDate.setMinutes(tzOffset);
                     // console.log('dates', transmittal_date, newDate);
                     value = {
@@ -587,7 +671,7 @@ export const commit = (request, response) => {
                   // console.log('Start Date', start_date);
                   if (start_date) {
                     const newDate = new Date(start_date);
-                    // const tzOffset = new Date(start_date).getTimezoneOffset();
+                    const tzOffset = new Date(start_date).getTimezoneOffset();
                     newDate.setMinutes(tzOffset);
                     // console.log('dates', start_date, newDate);
                     value = {
@@ -699,10 +783,16 @@ export const commit = (request, response) => {
                 case 'GEO REPORT DATE':
                   // console.log('Geotech report Date', geo_report_date);
                   if (geo_report_date) {
+                    // const hourOffset = 0 + (new Date(geo_report_date).getTimezoneOffset() / 60);
+                    // const dateTime = `${geo_report_date}T0${hourOffset}:00:00Z`;
+                    // const newDate = new Date(dateTime);
+
                     const newDate = new Date(geo_report_date);
-                    // const tzOffset = newDate.getTimezoneOffset();
+                    const tzOffset = newDate.getTimezoneOffset();
                     newDate.setMinutes(tzOffset);
-                    // console.log('dates', geo_report_date, newDate);
+
+                    // console.log('dates', geo_report_date, dateTime, newDate, hourOffset);
+                    console.log('dates', geo_report_date, newDate, tzOffset);
                     value = {
                       value: {'date': newDate.toString()}  // need to fix when null.  only update when value exists.
                     };
@@ -722,9 +812,9 @@ export const commit = (request, response) => {
                     promises.push(TrelloModel.put(tUrl, value));
                   }
                   break;
-                case 'SCOPE':
-                  // console.log('Folder', box_folder);
-                  if (scope) {
+                case 'SCOPE':  // now an array of scope records
+                  // console.log('scope', scope);
+                  if (scope && typeof scope === 'string') {
                     value = {
                       value: {'text': scope}  // need to fix when null.  only update when value exists.
                     };
@@ -751,7 +841,7 @@ export const commit = (request, response) => {
 
       // Updating the database
       try {
-        // console.log('in db update.  Params:', id, tCardID);
+        console.log('in db update.  Params:', id, tCardID);
         const dbResponse = await ProjectModel.commitProjectByID(id, tCardID);
         // console.log('database commit response', dbResponse);
 
@@ -763,12 +853,13 @@ export const commit = (request, response) => {
 
     } // for loop
 
+    console.log('Job number', job_number);
     if (errors.length) {
       console.log('Done with error(s)', errors);
       return response.json(errors);
     };
     console.log('Project(s) committed');
-    return response.json('Projects committed');
+    return response.json({job_number: job_number, message: 'Projects committed'});
   })();  // the async closure
 
 } // function closure

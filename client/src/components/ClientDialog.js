@@ -8,8 +8,10 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import AlertDialogContainer from '../containers/AlertDialogContainer';
 import Grid from '@material-ui/core/Grid';
-// import PropTypes from 'prop-types';
-// import { resolve } from 'url';
+
+// to setup draggable dialog.  Unfortunately, blocking Textfield edit.
+// import Paper from '@material-ui/core/Paper';
+// import Draggable from 'react-draggable';
 
 const styles = theme => ({
   root: {
@@ -44,6 +46,16 @@ const styles = theme => ({
     // textShadow: 5,
   },
 });
+
+var client_id;
+
+// function PaperComponent(props) {
+//   return (
+//     <Draggable>
+//       <Paper {...props} />
+//     </Draggable>
+//   );
+// }
 
 class ClientDialog extends Component {
   constructor(props) {
@@ -110,6 +122,7 @@ class ClientDialog extends Component {
   setClientID = () => {
     const client = this.props.clients.find(x => x.name === this.state.name)
     if (typeof client === 'undefined') return 'NA'
+    client_id = client.id;
     return client.id;
   };
 
@@ -122,7 +135,9 @@ class ClientDialog extends Component {
 
     return (
       <Dialog fullWidth = {false}
-        open={this.props.showClientDialog}
+        open={this.props.open}
+        // PaperComponent={PaperComponent}
+        aria-labelledby="client-dialog"
         // open={false}
         // onRequestClose={this.props.toggleLogin}
       >
@@ -178,7 +193,14 @@ class ClientDialog extends Component {
 
         <DialogActions>
           <Button
-            onClick = {this.handleClose}
+            // onClick = {this.handleClose}
+            onClick = {() => {
+              const values = { client_id: client_id
+                , client: this.state.client };
+              console.log('Client Dialog Close', values);
+              // this.props.closeDialog('',subdivision_id, this.state.subdivision);
+              this.props.closeDialog('',values);
+            }}
             variant = 'contained' color='secondary'
           >
             Close

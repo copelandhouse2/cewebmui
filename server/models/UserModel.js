@@ -1,18 +1,35 @@
 import { sql } from "../mysqldb";
 
+const sqlPromise = (SQLstmt, values) => {
+  return new Promise((resolve, reject) => {
+    sql().query(SQLstmt, values, (err, response) => {
+      if (err) reject(err);
+      // console.log('resolve for sql query: ', response);
+      resolve(response);
+    });
+  });
+};
+
+const SQL_USER_SELECT = `select id, username, auth_key, client_id, contact_id
+  , role, approved from users`;
+
+const SQL_SETTINGS_SELECT = `SELECT id, user_id, accent_color from users_settings`;
+
 const UserModel = {
   getUsers: function(callback) {
-    const SQLstmt = 'select id, username, auth_key, client_id, contact_id, role, approved from users';
+    const SQLstmt = SQL_USER_SELECT;
     return sql().query(SQLstmt, callback);
   },
 
   getUserByID: function(id, callback){
-    const SQLstmt = 'select id, username, auth_key, client_id, contact_id, role, approved from users where id=?';
+    const SQLstmt = SQL_USER_SELECT
+      + ' where id=?';
     return sql().query(SQLstmt, [id], callback);
   },
 
   getUserByUsername: function(username, callback){
-    const SQLstmt = 'select id, username, auth_key, client_id, contact_id, role, approved from users where username=?';
+    const SQLstmt = SQL_USER_SELECT
+      + ' where username=?';
     return sql().query(SQLstmt, [username], callback);
   },
 
@@ -46,6 +63,44 @@ const UserModel = {
     const values = [user.username, user.auth_key, user.client_id, user.contact_id
       , user.role, user.last_updated_by, user.id];
     return sql().query(SQLstmt, values, callback);
+  },
+
+  getSettings: function(userID, callback = null) {
+
+    let SQLstmt = SQL_SETTINGS_SELECT
+    + ' where user_id = ?';
+
+    if (callback) {
+      // console.log('Model addProject: in the callback version');
+      return sql().query(SQLstmt, [userID], callback);
+    } else {
+      // console.log('Model addProject: in the promise version');
+      return sqlPromise(SQLstmt, [userID]);
+    }
+  },
+
+  updateSettings: function(userID, settings, callback = null) {
+
+    console.log('updateSettings', userID, settings);
+
+    const { id, accent_color, created_by, last_updated_by} = settings;
+
+    const SQLstmt = `insert into users_settings
+      (id, user_id, accent_color, created_by, last_updated_by)
+      values (?, ?, ?, ?, ?)
+      on duplicate key update user_id = ?, accent_color = ?, last_updated_by = ?`;
+
+    const values = [id, userID, accent_color, created_by, last_updated_by
+      , userID, accent_color, last_updated_by
+    ];
+
+    if (callback) {
+      // console.log('Model addProject: in the callback version');
+      return sql().query(SQLstmt, values, callback);
+    } else {
+      // console.log('UserModel updateSettings', SQLstmt, values);
+      return sqlPromise(SQLstmt, values);
+    }
   }
 };
 

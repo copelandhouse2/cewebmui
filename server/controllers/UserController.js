@@ -244,3 +244,31 @@ export const remove = (request, response) => {
     return response.json("user deleted");
   });
 }
+
+
+export const getSettings = async (request, response) => {
+
+  try {
+    const settings = await UserModel.getSettings(request.params.userID);
+    // console.log('Data retrieved...', settings);
+    if (!settings.length) {
+      return response.json({accent_color: '#42a5f5'});
+    } else {
+      return response.json(settings[0]);
+    }
+  } catch (err) {
+    return response.json(err);
+  }
+}
+// function to update a user.
+export const updateSettings = async (request, response) => {
+  // console.log('in usercontroller updateSettings', request.params.userID, request.body);
+  try {
+    const updateResp = await UserModel.updateSettings(request.params.userID, request.body);
+    // console.log('updateSettings response...', updateResp);
+    return response.json(updateResp);
+  } catch (err) {
+    console.log('SQL query error users_settings', err);
+    return response.json(err);
+  }
+}

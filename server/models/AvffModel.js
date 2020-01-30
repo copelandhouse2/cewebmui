@@ -29,9 +29,10 @@ const AvffModel = {
 
     // , CONVERT(ac.image USING utf8mb4) image
 
-    const SQLstmt = `select ac.id, ac.name, ac.label, ac.entity_type, CONVERT(ac.image USING utf8mb4) image
-      , ac.background_color, ac.url, ac.name_id, ac.data_type, ac.field_length
-      , ac.lookup_list, ac.help_text
+    const SQLstmt = `select ac.id, ac.name, ac.label, ac.entity_type, ac.scope_section
+      , CONVERT(ac.image USING utf8mb4) image
+      , ac.background_color, ac.url, ac.category, ac.name_id, ac.data_type, ac.field_length
+      , ac.lookup_list, ac.creatable, ac.help_text
       from avff_controls ac
       order by ac.id`
     ;
@@ -49,13 +50,11 @@ const AvffModel = {
 
   getAllRelationships: function(callback = null) {
 
-    // , CONVERT(ac.image USING utf8mb4) image
-
-    const SQLstmt = `select ar.id, ar.control_id, ar.parent_id
+    const SQLstmt = `select ar.id rship_id, ar.control_id, ar.parent_id
       , ar.order, ar.display_width, ar.disabled, ar.required, ar.resizable
-      , ar.column_formatter, ar.field_formatter, ar.title_formatter
+      , ar.z_index, ar.column_formatter, ar.field_formatter, ar.label_formatter
       from avff_relationships ar
-      order by ar.parent_id, ar.order`
+      order by ar.parent_id, ar.order, ar.id`
     ;
     // let values = [];
 

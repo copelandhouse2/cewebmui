@@ -5,6 +5,9 @@ import { signOut } from "../actions";
 function mapStateToProps(state) {
   return {
     session: state.session,
+    currentMenu: state.currentMenu,
+    currentViews: state.currentViews,
+    currentProject: state.currentProject,
   };
 }
 

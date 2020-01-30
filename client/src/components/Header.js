@@ -18,7 +18,7 @@ import CloseIcon from '@material-ui/icons/Close';
 const styles = theme => ({
   root: {},
   // AppBar: {marginBottom: 10, zIndex: theme.zIndex.drawer+1,},
-  AppBar: {height: 60},
+  AppBar: {height: 60 },
   grow: {flexGrow: 1,},
   icon: { fontSize:"1.5em" },
 });
@@ -52,18 +52,20 @@ class Header extends React.Component {
     const { classes, width } = this.props;
     const { anchorEl } = this.state;
     const open = Boolean(anchorEl);
+    // console.log('header', currentMenu, currentViews, currentProject);
 
     return (
       <div>
       <AppBar className={classes.AppBar} >
         <Toolbar>
-          {/*<IconButton
+          <IconButton
             color="inherit"
             aria-label="Open drawer"
             onClick={this.props.toggleDrawer}
           >
             {this.props.navOpen? <CloseIcon /> : <MenuIcon />}
-          </IconButton>*/}
+          </IconButton>
+
           <Typography
             variant="h5"
             color="inherit"
@@ -71,6 +73,7 @@ class Header extends React.Component {
           >
             {width === "sm"||width === "xs" ? "CE Tools" : "Copeland Engineering Webtools"}
           </Typography>
+
           <Typography
             variant="body2"
             color="inherit"

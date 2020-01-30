@@ -1,8 +1,9 @@
 import App from "../components/App";
 import { connect } from "react-redux";
 import { loadPending, loadSession, loadCities
-  , loadClients, loadSubdivisions, loadJobNumberSeqs, loadContacts, getLookup
-  , authenticate, loadGeotechs, loadGeoMasterData, loadControls, loadRelationships }
+  , loadClients, loadSubdivisions, loadContacts, getLookup
+  , authenticate, loadGeotechs, loadGeoMasterData, loadControls, loadRelationships
+  , updateSettings}
   from "../actions";
 
 function mapStateToProps(state) {
@@ -32,9 +33,6 @@ function mapDispatchToProps(dispatch) {
     loadSubdivisions: function () {
       dispatch(loadSubdivisions());
     },
-    loadJobNumberSeqs: function () {
-      dispatch(loadJobNumberSeqs());
-    },
     loadContacts: function () {
       dispatch(loadContacts());
     },
@@ -55,6 +53,9 @@ function mapDispatchToProps(dispatch) {
     },
     loadRelationships: function () {
       dispatch(loadRelationships());
+    },
+    updateSettings: function (session, settings) {
+      dispatch(updateSettings(session, settings));
     },
   };
 }

@@ -6,8 +6,8 @@ function session(state = {}, action) {
   }
   if (action.type === "SETTINGS_UPDATED") {
     // console.log('reducer: state, action.value', state, action.value);
-    state.settings = action.value;
-    return state;
+    return action.value;
+    // return state;
   }
   return state;
 }
@@ -264,8 +264,15 @@ function avffRelationships(state = [], action) {
   return state;
 }
 
-function currentControls(state = {}, action) {
-  if (action.type === "CURRENT_CONTROLS_LOADED") {
+function currentMenu(state = {}, action) {
+  if (action.type === "CURRENT_MENU_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
+function currentViews(state = [], action) {
+  if (action.type === "VIEWS_LOADED") {
     return action.value;
   }
   return state;
@@ -273,6 +280,33 @@ function currentControls(state = {}, action) {
 
 function currentProject(state = {}, action) {
   if (action.type === "INITIAL_SCOPE_LOADED") {
+    return action.value;
+  }
+  if (action.type === "UPDATE_PROJECT") {
+    return action.value;
+  }
+  if (action.type === "CLEAR_PROJECT") {
+    return action.value;
+  }
+  return state;
+}
+
+function requestors(state = [], action) {
+  if (action.type === "REQUESTORS_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
+function saveType(state = [], action) {
+  if (action.type === "SAVE_TYPES_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
+function search(state = {}, action) {
+  if (action.type === "SEARCH_UPDATED") {
     return action.value;
   }
   return state;
@@ -286,6 +320,7 @@ const rootReducer = combineReducers({
   , scopeLookup, classificationLookup, masonryLookup, ynLookup, fndTypeLookup, garageTypeLookup
   , garageEntryLookup, garageSwingLookup, floorTypeLookup, roofTypeLookup
   , coveredPatioLookup, dwellingTypeLookup, pitaLookup, geos, geoMasterData
-  , avffControls, avffRelationships, currentControls, currentProject
+  , avffControls, avffRelationships, currentMenu, currentViews, currentProject
+  , requestors, saveType, search
 });
 export default rootReducer;

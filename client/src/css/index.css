@@ -14,10 +14,9 @@ html, body {
   height: 100%;
 }
 
-/* #parentDivOfGrid div.react-grid-HeaderCell {
-  background: #FF0000;
-
-} */
+.react-grid-HeaderCell {
+  padding: 0;
+}
 
 /* font-family: 'Sedgwick Ave Display', cursive;
 font-family: 'Walter Turncoat', cursive;

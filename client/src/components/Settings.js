@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import { SketchPicker, GithubPicker, CirclePicker } from 'react-color';
+// import { SketchPicker, GithubPicker, CirclePicker } from 'react-color';
+import { CirclePicker } from 'react-color';
 
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
+// import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
 import Tab from '@material-ui/core/Tab';
@@ -13,7 +14,7 @@ import Tabs from '@material-ui/core/Tabs';
 
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
-import { Link } from "react-router-dom"
+// import { Link } from "react-router-dom"
 import Button from '@material-ui/core/Button';
 
 import red from '@material-ui/core/colors/red';
@@ -59,8 +60,6 @@ class Settings extends Component {
   };
 
   render() {
-
-    const { classes } = this.props;
 
     const colors = [
       red[400],

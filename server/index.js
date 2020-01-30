@@ -2,7 +2,7 @@
 // require("dotenv").config();
 import { env } from "./envVars";
 
-import '@babel/polyfill';
+import '@babel/polyfill/noConflict';
 
 import express from "express";
 // import mongoose from "mongoose";

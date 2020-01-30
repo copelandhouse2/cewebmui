@@ -1,9 +1,9 @@
 import { sql } from "../mysqldb";
 
-const CityModel = { 
+const CityModel = {
   getCities: function(callback) {
     // const SQLstmt = 'select id, city, state_prov, country from cities';
-    const SQLstmt = 'select c.id, c.city, c.state_prov, l1.name state_prov_long, c.country, l2.name country_long'
+    const SQLstmt = 'select c.id, c.id code, c.city, c.city name, c.state_prov, l1.name state_prov_long, c.country, l2.name country_long'
       + ' from cities c'
       + ' left join lookups l1 on c.state_prov = l1.code'
       + ' left join lookups l2 on c.country = l2.code'
