@@ -84,14 +84,19 @@ const styles = theme => ({
     fontWeight: 500,
     paddingTop: 10,
   },
-  // Reports browser error (still works though)
-  parentDivOfGrid: {
-    // '& $div.react-grid-HeaderRow': {
+  // tried with index.css.  Didn't work in test env.
+  parentOfGrid: {
+    // '& $div.react-grid-HeaderRow': {  // eports browser error (still works though)
     //   backgroundColor: theme.palette.primary.main,
     //   color: theme.palette.primary.contrastText,
     //   textAlign: 'center',
     //   fontSize: 14
     // }
+
+    // WORKS!
+    '& .react-grid-HeaderCell': {
+      padding: 0
+    }
   },
 });
 
@@ -282,30 +287,28 @@ class DupsDialog extends Component {
         <DialogContent
         className={classes.container}
         >
-          <Paper>
-          <div className={classes.parentDivOfGrid}>
-          <ReactDataGrid
-            columns={this.columns}
-            // rowGetter={i => this.props.dups[i]}
-            rowGetter={i => this.joinCurrent(i)}
-            rowsCount={this.props.dups.length + 1}
-            minHeight={300}
-            selectAllRenderer={null}
-            // headerRenderer={this.HeaderRenderer}
-            // toolbar={true}
-            // showCheckbox={false}
-            rowSelection={{
-              showCheckbox: this.props.selectAllowed,
-              enableShiftSelect: this.props.selectAllowed,
-              onRowsSelected: this.onRowSelected,
-              // onRowsDeselected: this.onRowsDeselected,
-              selectBy: {
-                indexes: this.state.selectedIndexes
-              }
-            }}
+          <Paper className={classes.parentOfGrid}>
+            <ReactDataGrid
+              columns={this.columns}
+              // rowGetter={i => this.props.dups[i]}
+              rowGetter={i => this.joinCurrent(i)}
+              rowsCount={this.props.dups.length + 1}
+              minHeight={300}
+              selectAllRenderer={null}
+              // headerRenderer={this.HeaderRenderer}
+              // toolbar={true}
+              // showCheckbox={false}
+              rowSelection={{
+                showCheckbox: this.props.selectAllowed,
+                enableShiftSelect: this.props.selectAllowed,
+                onRowsSelected: this.onRowSelected,
+                // onRowsDeselected: this.onRowsDeselected,
+                selectBy: {
+                  indexes: this.state.selectedIndexes
+                }
+              }}
 
-          />
-          </div>
+            />
           </Paper>
 
           {!this.props.selectAllowed &&

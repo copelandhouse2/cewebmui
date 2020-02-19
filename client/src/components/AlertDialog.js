@@ -3,10 +3,20 @@ import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
+// Converted dialog to accept an html formatted text.  Not needing these anymore.
+// import DialogContentText from '@material-ui/core/DialogContentText';
+// import Typography from '@material-ui/core/Typography';
+
 
 class AlertDialog extends React.Component {
+
+  formattedContent = () => {
+
+      return (
+        this.props.message.content
+      );
+  }
 
   render() {
     return (
@@ -19,9 +29,7 @@ class AlertDialog extends React.Component {
         >
           <DialogTitle id="alert-dialog-title">{this.props.message.title}</DialogTitle>
           <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              {this.props.message.content}
-            </DialogContentText>
+            {this.formattedContent()}
           </DialogContent>
           <DialogActions>
             <Button
@@ -42,4 +50,6 @@ class AlertDialog extends React.Component {
 
 export default AlertDialog;
 
-
+// <DialogContentText id="alert-dialog-description">
+//   {this.formattedContent}
+// </DialogContentText>

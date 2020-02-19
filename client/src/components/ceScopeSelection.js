@@ -93,6 +93,9 @@ const styles = theme => ({
   minus: {
     width: 20,
     height: 20,
+  },
+  svgFill: {
+    fill: theme.palette.secondary.contrastText,
   }
 });
 
@@ -165,7 +168,7 @@ class scopeSelection extends Component {
   render() {
     const { classes, currentMenu } = this.props;
 
-    // console.log('scope selector', currentMenu, currentViews, currentProject);
+    // console.log('scope selector', 'menu',currentMenu, 'views',currentViews, 'project',currentProject);
     // console.log('state', this.state);
     return (
       <Dialog

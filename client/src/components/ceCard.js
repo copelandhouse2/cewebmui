@@ -16,6 +16,7 @@ import IconButton from '@material-ui/core/IconButton';
 // import ShareIcon from '@material-ui/icons/Share';
 // import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 // import MoreVertIcon from '@material-ui/icons/MoreVert';
+import Link from '@material-ui/core/Link';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 
@@ -28,8 +29,9 @@ const styles = theme => ({
     margin: '10px 20px',
   },
   title: {
-    fontSize: 14,
-    fontWeight: 'bold'
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: theme.palette.secondary.dark,
   }
 });
 
@@ -50,9 +52,11 @@ const ceCard = (props) => {
       />*/}
       <CardContent>
         <Grid container justify="space-between">
-          <Grid item xs={12}>
-            <Typography variant='subtitle1'>
+          <Grid item xs={10} >
+            <Typography variant='subtitle1' className={classes.title}>
+              <Link title='Edit project' href='#' color='inherit' onClick={(e) => props.updateProject(project)}>
               {`${project.address1}, ${project.city} `}
+              </Link>
             </Typography>
           </Grid>
           <Grid item xs={2}>
@@ -60,17 +64,23 @@ const ceCard = (props) => {
               {project.job_number}
             </Typography>
           </Grid>
-          <Grid item>
-            <Typography component='p'>
-              {project.creation_date}
-            </Typography>
-          </Grid>
           <Grid item xs={12}>
             <Typography component='p'>
               {project.client}
             </Typography>
           </Grid>
-
+          <Grid item>
+            <Typography component='p'>
+              <b>c:</b>
+              {` ${project.creation_date}`}
+            </Typography>
+          </Grid>
+          <Grid item>
+            <Typography component='p'>
+              <b>u:</b>
+              {` ${project.last_updated_date}`}
+            </Typography>
+          </Grid>
         </Grid>
       </CardContent>
       <CardActions>
@@ -88,14 +98,14 @@ const ceCard = (props) => {
         >
           <FileCopyIcon />
         </IconButton>
-        <IconButton
+        {/*<IconButton
           title='Edit project'
           aria-label="Edit"
           color='secondary'
           onClick={(e) => props.updateProject(project)}
         >
           <EditIcon />
-        </IconButton>
+        </IconButton>*/}
         <IconButton
           title='Delete project'
           aria-label="Delete"

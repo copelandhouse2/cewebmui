@@ -64,7 +64,7 @@ export function updateSettings(session, settings) {
     }).then((response) => {
       return response.json();  // need to do this extra .then to convert json response into object to read.
     }).then((response) => {
-      console.log('actions.updateSettings', response)
+      // console.log('actions.updateSettings', response)
       if (response.errno) {
         // console.log('2nd .then create Address', response);
         throw response;
@@ -277,7 +277,7 @@ export function createAddress(c, v2 = false) {
       if (response.errno) {
         console.log('Error: create Address', response);  // now has insertId
       }
-      console.log('.then create Address', response);  // now has insertId
+      // console.log('.then create Address', response);  // now has insertId
       // loadType === 'PENDING' ? dispatch(loadPending(userID)) : dispatch(loadProjects());
       // dispatch(saveProject(response));
       dispatch(loadRecents());
@@ -295,7 +295,7 @@ export function createAddress(c, v2 = false) {
 // Action to create the Address
 export function commitAddresses(userID, c, search, create, v2 = false) {
   return function (dispatch) {
-    console.log('in commitAddress function', userID, create, v2);
+    // console.log('in commitAddress function', userID, create, v2);
     fetch(`/commits/${userID}/${create}/${v2}`, {
       method: "PUT",
       headers: {"Content-Type": "application/json"}
@@ -307,7 +307,7 @@ export function commitAddresses(userID, c, search, create, v2 = false) {
         console.log('2nd .then ERROR commit Address', response);
         throw response;
       };
-      console.log('2nd .then commit Address', response);
+      // console.log('2nd .then commit Address', response);
       // dispatch(loadProjects(search));
       dispatch(loadRecents());
       dispatch(loadMessage(
@@ -1055,7 +1055,31 @@ export function assignNewProjectScope(scope) {
 }
 
 export function updateProject(project) {
-  return {
+  return function (dispatch, getState) {
+    if (project.classification) {
+      const { avffControls, avffRelationships } = getState();
+      const menuControl = avffControls.find(c=>c.entity_type === 'MENU' && c.category === project.classification);
+      // const menuChildren = avffRelationships.filter(r=>r.parent_id === menuControl.id);
+
+      let a = avffRelationships.filter(child => child.parent_id === menuControl.id);
+      let c = [];
+      for (let i = 0; i < a.length; i++) {
+        let b = avffControls.find(control => control.id === a[i].control_id);
+        // Find the menu that has the actions... cusnew or volnew.
+        ['MENU', 'ACTION'].includes(b.entity_type) && b.name.includes('new')? c.push({ ...b, ...a[i] }):null;
+      }
+      // console.log('updateProject', a, c[0].id);
+      const theProject = Object.assign({}, project, { categoryID: menuControl.id, url: menuControl.url });
+      dispatch(loadCurrentMenu(c[0].id));
+      dispatch(currentProjectLoaded(theProject));
+    } else {
+      dispatch(currentProjectLoaded(project));
+    }
+  };
+}
+
+export function currentProjectLoaded(project) {
+    return {
     type: "UPDATE_PROJECT",
     value: project
   };

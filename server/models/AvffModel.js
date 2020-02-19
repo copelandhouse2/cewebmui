@@ -51,8 +51,9 @@ const AvffModel = {
   getAllRelationships: function(callback = null) {
 
     const SQLstmt = `select ar.id rship_id, ar.control_id, ar.parent_id
-      , ar.order, ar.display_width, ar.disabled, ar.required, ar.resizable
-      , ar.z_index, ar.column_formatter, ar.field_formatter, ar.label_formatter
+      , ar.order, ar.display_width, ar.column_width, ar.disabled, ar.hidden
+      , ar.required, ar.resizable, ar.z_index, ar.column_formatter
+      , ar.header_formatter, ar.field_formatter, ar.label_formatter, ar.hide_label
       from avff_relationships ar
       order by ar.parent_id, ar.order, ar.id`
     ;
@@ -75,8 +76,11 @@ const AvffModel = {
     const SQLstmt = `select ac.id, ac.name, ac.label, ac.entity_type, CONVERT(ac.image USING utf8mb4) image
       , ac.background_color, ac.url, ac.name_id, ac.data_type, ac.field_length
       , ac.lookup_list, ac.help_text
-      , ar.order, ar.display_width, ar.disabled, ar.required, ar.resizable
-      , ar.column_formatter, ar.field_formatter, ar.title_formatter
+
+      , ar.id rship_id, ar.control_id, ar.parent_id
+      , ar.order, ar.display_width, ar.column_width, ar.disabled, ar.hidden
+      , ar.required, ar.resizable, ar.z_index, ar.column_formatter
+      , ar.header_formatter, ar.field_formatter, ar.label_formatter, ar.hide_label
       from avff_controls ac
       left join avff_relationships ar on ac.id = ar.control_id
       where ar.parent_id IS NULL
@@ -99,9 +103,11 @@ const AvffModel = {
     const SQLstmt = `select ac.id, ac.name, ac.label, ac.entity_type, CONVERT(ac.image USING utf8mb4) image
       , ac.background_color, ac.url, ac.name_id, ac.data_type, ac.field_length
       , ac.lookup_list, ac.help_text
-      , ar.order, ar.display_width, ar.disabled, ar.required, ar.resizable
-      , ar.column_formatter, ar.field_formatter, ar.title_formatter
-      from avff_controls ac
+      
+      , ar.id rship_id, ar.control_id, ar.parent_id
+      , ar.order, ar.display_width, ar.column_width, ar.disabled, ar.hidden
+      , ar.required, ar.resizable, ar.z_index, ar.column_formatter
+      , ar.header_formatter, ar.field_formatter, ar.label_formatter, ar.hide_label
       left join avff_relationships ar on ac.id = ar.control_id
       where ar.parent_id = ?
       order by ar.order`

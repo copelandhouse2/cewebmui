@@ -1,6 +1,6 @@
 import express from 'express';
 // import { list, show, create, update, delete } from '../controllers/AddressController';
-import { list, show, create, remove, listPending, listRecents, commit, listDups } from '../controllers/ProjectController';
+import { list, show, create, remove, listPending, listSearch, commit, listDups } from '../controllers/ProjectController';
 const router = express.Router();
 
 //Getting the data... the entire list
@@ -11,10 +11,10 @@ router.get(`/projects/:pending/:dateRange/:enteredBy/:jobNumber/:address/:reques
 router.get('/pending/:userID', listPending);
 
 //Getting the projects... those pending for the user
-router.get('/recents/:ver/:enteredBy/:filter', listRecents);
+router.get('/recents/:ver/:enteredBy/:filter', listSearch);
 
 //Getting the projects... those pending for the user
-router.get('/find/:ver/:find', listRecents);
+router.get('/find/:ver/:find', listSearch);
 
 //Getting the data... just one entity
 router.get('/projects/:id', show);

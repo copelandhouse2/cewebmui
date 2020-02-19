@@ -5,7 +5,7 @@ import { withStyles } from '@material-ui/core/styles';
 
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
-import { Link, Redirect } from "react-router-dom"
+import { Redirect } from "react-router-dom"
 import Fade from '@material-ui/core/Fade';
 import Button from '@material-ui/core/Button';
 import SvgIcon from '@material-ui/core/SvgIcon';
@@ -199,8 +199,18 @@ class Welcome extends Component {
   };
 
   componentDidMount() {
-    // console.log('Welcome componentDidMount before', this.props.currentMenu);
-    this.props.loadCurrentMenu(1);
+    // console.log('Welcome CDM', this.props.currentProject);
+
+    // this.props.assignNewProjectScope({ menuFlow: newPrevious, categoryID: id, url: url, initialScope: [], scope: [] });
+    // this.setState( { url: url, redirect: true } );
+    if (this.props.currentProject.menuFlow) {
+      const { menuFlow } = this.props.currentProject;
+
+      this.setState({ previous: menuFlow },
+        () => this.handleBack() );  // this will populate the right menu values
+    } else {
+      this.props.loadCurrentMenu(1);
+    }
     // console.log('Welcome componentDidMount after', this.props.currentMenu);
 
     // (async () => {
@@ -215,10 +225,12 @@ class Welcome extends Component {
   }
 
   handleClick = selected => event => {
-    // console.log('field name: ', name, event.target);
     const { id, name, url } = selected;
+    // console.log('field name: ', id, name, url, event.target);
     let newPrevious = [...this.state.previous];
-    newPrevious.push({id: this.props.currentMenu.id, name: this.props.currentMenu.name})
+    newPrevious.push({id: this.props.currentMenu.id, name: this.props.currentMenu.name,
+      categoryID: this.state.categoryID, url: this.state.url
+    })
     // let next = {id: selected.id, name: selected.name}
 
     if (name === 'top') {
@@ -230,6 +242,10 @@ class Welcome extends Component {
     } else if (name==='volnew'||name === 'cusnew') {
       this.setState( { previous: newPrevious } )
       this.props.loadCurrentMenu(id);
+    } else if (name==='update'||name === 'volupdate'||name === 'cusupdate') {
+      // console.log('Update', newPrevious);
+      this.props.assignNewProjectScope({ menuFlow: newPrevious, categoryID: id, url: url, initialScope: [], scope: [] });
+      this.setState( { url: url, redirect: true } );
     } else {
       let curScope = [...this.state.scope];
 
@@ -254,14 +270,13 @@ class Welcome extends Component {
     const scope = backTo.name === 'top'? [] : [...this.state.scope];
     // let previous = {id: 1, name: 'top'}
     this.props.loadCurrentMenu(backTo.id);
-    this.setState({ scope: scope, previous: newPrevious })
+    this.setState({ categoryID: backTo.categoryID, url: backTo.url, scope: scope, previous: newPrevious })
 
   };
 
   handleButtonNext = () => {
-
-    // console.log('Next button', this.state);
-    this.props.assignNewProjectScope({ categoryID: this.state.categoryID, url: this.state.url, initialScope: [...this.state.scope], scope: [] });
+    // console.log('Next button', this.state.previous);
+    this.props.assignNewProjectScope({ menuFlow: this.state.previous, categoryID: this.state.categoryID, url: this.state.url, initialScope: [...this.state.scope], scope: [] });
     this.setState( { redirect: true } );
 
     // (async () => {
@@ -300,11 +315,11 @@ class Welcome extends Component {
   }
 
   render() {
-    // console.log('Welcome render', this.props.currentMenu);
+    // console.log('Welcome render', this.state);
 
 
     if (this.state.redirect) {
-      console.log('REDIRECTING...')
+      console.log('REDIRECTING...', this.state.url)
       return (
         <Redirect to={this.state.url} />
       );
@@ -398,7 +413,6 @@ class Welcome extends Component {
                 {(button.name==='update'||button.name==='volupdate'||button.name==='cusupdate')&&
                 <Fragment>
                 <Fade in={true} timeout={5000}>
-                  <Link to='/search' className={classes.fab}>
                   <Fab
                     className={classes.fab}
                     onClick={ this.handleClick(button) }
@@ -412,7 +426,6 @@ class Welcome extends Component {
                     <img src={this.useSvg(button.image)} alt={button.label} className={classes.imageSrc} />
                     </div>
                   </Fab>
-                  </Link>
                 </Fade>
                 <Fade in={true} timeout={5000}>
                   <Typography

@@ -18,12 +18,13 @@ const SQL_PROJECT_SELECT = `SELECT s.id, s.id address_id, s.job_number, s.story,
 , date_format(s.due_date, '%Y-%m-%d') due_date, date_format(s.final_due_date, '%Y-%m-%d') final_due_date, date_format(s.transmittal_date, '%Y-%m-%d') transmittal_date, s.main_contact, s.billing_contact, s.builder_contact, s.foundation_type, s.floor_type
 , s.roof_type, s.num_stories, s.square_footage, s.pita_factor, s.dwelling_type, s.trello_list_id, l.name trello_list, s.trello_card_id, s.box_folder
 , s.created_by, s.last_updated_by, date_format(s.creation_date, '%Y-%m-%d') creation_date, date_format(s.last_updated_date, '%Y-%m-%d') last_updated_date
-, cl.name client, co.full_name requestor, c.id city_id, su.id subdivision_id`
+, cl.name client, co.full_name requestor, co2.full_name creator, c.id city_id, su.id subdivision_id`
 + ' from projects s'
 + ' left join clients cl on s.client_id = cl.id'  // allowing client_id to be null
 + ' left join contacts co on s.contact_id = co.id'  // allowing contact_id to be null
-+ ' left join cities c on s.city = c.city'  // allowing contact_id to be null
-+ ' left join subdivisions su on s.subdivision = su.subdivision'  // allowing contact_id to be null
++ ' left join contacts co2 on s.user_id = co2.user_id'  // user id should NEVER be null
++ ' left join cities c on s.city = c.city'  // allowing city_id to be null
++ ' left join subdivisions su on s.subdivision = su.subdivision'  // allowing subdivision to be null
 + ' left join lookups l on IFNULL(s.trello_list_id, \'\') = l.code'
 + ' where l.type = "TRELLO_LIST"';
 
@@ -141,7 +142,7 @@ const ProjectModel = {
     let pendingClause = '', enteredByClause = '', jobNumberClause = ''
     , addressClause = '', requestedByClause = '', clientClause = '', cityClause = ''
     , subdivisionClause = '', statusClause = '', dateRangeClause = ''
-    , findClause = '';
+    , findClause = '', orderBy = '', andClause = '';
 
     if (enteredBy) {
       enteredByClause = ' and s.user_id = ?';
@@ -163,15 +164,79 @@ const ProjectModel = {
           values.push(Number(filter));
         break;
       };
+      orderBy = ' order by s.last_updated_date desc';  // changing to last updated date.
     }
 
     if (find) {
-      findClause = ` and CONCAT_WS('~', s.job_number, s.address1, s.story, s.subdivision
-      , s.city, cl.name, co.full_name, s.revision_desc
-      , s.geo_lab, s.geo_report_num, s.geo_pi, s.soil_notes
-      , s.additional_options, s.comments)
-       like ?`;
-      values.push('%'+find+'%');
+      const criteria = find.toLowerCase().split('and').map(e=>e.trim());
+
+      console.log('/*** criteria ***/', criteria);
+      let val = '';
+      criteria.forEach((e, i)=> {
+        // const e = elementWithSpaces.trim();
+        if (e.startsWith('job_number:')) { val = e.slice(11)+'%'; andClause = ` and s.job_number like ?`}
+        else if (e.startsWith('job:')) { val = e.slice(4)+'%'; andClause = ` and s.job_number like ?`}
+        else if (e.startsWith('story:')) { val = '%'+e.slice(6)+'%'; andClause = ` and s.story like ?`}
+
+        else if (e.startsWith('revision:')) { val = e.slice(9); andClause = ` and s.revision = ?`}
+        else if (e.startsWith('rev:')) { val = e.slice(4); andClause = ` and s.revision = ?`}
+        else if (e.startsWith('revision_desc:')) { val = '%'+e.slice(14)+'%'; andClause = ` and s.revision_desc like ?`}
+        else if (e.startsWith('rdesc:')) { val = '%'+e.slice(6)+'%'; andClause = ` and s.revision_desc like ?`}
+
+        else if (e.startsWith('address:')) { val = e.slice(8)+'%'; andClause = ` and s.address1 like ?`}
+        else if (e.startsWith('addr:')) { val = e.slice(5)+'%'; andClause = ` and s.address1 like ?`}
+        else if (e.startsWith('city:')) { val = e.slice(5)+'%'; andClause = ` and s.city like ?`}
+        else if (e.startsWith('subdivision:')) { val = '%'+e.slice(12)+'%'; andClause = ` and s.subdivision like ?`}
+        else if (e.startsWith('sub:')) { val = '%'+e.slice(4)+'%'; andClause = ` and s.subdivision like ?`}
+        else if (e.startsWith('phase:')) { val = e.slice(6); andClause = ` and s.phase = ?`}
+        else if (e.startsWith('section:')) { val = e.slice(8); andClause = ` and s.section = ?`}
+        else if (e.startsWith('sec:')) { val = e.slice(4); andClause = ` and s.section = ?`}
+        else if (e.startsWith('lot:')) { val = e.slice(4); andClause = ` and s.lot = ?`}
+        else if (e.startsWith('block:')) { val = e.slice(6); andClause = ` and s.block = ?`}
+
+        else if (e.startsWith('client:')) { val = '%'+e.slice(7)+'%'; andClause = ` and cl.name like ?`}
+        else if (e.startsWith('cli:')) { val = '%'+e.slice(4)+'%'; andClause = ` and cl.name like ?`}
+
+        else if (e.startsWith('geo_lab:')) { val = e.slice(8)+'%'; andClause = ` and s.geo_lab like ?`}
+        else if (e.startsWith('lab:')) { val = e.slice(4)+'%'; andClause = ` and s.geo_lab like ?`}
+        else if (e.startsWith('geo_report_num:')) { val = e.slice(15)+'%'; andClause = ` and s.geo_report_num like ?`}
+        else if (e.startsWith('grep:')) { val = e.slice(5)+'%'; andClause = ` and s.geo_report_num like ?`}
+        else if (e.startsWith('geo_pi:')) { val = e.slice(7)+'%'; andClause = ` and s.geo_pi like ?`}
+        else if (e.startsWith('pi:')) { val = e.slice(3)+'%'; andClause = ` and s.geo_pi like ?`}
+        else if (e.startsWith('soil_notes:')) { val = '%'+e.slice(11)+'%'; andClause = ` and s.soil_notes like ?`}
+        else if (e.startsWith('snote:')) { val = '%'+e.slice(6)+'%'; andClause = ` and s.soil_notes like ?`}
+
+        else if (e.startsWith('creation_date:') && !isNaN(e.slice(13))) { val = e.slice(13); andClause = ` and s.creation_date >= NOW() - INTERVAL ? DAY`}
+        else if (e.startsWith('cdate:') && !isNaN(e.slice(6))) { val = e.slice(6); andClause = ` and s.creation_date >= NOW() - INTERVAL ? DAY`}
+        else if (e.startsWith('last_updated_date:') && !isNaN(e.slice(18))) { val = e.slice(18); andClause = ` and s.last_updated_date >= NOW() - INTERVAL ? DAY`}
+        else if (e.startsWith('ldate:') && !isNaN(e.slice(6))) { val = e.slice(6); andClause = ` and s.last_updated_date >= NOW() - INTERVAL ? DAY`}
+        // else if (!isNaN(e)) { val = e; andClause = ` and s.last_updated_date >= NOW() - INTERVAL ? DAY`}
+
+        else if (e.startsWith('entered:')) { val = e.slice(8)+'%'; andClause = ` and co2.full_name like ?`}
+        else if (e.startsWith('ent:')) { val = e.slice(4)+'%'; andClause = ` and co2.full_name like ?`}
+        else if (e.startsWith('requested:')) { val = e.slice(10)+'%'; andClause = ` and co.full_name like ?`}
+        else if (e.startsWith('req:')) { val = e.slice(4)+'%'; andClause = ` and co.full_name like ?`}
+
+        else {
+          // if (!isNaN(e)) { val = e; andClause = ` and s.last_updated_date >= NOW() - INTERVAL ? DAY`}
+          // else {
+            andClause = ` and CONCAT_WS('~', s.job_number, s.address1, s.story, s.subdivision
+            , s.city, cl.name, co.full_name, s.revision_desc
+            , s.geo_lab, s.geo_report_num, s.geo_pi, s.soil_notes
+            , s.additional_options, s.comments, co.full_name, co2.full_name)
+             like ?`;
+            val = '%'+e+'%';
+          // }
+
+        }
+
+        findClause = findClause + andClause;
+        values.push(val);
+
+      })
+
+      orderBy = ' order by job_number';
+
     }
 
     let SQLstmt = SQL_PROJECT_SELECT
@@ -179,11 +244,9 @@ const ProjectModel = {
     + statusClause
     + dateRangeClause
     + findClause
-    + ' order by s.creation_date desc';
+    + orderBy;
 
     // console.log('searchProjects', SQLstmt, values);
-
-    // console.log('ProjectModel: SQL', SQLstmt, values);
     if (callback) {
       // console.log('getProjects: in the callback version');
       return sql().query(SQLstmt, values, callback);
@@ -367,6 +430,53 @@ const ProjectModel = {
 
   },
 
+  deleteProject: (id) => {
+    const SQLstmt = "DELETE from projects where id = ?";
+    const values = [id];
+    return sqlPromise(SQLstmt, values);
+  },
+
+  // right now, not using.  Leveraging the upsert functionality MySQL has.  See add.
+  updateProject: function(city, callback){
+    const SQLstmt = 'update projects set 1=1';
+    const values = [];
+    return sql().query(SQLstmt, values, callback);
+  },
+
+  commitProject: function(userID, callback) {
+    const SQLstmt = 'update projects'
+      + ' set status = ?'
+      + ' where user_id = ?'
+      + ' and status = ?';
+
+    const values = ['ACTIVE', userID, 'PENDING'];
+    // console.log('ProjectModel: userID, SQL', SQLstmt, values);
+    return sql().query(SQLstmt, values, callback);
+  },
+
+  commitProjectByUser: (userID) => {
+    const SQLstmt = 'update projects'
+      + ' set status = ?'
+      + ' where user_id = ?'
+      + ' and status = ?';
+    const values = ['ACTIVE', userID, 'PENDING'];
+
+    return sqlPromise(SQLstmt, values);
+  },
+
+  commitProjectByID: (ID, cardID) => {
+    const SQLstmt = 'update projects'
+      + ' set status = ?, trello_card_id = ?'
+      + ' where id = ?';
+    const values = ['ACTIVE', cardID, ID];
+
+    return sqlPromise(SQLstmt, values);
+  },
+
+/**************************************************
+************* Project Scope Queries ***************
+**************************************************/
+
   // This function handles BOTH ADD and UPDATE.
   // Basically an UPSERT feature.
   addProjectScope: function(scope_item, callback = null){
@@ -447,46 +557,9 @@ const ProjectModel = {
 
   },
 
-  deleteProject: (id) => {
-    const SQLstmt = "DELETE from projects where id = ?";
+  deleteProjectScope: (id) => {
+    const SQLstmt = "DELETE from projects_scope where id = ?";
     const values = [id];
-    return sqlPromise(SQLstmt, values);
-  },
-
-  // right now, not using.  Leveraging the upsert functionality MySQL has.  See add.
-  updateProject: function(city, callback){
-    const SQLstmt = 'update projects set 1=1';
-    const values = [];
-    return sql().query(SQLstmt, values, callback);
-  },
-
-  commitProject: function(userID, callback) {
-    const SQLstmt = 'update projects'
-      + ' set status = ?'
-      + ' where user_id = ?'
-      + ' and status = ?';
-
-    const values = ['ACTIVE', userID, 'PENDING'];
-    // console.log('ProjectModel: userID, SQL', SQLstmt, values);
-    return sql().query(SQLstmt, values, callback);
-  },
-
-  commitProjectByUser: (userID) => {
-    const SQLstmt = 'update projects'
-      + ' set status = ?'
-      + ' where user_id = ?'
-      + ' and status = ?';
-    const values = ['ACTIVE', userID, 'PENDING'];
-
-    return sqlPromise(SQLstmt, values);
-  },
-
-  commitProjectByID: (ID, cardID) => {
-    const SQLstmt = 'update projects'
-      + ' set status = ?, trello_card_id = ?'
-      + ' where id = ?';
-    const values = ['ACTIVE', cardID, ID];
-
     return sqlPromise(SQLstmt, values);
   },
 

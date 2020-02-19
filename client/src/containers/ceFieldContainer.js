@@ -1,6 +1,6 @@
 import { connect } from "react-redux";
-import { Field } from "../components/ceField";
-// import {  } from "../actions";
+import { Field, Field2 } from "../components/ceField";
+import { searchForDups, loadFind, loadMessage  } from "../actions";
 
 function mapStateToProps(state) {
   return {
@@ -10,6 +10,7 @@ function mapStateToProps(state) {
     clients: state.clients,
     cities: state.cities,
     stateLookup: state.stateLookup,
+    countryLookup: state.countryLookup,
     subdivisions: state.subdivisions,
     addresses: state.addresses,
     dups: state.dups,
@@ -43,9 +44,18 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-
-
+    searchForDups: (test, project) => {
+      dispatch(searchForDups(test, project));
+    },
+    loadFind: (search) => {
+      dispatch(loadFind(search));
+    },
+    loadMessage: function (message, type) {
+      dispatch(loadMessage(message, type));
+    },
   };
 }
 
 export const FieldContainer = connect(mapStateToProps, mapDispatchToProps)(Field);
+
+export const Field2Container = connect(mapStateToProps, mapDispatchToProps)(Field2);

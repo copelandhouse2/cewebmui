@@ -35,7 +35,8 @@ class ProjectCustom extends Component {
     super(props);
 
     this.state = {
-      currentView: 'SINGLE',
+      menuID: this.props.currentProject.categoryID,
+      currentView: 'SINGLE',  // default view.
       recentsDrawerOpen: false,
       findDrawerOpen: false,
       drawerWidth: 300,
@@ -48,6 +49,7 @@ class ProjectCustom extends Component {
     })
   };
 
+  // In CDM, we load the views given the categoryID
   componentDidMount = () => {
 
     if (this.props.currentProject.categoryID) {
@@ -65,6 +67,20 @@ class ProjectCustom extends Component {
     //
     // })();
 
+  }
+
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const { currentProject, loadViews } = nextProps;
+
+    // console.log('in ProjectCustom getDerivedStateFromProps');
+    // console.log('nextProps', currentProject);
+    // console.log('prevState', prevState);
+    if (currentProject.categoryID && prevState.menuID !== currentProject.categoryID ) {
+      // console.log('CDM: outside async', this.props.currentProject, this.state);
+      loadViews(currentProject.categoryID);
+      return ( {menuID: currentProject.categoryID} )
+    }
+    return null;
   }
 
   handleViewButton = (view) => {

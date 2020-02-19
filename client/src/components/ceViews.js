@@ -77,6 +77,7 @@ const styles = theme => ({
   findIconButton: {
     // padding: 10,
   },
+
 });
 
 // const promiseFn = theFunction => {
@@ -196,7 +197,7 @@ class singleView extends Component {
     super(props);
 
     this.today = date();
-    this.due = date(30);
+    // this.due = this.props.currentViews.category === 'VOLUME'?date(2):date(21);
 
     this.state = {
       jobNumUnlock: false,
@@ -213,9 +214,12 @@ class singleView extends Component {
       created_by: this.props.session.id,
       last_updated_by: this.props.session.id,
       onboard_date: this.today,
-      due_date: this.due,
+      // due_date: this.due,
       scope: [],
       saveValue: '',  // stores previous values of address/lot/block to test for change
+      classification: this.props.currentViews.category,
+      geo_lab: this.props.currentViews.category === 'VOLUME'?'MLALABS':null,
+      dwelling_type: this.props.currentViews.category === 'VOLUME'?'PT 1 UNIT':null,
     };
 
     this.initState = {...this.state};
@@ -254,7 +258,7 @@ class singleView extends Component {
   viewChildren = (children, inclID=false) => {
     if (children) {
       children.forEach((child, id) => {
-        if (child.entity_type === 'FIELD_GROUP') {
+        if (child.entity_type === 'FIELD_GROUP' && child.hidden !== 'Y') {
           if ( child.category !== 'DESIGN' ||
               (child.category === 'DESIGN' && this.state.scope && this.state.scope.find(s => s.name === child.name ) )
              )
@@ -262,6 +266,7 @@ class singleView extends Component {
             this.childArr.push(
               <FieldGroup
                 key={this.oID++}
+                // key={child.rship_id}
                 fieldGroup = {child}
                 toggleScopeDialog={this.toggleScopeDialog}
                 removeScope={false}
@@ -270,9 +275,10 @@ class singleView extends Component {
             if (child.children) this.viewChildren(child.children);  // recursive call.
           }
         }
-        if (child.entity_type === 'FIELD') this.childArr.push(
+        if (child.entity_type === 'FIELD' && child.hidden !== 'Y') this.childArr.push(
           <FieldContainer
             key={this.oID++}
+            // key={child.rship_id}
             field = {child}
             state = {this.state}
             arrID = {inclID||inclID===0?inclID:false}
@@ -296,35 +302,40 @@ class singleView extends Component {
   viewScope = (masterScopeList) => {
     if (masterScopeList && this.state.scope) {
       this.state.scope.forEach((item, id) => {
-        let child = masterScopeList.find(s => s.name === item.name );
+        if (!item.delete) {  // if added scope and saved to database, then later wish to delete it.
+          let child = masterScopeList.find(s => s.name === item.name );
 
-        if (child.entity_type === 'FIELD_GROUP') {
-            this.childArr.push(
-              <FieldGroup
-                key={this.oID++}
-                fieldGroup = {child}
-                toggleScopeDialog={this.toggleScopeDialog}
-                arrID={id}
-                removeScope={this.removeScope}
-              />
-            );
-            if (child.children) this.viewChildren(child.children, id);  // almost recursive call.
+          if (child.entity_type === 'FIELD_GROUP'&& child.hidden !== 'Y') {
+              this.childArr.push(
+                <FieldGroup
+                  key={this.oID++}
+                  // key={child.rship_id}
+                  fieldGroup = {child}
+                  toggleScopeDialog={this.toggleScopeDialog}
+                  arrID={id}
+                  removeScope={this.removeScope}
+                />
+              );
+              if (child.children) this.viewChildren(child.children, id);  // almost recursive call.
+          }
+
+          if (child.entity_type === 'FIELD'&& child.hidden !== 'Y') this.childArr.push(
+            <FieldContainer
+              key={this.oID++}
+              // key={child.rship_id}
+              field = {child}
+              state = {this.state}
+              arrID = {id}
+              handleChange = {this.handleChange}
+              handleListChange = {this.handleListChange}
+              toggleJob = {this.toggleJob}
+              createDialogValue = {this.createDialogValue}
+              handleTabEnter = {this.handleTabEnter}
+              handleFocus = {this.handleFocus}
+              handleBlur = {this.handleBlur}
+            />);
         }
 
-        if (child.entity_type === 'FIELD') this.childArr.push(
-          <FieldContainer
-            key={this.oID++}
-            field = {child}
-            state = {this.state}
-            arrID = {id}
-            handleChange = {this.handleChange}
-            handleListChange = {this.handleListChange}
-            toggleJob = {this.toggleJob}
-            createDialogValue = {this.createDialogValue}
-            handleTabEnter = {this.handleTabEnter}
-            handleFocus = {this.handleFocus}
-            handleBlur = {this.handleBlur}
-          />);
       });
       return this.childArr;
     }
@@ -368,31 +379,65 @@ class singleView extends Component {
 
   };
 
-  handleListChange = (selected, field) => {
-    console.log('in handleListChange:', field.name, selected);
+  handleListChange = (selected, field, arrID) => {
+    // console.log('in handleListChange:', field.name, selected);
 
-    switch (field.name) {
-      // case 'subdivision':
-      //   this.setState({ [field.name]: selected.code }, () => {
-      //     if (this.state.subdivision && this.state.lot && this.state.block) {
-      //       this.searchForExisting('LOT')
-      //     }}
-      //   );  // fill in value.
-      //   break;
-      default:
-        selected?  // if selected
-          field.name_id?  // then if field has an id
-            this.setState({ [field.name_id]: selected.code, [field.name]: selected.name }) :  // fill in id and value.
-            this.setState({ [field.name]: selected.code }) :  // fill in value.
-          field.name_id?  // else (selected is null)... now if field has an id...
-            this.setState({ [field.name_id]: null, [field.name]: null }) :  // clear out
-            this.setState({ [field.name]: null });  // clear out
+    if (arrID||arrID===0) {
+      switch (field.name) {
+        // case 'subdivision':
+        //   this.setState({ [field.name]: selected.code }, () => {
+        //     if (this.state.subdivision && this.state.lot && this.state.block) {
+        //       this.searchForExisting('LOT')
+        //     }}
+        //   );  // fill in value.
+        //   break;
+        default:
+          let updatedScope = [...this.state.scope];
+
+          if (selected) {
+            if (field.name_id) {  // fill in id and value
+              updatedScope[arrID][field.name_id] = selected.code;
+              updatedScope[arrID][field.name] = selected.name;
+            } else {  // fill in value
+              updatedScope[arrID][field.name] = selected.code;
+            }
+          } else {  // it is null so...
+            if (field.name_id) {  // NULL out id and value
+              updatedScope[arrID][field.name_id] = null;
+              updatedScope[arrID][field.name] = null;
+            } else {  // just NULL out value.
+              updatedScope[arrID][field.name] = null;
+            }
+          }
+
+          this.setState({ scope: updatedScope });
+
+      }
+    } else {
+      switch (field.name) {
+        // case 'subdivision':
+        //   this.setState({ [field.name]: selected.code }, () => {
+        //     if (this.state.subdivision && this.state.lot && this.state.block) {
+        //       this.searchForExisting('LOT')
+        //     }}
+        //   );  // fill in value.
+        //   break;
+        default:
+          selected?  // if selected
+            field.name_id?  // then if field has an id
+              this.setState({ [field.name_id]: selected.code, [field.name]: selected.name }) :  // fill in id and value.
+              this.setState({ [field.name]: selected.code }) :  // fill in value.
+            field.name_id?  // else (selected is null)... now if field has an id...
+              this.setState({ [field.name_id]: null, [field.name]: null }) :  // clear out
+              this.setState({ [field.name]: null });  // clear out
+      }
     }
+
   }
 
   handleTabEnter = (name, currentValue) => {
     switch (name) {
-      case 'search':
+      case 'find':
         this.findProjects(currentValue);
         break;
       case 'geo_lab':
@@ -408,18 +453,22 @@ class singleView extends Component {
   }
 
   assignScope = (newScope)=> {
-    console.log('assign scope');
     this.setState({ openScopeDialog: !this.state.openScopeDialog, scope: newScope});
   }
 
   removeScope = (selected) => {
     let adjustedScope = [...this.state.scope];
-    adjustedScope.splice(selected,1);
+    if (adjustedScope[selected].id) {
+      adjustedScope[selected].delete = true;
+      adjustedScope[selected].name = null;  // this is a trick to "hide" this scope record.  It will not render on screen
+    } else {
+      adjustedScope.splice(selected,1);
+    }
     this.setState({ scope: adjustedScope });
   };
 
   clearState = (clearAction = false) => {
-    console.log('clearState');
+    // console.log('clearState');
     // does not clear out keys that are absent in initial state.
     // only merges.
     // this.setState(prevState => {
@@ -432,6 +481,7 @@ class singleView extends Component {
         address_id: null,
         id: null,
         job_number: null,
+        trello_card_id: null,
       });
     } else {
       const keys = Object.keys(this.state)
@@ -442,7 +492,7 @@ class singleView extends Component {
   }
 
   saveProject = (andCommit = false) => {
-    console.log('save Project and', andCommit);
+    // console.log('save Project and', andCommit);
 
     if (this.state.address1 && this.state.client_id && this.state.city ) {
 
@@ -564,12 +614,12 @@ class singleView extends Component {
     this.oID=0;
     this.childArr = [];
     const { classes, currentViews, width } = this.props;
-    // console.log('singleView render', 'state:', this.state, 'currentProject:', currentProject);
-    let currentView = {};
+    // console.log('ceViews Render', 'state:', this.state, 'currentProject:', currentProject, 'currentViews', currentViews);
+    let currentView = [];
     if (currentViews.children) {
-      currentView = currentViews.children.find((view) => view.category === this.VIEW)  // only getting the first view.  Used for titling.
+      currentView = currentViews.children.filter((view) => view.category === this.VIEW)  // array of subviews (sections) that make up whole view.
     }
-    // console.log('currentView', currentView, currentProject);
+    // console.log('currentView', currentView);
 
     return (
       <Fragment>
@@ -587,7 +637,7 @@ class singleView extends Component {
               </IconButton>
             </Paper>*/}
             <FieldContainer
-              field = {{name: 'search', label: 'Find'}}
+              field = {{name: 'find', label: 'Find'}}
               state = {this.state}
               handleChange = {this.handleChange}
               handleTabEnter = {this.handleTabEnter}
@@ -602,7 +652,7 @@ class singleView extends Component {
           <Grid item xs={6} md={2}>
             <Paper elevation={4} className={classes.titleText}>
             <Typography align='center' variant={width==='xs'?'subtitle2':'h6'} className={classes.titleText}>
-              {!this.state.job_number?currentView.label:'Job #: '+this.state.job_number}
+              {!this.state.job_number?currentView[0].label:'Job #: '+this.state.job_number}
             </Typography>
 
             </Paper>
@@ -630,10 +680,15 @@ class singleView extends Component {
           className={classes.container}
         >
           {
-            currentViews.children? currentViews.children.forEach(view => {
+            currentView? currentView.forEach(view => {  // could have multiple subviews
               view.scope_section === 'Y'? this.viewScope(view.children): this.viewChildren(view.children)
             }) : null
           }
+          {/*
+            currentViews.children? currentViews.children.forEach(view => {
+              view.scope_section === 'Y'? this.viewScope(view.children): this.viewChildren(view.children)
+            }) : null
+          */}
           {this.childArr}
 
           {actionButtonList(this.state, this.props, this.clearState, this.saveProject, this.handleChange, this.handleListChange)}
@@ -705,9 +760,9 @@ class tabularView extends Component {
   render() {
     console.log('render... state:', this.state);
     const { classes, currentViews } = this.props;
-    let currentView = {};
+    let currentView = [];
     if (currentViews.children) {
-      currentView = currentViews.children.find((view) => view.category === this.VIEW)
+      currentView = currentViews.children.filter((view) => view.category === this.VIEW)  // gets all sections (views) that apply.
     }
     console.log('currentView', currentView);
 
@@ -719,7 +774,7 @@ class tabularView extends Component {
         >
           <Grid item xs={8}>
             <Typography variant='h6' className={classes.titleText}>
-              {currentView.label}
+              {currentView[0].label}
             </Typography>
           </Grid>
           <Grid item>
@@ -751,9 +806,9 @@ class guidedView extends Component {
   render() {
     console.log('render... state:', this.state);
     const { classes, currentViews } = this.props;
-    let currentView = {};
+    let currentView = [];
     if (currentViews.children) {
-      currentView = currentViews.children.find((view) => view.category === this.VIEW)
+      currentView = currentViews.children.filter((view) => view.category === this.VIEW)  // gets all sections (views) that apply.
     }
     console.log('currentView', currentView);
 
@@ -765,7 +820,7 @@ class guidedView extends Component {
         >
           <Grid item xs={8}>
             <Typography variant='h6' className={classes.titleText}>
-              {currentView.label}
+              {currentView[0].label}
             </Typography>
           </Grid>
           <Grid item>

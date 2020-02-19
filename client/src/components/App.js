@@ -17,12 +17,12 @@ import AlertDialogContainer from "../containers/AlertDialogContainer";
 import Drawer from '@material-ui/core/Drawer';
 
 import Navbar from "./Navbar";
-import ProjectMgmtContainer from "../containers/ProjectMgmtContainer";
+// import ProjectMgmtContainer from "../containers/ProjectMgmtContainer";
 import SignUpSignInContainer from "../containers/SignUpSignInContainer";
 import WelcomeContainer from "../containers/WelcomeContainer";
 import UnderConstruction from "../components/UnderConstruction";
 import ProjectCustomContainer from "../containers/ProjectCustomContainer";
-
+import SearchContainer from '../containers/SearchContainer';
 // import AppContainer from "../containers/AppContainer";
 
 import blueGrey from '@material-ui/core/colors/blueGrey';
@@ -127,6 +127,8 @@ class App extends Component {
     this.props.loadSubdivisions();
     this.props.loadContacts();
     // this.props.loadRequestors();  // a subset of contacts
+    this.props.getLookup('STATE');
+    this.props.getLookup('COUNTRY');
     this.props.getLookup('TRELLO_LIST');
     this.props.getLookup('PROJECT_STATUS');
     this.props.getLookup('SCOPE');
@@ -228,9 +230,9 @@ class App extends Component {
           </Drawer>
           <Grid item xs={12} >
             <Switch>
-              <Route path="/volumeproject" component={ProjectMgmtContainer} />
+              <Route path="/volumeproject" component={ProjectCustomContainer} />
               <Route path="/customproject" component={ProjectCustomContainer} />
-              <Route path="/search" component={ProjectMgmtContainer} />
+              <Route path="/search" component={SearchContainer} />
               <Route path="/underconstruction" component={UnderConstruction} />
               <Route path="/dashboard" render={() =>
                 <Grid container justify='center' alignItems='center'>

@@ -85,7 +85,7 @@ export const listPending = async (request, response) => {
 
 }
 
-export const listRecents = async (request, response) => {
+export const listSearch = async (request, response) => {
 
   // The main section.  First get projects, then loop on projects
   // with map function to get the scope items.
@@ -139,7 +139,7 @@ export const show = (request, response) => {
 export const create = async (request, response) => {
 
   // console.log('in ProjectController.create', request.body, request.params.v2);
-  console.log('in ProjectController.create', request.params);
+  // console.log('in ProjectController.create', request.params);
   var errors = [];
   var addRecordResponse;
 
@@ -161,8 +161,14 @@ export const create = async (request, response) => {
       // console.log('In the scope section.');
       let scopePromises = [];
       request.body.scope.forEach((item, i) => {
-        item.project_id = request.body.id? request.body.id:addRecordResponse.insertId;
-        scopePromises.push(ProjectModel.addProjectScope(item));
+        if (!item.delete) {  // checking to see if we are to delete scope.
+          item.project_id = request.body.id? request.body.id:addRecordResponse.insertId;
+          scopePromises.push(ProjectModel.addProjectScope(item));
+        } else {  // wish to delete the scope record.
+          // console.log('delete scope', item.id);
+          scopePromises.push(ProjectModel.deleteProjectScope(item.id));
+        }
+
       });
 
       try {
@@ -205,7 +211,7 @@ export const create = async (request, response) => {
   //
   // });  // end of callback function and addProject
   if (request.params.fromCommit) {
-    console.log('Create return... back to commit');
+    // console.log('Create return... back to commit');
     if (errors.length) {
       console.log('Done with error(s)', errors);
       return errors;
@@ -216,7 +222,7 @@ export const create = async (request, response) => {
     // console.log('This is the proj', proj)
     return project;
   } else {
-    console.log('Create return... back to browser');
+    // console.log('Create return... back to browser');
     if (errors.length) {
       console.log('Done with error(s)', errors);
       return response.json(errors);
@@ -233,7 +239,7 @@ export const create = async (request, response) => {
 
 // function to create a address
 export const commit = (request, response) => {
-  console.log('Project Controller.commit request', request.params);
+  // console.log('Project Controller.commit request', request.params);
 
   //Central time offsets.  Treating these like Globals for this function rightn now.
   // var CST_OFFSET = 360;  //starts fist sun in Nov
@@ -295,16 +301,52 @@ export const commit = (request, response) => {
       } else {
         var {id, job_number} = request.body[i];
       }
+
       // console.log('6. the id, job_number: ', id, job_number);
-      const {revision, revision_desc, client_id, client, owner_id, requestor, requestor_id, city, subdivision, address1, address2, phase, section, lot, block
-        , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation, masonry, garage_type
-        , garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window, master_shower_drop
-        , bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num, geo_report_date
-        , geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, comments, status, project_status, scope, classification, due_date, final_due_date
-        , start_date, onboard_date, transmittal_date, main_contact, billing_contact, builder_contact, foundation_type, floor_type
-        , roof_type, num_stories, square_footage, pita_factor, dwelling_type, trello_list, trello_list_id, trello_card_id, box_folder
-        , created_by, last_updated_by
+      const {revision, revision_desc, client_id, client, owner_id, requestor, requestor_id, city, subdivision
+        , address1, address2, phase, section, lot, block
+        , geo_lab, geo_report_num, geo_report_date, geo_pi, em_center, em_edge, ym_center, ym_edge
+        , soil_notes, additional_options, comments, status, project_status, classification
+        , due_date, final_due_date, start_date, onboard_date, transmittal_date
+        , main_contact, billing_contact, builder_contact, dwelling_type
+        , trello_list, trello_list_id, trello_card_id, box_folder, created_by, last_updated_by
       } = request.body[i];
+
+      let scope = '';
+      newRecord.scope.forEach(s=> {
+        // console.log('s', s);
+        scope = scope+s.scope+',';
+        // console.log('for each scope', scope);
+      });
+      scope = scope.slice(0,scope.length-1);  // remove the last comma.
+
+      // console.log('scope', scope);
+
+      // these scope type values used to be stored at project level.  Need to pull them out at scope
+      // level now.
+      const fdn = newRecord.scope.find(s => s.name === 'volfoundation');
+      const frm = newRecord.scope.find(s => s.name === 'cusframing');
+
+      // console.log('fdn, frm', fdn, frm);
+
+      var fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation, masonry
+        , garage_type, garage_entry, garage_swing, garage_drop, garage_extension
+        , covered_patio, bay_window, master_shower_drop, bath1_shower_drop
+        , bath2_shower_drop, bath3_shower_drop, foundation_type, floor_type
+        , roof_type, num_stories, square_footage, pita_factor = null;
+
+      if (fdn) {
+        var {fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation
+          , masonry, garage_type, garage_entry, garage_swing, garage_drop, garage_extension
+          , covered_patio, bay_window, master_shower_drop, bath1_shower_drop
+          , bath2_shower_drop, bath3_shower_drop, foundation_type}
+        = fdn;
+      }
+
+      if (frm) {
+        var {foundation_type, floor_type, roof_type, num_stories, square_footage, pita_factor}
+        = frm;
+      }
 
       // console.log('values', trello_list_id, trello_card_id, due_date, revision, revision_desc);
 
@@ -339,7 +381,7 @@ export const commit = (request, response) => {
 
         // Defining the description for volume client cards.
         const gs = garage_swing? garage_swing === 'RIGHT'? 'R':'L' : '';
-        console.log('masonry', ':'||masonry||':');
+        // console.log('masonry', ':'||masonry||':');
         const ms = masonry === 'PLAN'? ', PLAN' : masonry === null||masonry ===''? '' : `, ${masonry}SM`
         const gext = garage_extension? `X${garage_extension}` : '';
         const gdrop = garage_drop? `D${garage_drop}` : '';
