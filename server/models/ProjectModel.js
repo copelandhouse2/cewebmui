@@ -10,7 +10,9 @@ const sqlPromise = (SQLstmt, values) => {
   });
 };
 
-const SQL_PREQUERY = `SELECT DISTINCT p.id`
+// interesting the prequery failed in test env.  Regarding distinct and order by...
+// fields in order by must be selected when you have a distinct.
+const SQL_PREQUERY = `SELECT DISTINCT p.id, p.job_number, p.last_updated_date`
 
 // p.fnd_height_fr, p.fnd_height_fl, p.fnd_height_rr, p.fnd_height_rl, p.plan_type, p.elevation, p.masonry, p.garage_type
 // , p.garage_entry, p.garage_swing, p.garage_drop, p.garage_extension, p.covered_patio, p.bay_window, p.master_shower_drop
