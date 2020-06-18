@@ -1,10 +1,13 @@
 import express from 'express';
 // import { list, show, create, update, delete } from '../controllers/AddressController';
-import { listControls, listRelationships, listChildren } from '../controllers/AvffController';
+import { listControls, listRelationships, listChildren, listScope } from '../controllers/AvffController';
 const router = express.Router();
 
 //Getting the data... the top menu
 router.get(`/controls`, listControls);
+
+//Getting the data... the top menu
+router.get(`/controls/scope`, listScope);
 
 //Getting the data... the top menu
 router.get(`/relationships`, listRelationships);

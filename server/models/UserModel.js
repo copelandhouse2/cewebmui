@@ -10,8 +10,16 @@ const sqlPromise = (SQLstmt, values) => {
   });
 };
 
-const SQL_USER_SELECT = `select id, username, auth_key, client_id, contact_id
-  , role, approved from users`;
+const SQL_USER_SELECT = `select u.id, u.id code, u.username, u.auth_key, u.approved
+, c.id contact_id, c.client_id, c.first_name, c.last_name, c.full_name
+, c.full_name name, c.email, c.mobile, c.other, c.requestor, c.role, c.active
+, c.comments
+from users u, contacts c
+where u.id = c.user_id`;
+
+// Old select statement
+// const SQL_USER_SELECT = `select u.id, u.username, u.auth_key, u.client_id, u.contact_id
+//   , u.role, u.approved from users u`;
 
 const SQL_SETTINGS_SELECT = `SELECT id, user_id, accent_color from users_settings`;
 
@@ -23,13 +31,13 @@ const UserModel = {
 
   getUserByID: function(id, callback){
     const SQLstmt = SQL_USER_SELECT
-      + ' where id=?';
+      + ' and u.id=?';
     return sql().query(SQLstmt, [id], callback);
   },
 
   getUserByUsername: function(username, callback){
     const SQLstmt = SQL_USER_SELECT
-      + ' where username=?';
+      + ' and u.username=?';
     return sql().query(SQLstmt, [username], callback);
   },
 

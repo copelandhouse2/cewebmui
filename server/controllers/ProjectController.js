@@ -86,16 +86,30 @@ export const listPending = async (request, response) => {
 }
 
 export const listSearch = async (request, response) => {
-
+  // console.log('listSearch', request.params);
   // The main section.  First get projects, then loop on projects
   // with map function to get the scope items.
   try {
-    const projects = await ProjectModel.searchProjects(request.params);
+    let projects = [];
+    if (request.params.find||request.params.filter) {
+      const idListObj = await ProjectModel.searchProjects(request.params);
+      // console.log('listSearch: idArr', idListObj);
+      if (idListObj.length>0) {  // if we have some ids, go get the data.
+        const orderField = request.params.filter?'last_updated_date':'job_number'
+        projects = await ProjectModel.getProjectsByArr(idListObj, orderField);
+        // console.log('listSearch: projects', projects);
+      } else {
+        console.log('listSearch no projects to pull');
+      }
+    } else {
+      projects = await ProjectModel.getProjects(request.params);
+    }
     const projectData = await Promise.all(projects.map(proj => getScope(proj)));
     // console.log('list PENDING projects with scope:', projectData);
     return response.json(projectData);
 
   } catch (err) {
+    console.log('listSearch error: ', err);
     return response.json(err);
 
   }
@@ -158,7 +172,7 @@ export const create = async (request, response) => {
   // console.log('just before scope section', errors.length, request.params.v2);
   if (!errors.length && request.params.v2 === 'true') {  // version 2 changes
     if (addRecordResponse.insertId || request.body.id) {
-      // console.log('In the scope section.');
+      // console.log('In the scope section.', request.body.scope);
       let scopePromises = [];
       request.body.scope.forEach((item, i) => {
         if (!item.delete) {  // checking to see if we are to delete scope.
@@ -834,7 +848,7 @@ export const commit = (request, response) => {
                     newDate.setMinutes(tzOffset);
 
                     // console.log('dates', geo_report_date, dateTime, newDate, hourOffset);
-                    console.log('dates', geo_report_date, newDate, tzOffset);
+                    // console.log('dates', geo_report_date, newDate, tzOffset);
                     value = {
                       value: {'date': newDate.toString()}  // need to fix when null.  only update when value exists.
                     };
@@ -881,11 +895,19 @@ export const commit = (request, response) => {
         }
       } // trello card info to create / update
 
-      // Updating the database
+      // Updating the database one more time with trello card id.
+      // If update occurs, it creates one more entry in history table
+      // that does NOT coincide with history in scope history.  Based
+      // on the way I will write the revision queries, it won't matter.
+      // In order to fully coincide, I would have to create a dummy update
+      // on the project scope table right here.  Seems like a silly step.
       try {
-        console.log('in db update.  Params:', id, tCardID);
-        const dbResponse = await ProjectModel.commitProjectByID(id, tCardID);
-        // console.log('database commit response', dbResponse);
+        // console.log('in db update.  Params:', id, tCardID, trello_card_id);
+        if (tCardID !== trello_card_id) {
+          console.log('updating the db');
+          const dbResponse = await ProjectModel.commitProjectByID(id, tCardID);
+          // console.log('database commit response', dbResponse);
+        }
 
       } catch (err) {
         // console.log('MySQL Update record Error: ', `${err.errno}:${err.code} - ${err.sqlMessage}`);
@@ -915,14 +937,53 @@ export const update = (request, response) => {
   });
 }
 
-export const remove = (request, response) => {
+// export const remove = (request, response) => {
+//
+//   ProjectModel.deleteProject(request.params.id)
+//   .then( deleteResponse => {
+//     console.log('Project Deleted');
+//     return response.json('Project Deleted');
+//   })
+//   .catch( err => {
+//     return response.json(err);
+//   });
+// }
 
-  ProjectModel.deleteProject(request.params.id)
-  .then( deleteResponse => {
-    console.log('Project Deleted');
+export const remove = async (request, response) => {
+
+  try {
+    // console.log('in db update.  Params:', id, tCardID);
+    const scopeResp = await ProjectModel.deleteProjectScopeAll(request.params.id);
+    const projectData = await ProjectModel.deleteProject(request.params.id);
+    // console.log('listDups', request.params);
+    // console.log('listDups', dups);
     return response.json('Project Deleted');
-  })
-  .catch( err => {
+
+  } catch (err) {
+    // console.log('MySQL Update record Error: ', `${err.errno}:${err.code} - ${err.sqlMessage}`);
     return response.json(err);
-  });
+
+  }
+}
+
+const getRevScope = async rev => {
+    const scopeData = await ProjectModel.getRevScopeItems(rev);
+    const returnData = {...rev, scope: scopeData};
+    return returnData;
+};
+
+export const getHistory = async (request, response) => {
+
+  // The main section.  Get history of project, then loop on projects
+  // with map function to get the scope items.
+  try {
+    const revisions = await ProjectModel.getRevisions(request.params.id);
+    const historyData = await Promise.all(revisions.map(rev => getRevScope(rev)));
+    // console.log('getHistory:', historyData);
+    return response.json(historyData);
+
+  } catch (err) {
+    return response.json(err);
+
+  }
 }

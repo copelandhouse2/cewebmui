@@ -14,13 +14,30 @@ import {
 import { AccountCircle } from "@material-ui/icons";
 import MenuIcon from '@material-ui/icons/Menu';
 import CloseIcon from '@material-ui/icons/Close';
+import Paper from '@material-ui/core/Paper';
 
 const styles = theme => ({
   root: {},
   // AppBar: {marginBottom: 10, zIndex: theme.zIndex.drawer+1,},
-  AppBar: {height: 60 },
-  grow: {flexGrow: 1,},
-  icon: { fontSize:"1.5em" },
+  AppBar: {
+    height: 60
+  },
+  grow: {
+    flexGrow: 1,
+  },
+  grow2: {
+    flexGrow: 1.5,
+    [theme.breakpoints.down("sm")]: {
+      flexGrow: 1,
+    },
+  },
+  icon: {
+    fontSize:"1.5em"
+  },
+  paper: {
+    backgroundColor: theme.palette.primary.main,
+    padding: '0px 30px',
+  }
 });
 
 class Header extends React.Component {
@@ -69,10 +86,18 @@ class Header extends React.Component {
           <Typography
             variant="h5"
             color="inherit"
-            className={classes.grow}
+            // className={classes.grow}
           >
             {width === "sm"||width === "xs" ? "CE Tools" : "Copeland Engineering Webtools"}
           </Typography>
+
+          <div className={classes.grow} />
+          <Paper elevation={4} className={classes.paper}>
+          <Typography variant='h5' color='inherit'>
+            {this.props.pageTitle||'Welcome'}
+          </Typography>
+          </Paper>
+          <div className={classes.grow2} />
 
           <Typography
             variant="body2"
@@ -86,7 +111,6 @@ class Header extends React.Component {
             onClick={this.handleMenu}
             color="inherit"
           >
-
             <AccountCircle className={classes.icon}/>
           </IconButton>
           <Menu

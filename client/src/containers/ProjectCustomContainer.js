@@ -1,6 +1,6 @@
 import { connect } from "react-redux";
 import ProjectCustom from "../components/ProjectCustom";
-import { loadViews } from "../actions";
+import { loadViews, loadViewsByName } from "../actions";
 
 function mapStateToProps(state) {
   return {
@@ -14,8 +14,11 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
   return {
-    loadViews: function (parent_id, scope) {
-      dispatch(loadViews(parent_id, scope));
+    loadViews: function (parent_id, scope, clear) {
+      dispatch(loadViews(parent_id, scope, clear));
+    },
+    loadViewsByName: function (name) {
+      dispatch(loadViewsByName(name));
     },
   };
 }

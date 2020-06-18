@@ -49,13 +49,13 @@ class Recents extends Component {
   render() {
 
     const { classes, search } = this.props;
-
+    // console.log('Recents', search.recentsResults);
     return (
       <div >
         <AppBar className={classes.appbar}>
           <Toolbar className={classes.toolbar}>
 
-            <Button
+{/*            <Button
               title='display Unapproved projects'
               variant="contained"
               color="secondary"
@@ -64,7 +64,7 @@ class Recents extends Component {
               onClick={ (e) => {this.props.loadRecents('U')} }
             >
               U
-            </Button>
+            </Button>*/}
             <Button
               title='Display Pending projects'
               variant="contained"

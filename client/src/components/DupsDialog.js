@@ -315,7 +315,7 @@ class DupsDialog extends Component {
 
             <Grid item xs={12}>
               <Typography variant='h6' align='center' className={ classes.alert }>
-              <b>ALERT</b>: If entry is a duplicate, please use Project Management screen to edit.
+              <b>ALERT</b>: If entry is a duplicate, check for errors.  Or cancel edit and pull up original entry.
               </Typography>
             </Grid>
           }

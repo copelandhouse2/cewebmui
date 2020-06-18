@@ -48,11 +48,35 @@ const AvffModel = {
 
   },
 
+  getScopeControls: function(callback = null) {
+
+    // , CONVERT(ac.image USING utf8mb4) image
+
+    const SQLstmt = `select ac.id, ac.name, ac.name code, ac.label, ac.label name, ac.entity_type, ac.scope_section
+      , CONVERT(ac.image USING utf8mb4) image
+      , ac.background_color, ac.url, ac.category, ac.name_id, ac.data_type, ac.field_length
+      , ac.lookup_list, ac.creatable, ac.help_text
+      from avff_controls ac
+      where entity_type = "ACTION"
+      and category <> 'SETUP'
+      order by ac.id`
+    ;
+    // let values = [];
+
+    if (callback) {
+      // console.log('getPendingProjects: in the callback version');
+      return sql().query(SQLstmt, callback);
+    } else {
+      // console.log('getPendingProjects: in the promise version');
+      return sqlPromise(SQLstmt);
+    }
+
+  },
   getAllRelationships: function(callback = null) {
 
     const SQLstmt = `select ar.id rship_id, ar.control_id, ar.parent_id
       , ar.order, ar.display_width, ar.column_width, ar.disabled, ar.hidden
-      , ar.required, ar.resizable, ar.z_index, ar.column_formatter
+      , ar.readonly, ar.required, ar.resizable, ar.z_index, ar.column_formatter
       , ar.header_formatter, ar.field_formatter, ar.label_formatter, ar.hide_label
       from avff_relationships ar
       order by ar.parent_id, ar.order, ar.id`
@@ -103,7 +127,7 @@ const AvffModel = {
     const SQLstmt = `select ac.id, ac.name, ac.label, ac.entity_type, CONVERT(ac.image USING utf8mb4) image
       , ac.background_color, ac.url, ac.name_id, ac.data_type, ac.field_length
       , ac.lookup_list, ac.help_text
-      
+
       , ar.id rship_id, ar.control_id, ar.parent_id
       , ar.order, ar.display_width, ar.column_width, ar.disabled, ar.hidden
       , ar.required, ar.resizable, ar.z_index, ar.column_formatter

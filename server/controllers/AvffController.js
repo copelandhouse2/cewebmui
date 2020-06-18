@@ -18,6 +18,24 @@ export const listControls = async (request, response) => {
     return response.json(controls);
 
   } catch (err) {
+    console.log('Controls retrieval error', err);
+    return response.json(err);
+  }
+}
+
+// pull the controls with action =  actions (scope).
+export const listScope = async (request, response) => {
+
+  // get all controls
+  try {
+    const scope = await AvffModel.getScopeControls();
+    // const projectData = await Promise.all(projects.map(proj => getScope(proj)));
+    // console.log('list controls', controls);
+    console.log('Data retrieved... Scope');
+    return response.json(scope);
+
+  } catch (err) {
+    console.log('Controls retrieval error', err);
     return response.json(err);
   }
 }
@@ -33,6 +51,7 @@ export const listRelationships = async (request, response) => {
     return response.json(relationships);
 
   } catch (err) {
+    console.log('Relationships retrieval error', err);
     return response.json(err);
   }
 }

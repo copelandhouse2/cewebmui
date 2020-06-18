@@ -3,7 +3,7 @@ import { connect } from "react-redux";
 import { loadPending, loadSession, loadCities
   , loadClients, loadSubdivisions, loadContacts, getLookup
   , authenticate, loadGeotechs, loadGeoMasterData, loadControls, loadRelationships
-  , updateSettings}
+  , updateSettings, loadUsers, loadScope }
   from "../actions";
 
 function mapStateToProps(state) {
@@ -12,7 +12,6 @@ function mapStateToProps(state) {
     cities: state.cities,
     clients: state.clients,
     subdivisions: state.subdivisions,
-
   };
 }
 
@@ -32,6 +31,9 @@ function mapDispatchToProps(dispatch) {
     },
     loadSubdivisions: function () {
       dispatch(loadSubdivisions());
+    },
+    loadUsers: function () {
+      dispatch(loadUsers());
     },
     loadContacts: function () {
       dispatch(loadContacts());
@@ -56,6 +58,9 @@ function mapDispatchToProps(dispatch) {
     },
     updateSettings: function (session, settings) {
       dispatch(updateSettings(session, settings));
+    },
+    loadScope: function () {
+      dispatch(loadScope());
     },
   };
 }

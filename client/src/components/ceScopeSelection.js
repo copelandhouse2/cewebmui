@@ -169,6 +169,7 @@ class scopeSelection extends Component {
     const { classes, currentMenu } = this.props;
 
     // console.log('scope selector', 'menu',currentMenu, 'views',currentViews, 'project',currentProject);
+    // console.log('scope selector', 'menu',currentMenu);
     // console.log('state', this.state);
     return (
       <Dialog
@@ -185,35 +186,40 @@ class scopeSelection extends Component {
             alignItems='flex-start'
             spacing={16}
           >
-            {currentMenu.children && currentMenu.children.map(button => (
-            <Grid item key={button.name} xs={4} sm={3} lg={2} className={classes.buttonGroup}>
-              <Fab className={classes.fab}
-                onClick={()=>{this.addScope(button)} }
-              >
-                <Badge badgeContent={this.state.count[button.name]||0} color='primary' classes={{ badge: classes.badge }}>
+            {currentMenu.children && currentMenu.children.map(button => {
+              // don't load menu items and other stuff.  Only scope buttons
+              if (button.entity_type !== 'ACTION') return null;
+              // Loads scope buttons.
+              return (
+              <Grid item key={button.name} xs={4} sm={3} lg={2} className={classes.buttonGroup}>
+                <Fab className={classes.fab}
+                  onClick={()=>{this.addScope(button)} }
+                >
+                  <Badge badgeContent={this.state.count[button.name]||0} color='primary' classes={{ badge: classes.badge }}>
 
-                  <img src={useSvg(button.image)} alt={button.label} className={classes.imageSrc} />
-                </Badge>
+                    <img src={useSvg(button.image)} alt={button.label} className={classes.imageSrc} />
+                  </Badge>
 
-              </Fab>
-              { this.state.count[button.name] > 0 &&
-                <Tooltip title='Remove scope item' aria-label='Remove'>
-                  <Fab color='primary' className={classes.fabMinus}
-                     onClick={()=>{this.removeScope(button)}}
-                  >
-                    <Minus className={classes.minus}/>
-                  </Fab>
-                </Tooltip>
-              }
-              <Typography
-                variant='caption'
-                color='secondary'
-                className={classes.buttonTitle}
-              >
-                {button.label}
-              </Typography>
-            </Grid>
-            ))}
+                </Fab>
+                { this.state.count[button.name] > 0 &&
+                  <Tooltip title='Remove scope item' aria-label='Remove'>
+                    <Fab color='primary' className={classes.fabMinus}
+                       onClick={()=>{this.removeScope(button)}}
+                    >
+                      <Minus className={classes.minus}/>
+                    </Fab>
+                  </Tooltip>
+                }
+                <Typography
+                  variant='caption'
+                  color='secondary'
+                  className={classes.buttonTitle}
+                >
+                  {button.label}
+                </Typography>
+              </Grid>
+              )}
+            )}
           </Grid>
         </DialogContent>
         <DialogActions>

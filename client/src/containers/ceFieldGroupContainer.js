@@ -7,6 +7,7 @@ function mapStateToProps(state) {
     session: state.session,
     currentViews: state.currentViews,
     currentProject: state.currentProject,
+    // dups: state.dups,
   };
 }
 

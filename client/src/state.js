@@ -1,4 +1,5 @@
 export default {
+  pageTitle: '',
   addresses: [],
   search: {
     recents: '1',
@@ -10,8 +11,10 @@ export default {
   clients: [],
   cities: [],
   subdivisions: [],
-  contacts: [],
-  requestors: [], // subset of contacts where requestor = 'Y'
+  users: [],  // People that have approved record in users table.
+  requestors: [], // users and contacts with requestor flag = 'Y'.  User can enter "on behalf of".
+  designers: [],  // 
+  contacts: [],  // all people in contacts table.
   jobnumberseqs: [],
   stateLookup: [],
   countryLookup: [],
@@ -31,7 +34,10 @@ export default {
   roofTypeLookup: [],
   coveredPatioLookup: [],
   dwellingTypeLookup: [],
+  dateSearchLookup: [],
   pitaLookup: [],
+  revReasonLookup: [],
+  revRespLookup: [],
   geos: [],
   geoMasterData: [],
   session: {
@@ -68,10 +74,12 @@ export default {
   avffRelationships:[],
   currentMenu: {},
   currentViews: [],  // could load multiple views.  SINGLE view is default.
+  localView: {},  // this is for a temp view used in a popup then discarded.
   currentProject: {},
   saveType: [
     {name: 'save', code: 'save'},
     {name: 'commit', code: 'commit'}
-  ]
+  ],
+  projectHistory: [],
 
 };

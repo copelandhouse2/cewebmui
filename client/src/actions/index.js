@@ -1,5 +1,16 @@
-// import AlertDialog from "../components/AlertDialog";
-// import { STATUS_CODES } from "http";
+// Setting the page title.
+export function setPageTitle(theTitle) {
+  // console.log('pageTitle', theTitle);
+  return function (dispatch) {
+    dispatch(pageTitleDone(theTitle));
+  }
+}
+function pageTitleDone(theTitle) {
+  return {
+    type: "TITLE_LOADED",
+    value: theTitle
+  };
+}
 
 /* SESSION ACTION */
 // Loading the list of addresses
@@ -106,6 +117,25 @@ function controlsLoaded(controls) {
   };
 }
 
+export function loadScope() {
+  // console.log('loadScope');
+  return function (dispatch) {
+    fetch(`/controls/scope`)
+    .then( (response) => {
+      return response.json();
+    }).then((scope) => {
+      // console.log('loadScope after', scope);
+      dispatch(scopeLoaded(scope));
+    });
+  };
+}
+function scopeLoaded(scope) {
+  return {
+    type: "SCOPELOOKUP_LOADED",
+    value: scope
+  };
+}
+
 export function loadRelationships() {
   // console.log('loadSession', username);
   return function (dispatch) {
@@ -129,10 +159,10 @@ export function loadTopMenu() {
   return function (dispatch) {
     fetch(`/controls`)
     .then( (response) => {
-      console.log('loadTopMenu response', response);
+      // console.log('loadTopMenu response', response);
       return response.json();
     }).then((menu) => {
-      console.log('action loadTopMenu', menu);
+      // console.log('action loadTopMenu', menu);
       dispatch(menuLoaded(menu));
     });
   };
@@ -188,6 +218,7 @@ function projectsLoaded(projects) {
 export function loadRecents(searchFilter = null) {
   return function (dispatch, getState) {
     const { search, session } = getState();
+    // console.log('.then loadRecents 1', search);
     const searchVal = searchFilter?searchFilter:search.recents;
     // console.log('In loadRecents', searchVal);
     fetch(`/recents/v2.0/${session.id}/${searchVal}`)
@@ -196,26 +227,42 @@ export function loadRecents(searchFilter = null) {
     }).then((projects) => {
       let updatedSearch = {...search};
       updatedSearch.recents = searchVal;
-      updatedSearch.recentsResults = projects;
-      // console.log('.then loadRecents', updatedSearch);
+      updatedSearch.recentsResults = [...projects];
+      // console.log('.then loadRecents 2', updatedSearch);
       dispatch(searchLoaded(updatedSearch));
     });
   };
 }
 
-export function loadFind(searchFilter) {
+export function loadFind(searchFilter, searchFields = null) {
   return function (dispatch, getState) {
-    const { search } = getState();
-
-    fetch(`/find/v2.0/${searchFilter}`)
+    let urlString = `${searchFilter}`;  // default
+    if (searchFields && !searchFilter) {
+      const { job_number, address1, date_search, client_id
+        , subdivision, city, user_id, contact_id, status } = searchFields;
+      urlString = `:${job_number||'null'}`
+        + `/:${address1||'null'}`
+        + `/:${date_search||'null'}`
+        + `/:${client_id||'null'}`
+        + `/:${subdivision||'null'}`
+        + `/:${city||'null'}`
+        + `/:${user_id||'null'}`
+        + `/:${contact_id||'null'}`
+        + `/:${status||'null'}`;
+    }
+    // console.log('loadFind', urlString);
+    fetch(`/find/v2.0/${urlString}`)
     .then( (response) => {
       return response.json();
     }).then((projects) => {
+      const { search } = getState();
+      // console.log('.then loadFind 1', search);
       let updatedSearch = {...search};
       updatedSearch.find = searchFilter;
-      updatedSearch.findResults = projects;
-      // console.log('.then loadFind', updatedSearch);
+      updatedSearch.findResults = [...projects];
+      // console.log('.then loadFind 2', updatedSearch);
       dispatch(searchLoaded(updatedSearch));
+      return true;
     });
   };
 }
@@ -263,10 +310,10 @@ function dupsLoaded(dups) {
 }
 
 // Action to create the Address
-export function createAddress(c, v2 = false) {
+export function createAddress(c, v2 = false, updateSearch = false) {
   // console.log('Just in createAddress', c)
-  return function (dispatch) {
-    console.log('createAddress', v2);
+  return function (dispatch, getState) {
+    // console.log('createAddress', v2);
     fetch(`/projects/${v2}`, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
@@ -274,27 +321,31 @@ export function createAddress(c, v2 = false) {
     }).then((response) => {
       return response.json();  // need to do this extra .then to convert json response into object to read.
     }).then((response) => {
+      // console.log('createAddress', response);
       if (response.errno) {
         console.log('Error: create Address', response);  // now has insertId
       }
-      // console.log('.then create Address', response);  // now has insertId
-      // loadType === 'PENDING' ? dispatch(loadPending(userID)) : dispatch(loadProjects());
-      // dispatch(saveProject(response));
+      // console.log('createAddress loadRecents');
       dispatch(loadRecents());
+      return response;  // need to do this extra .then to convert json response into object to read.
+    }).then((response) => {
+      if (updateSearch) {
+        const { search } = getState();
+        // console.log('createAddress loadFind');
+        dispatch(loadFind(search.find, null));
+      }
       dispatch(loadMessage(
         { ok:false,
           status: `New / Updated Job #`,
           statusText: response.job_number
         }, 'INFO'));
-
-      // return response;
     });
   };
 }
 
 // Action to create the Address
-export function commitAddresses(userID, c, search, create, v2 = false) {
-  return function (dispatch) {
+export function commitAddresses(userID, c, create, v2 = false, updateSearch = false) {
+  return function (dispatch, getState) {
     // console.log('in commitAddress function', userID, create, v2);
     fetch(`/commits/${userID}/${create}/${v2}`, {
       method: "PUT",
@@ -307,9 +358,13 @@ export function commitAddresses(userID, c, search, create, v2 = false) {
         console.log('2nd .then ERROR commit Address', response);
         throw response;
       };
-      // console.log('2nd .then commit Address', response);
-      // dispatch(loadProjects(search));
+      // console.log('update recents');
       dispatch(loadRecents());
+      if (updateSearch) {
+        const { search } = getState();
+        // console.log('update find');
+        dispatch(loadFind(search.find, null));
+      }
       dispatch(loadMessage(
         { ok:false,
           status: `New / Updated Job #`,
@@ -351,6 +406,21 @@ export function deleteAddress(id, search) {
       method: "DELETE"
     }).then(() => {
       dispatch(loadProjects(search));
+    });
+  };
+}
+
+// Action to create the Address
+export function deleteProject(id) {
+  // console.log('deleteAddress',id)
+  return function (dispatch, getState) {
+    fetch(`/projects/${id}`, {
+      method: "DELETE"
+    }).then(() => {
+      dispatch(loadRecents());
+      const { search } = getState();
+      // console.log('createAddress loadFind');
+      dispatch(loadFind(search.find, null));
     });
   };
 }
@@ -406,8 +476,30 @@ export function showHideClientDialog() {
     type: 'SHOW_CLIENT_DIALOG'
   };
 }
+
+/* USERS */
+// Loading the users
+export function loadUsers() {
+  return function (dispatch) {
+    fetch("/users")
+    .then( (response) => {
+      return response.json();
+    }).then((results) => {
+      const users = results.filter(u => u.approved === 'Y');
+      dispatch(usersLoaded(users));
+    });
+  };
+}
+
+function usersLoaded(users) {
+  return {
+    type: "USERS_LOADED",
+    value: users
+  };
+}
+
 /* CONTACTS ACTIONS */
-// Loading the list of contacts
+// Loading the list of contacts, requestors, and users
 export function loadContacts() {
   return function (dispatch) {
     fetch("/contacts")
@@ -416,8 +508,11 @@ export function loadContacts() {
     }).then((contacts) => {
       dispatch(contactsLoaded(contacts));
       const requestors = contacts.filter(c => c.requestor === 'Y');
+      const designers = contacts.filter(c => c.designer === 'Y');
       // console.log('the requestors', requestors);
       dispatch(requestorsLoaded(requestors));
+      dispatch(designersLoaded(designers));
+
     });
   };
 }
@@ -433,7 +528,12 @@ function requestorsLoaded(requestors) {
     value: requestors
   };
 }
-
+function designersLoaded(designers) {
+  return {
+    type: "DESIGNERS_LOADED",
+    value: designers
+  };
+}
 // Action to create the Contact
 export function createContact(c) {
   return function (dispatch) {
@@ -726,6 +826,24 @@ function lookupLoaded(lookupList, type) {
       value: lookupList
     };
   }
+  if (type === 'DATE_SEARCH') {
+    return {
+      type: "DATESEARCH_LOADED",
+      value: lookupList
+    };
+  }
+  if (type === 'REV_REASON') {
+    return {
+      type: "REVREASON_LOADED",
+      value: lookupList
+    };
+  }
+  if (type === 'REV_RESP') {
+    return {
+      type: "REVRESP_LOADED",
+      value: lookupList
+    };
+  }
 }
 
 // Action to create the Account
@@ -737,11 +855,10 @@ export function authenticate() {
 
   if (authToken == null) {
   // if (true) {
-    // console.log('token is undefined');
+    console.log('token is undefined');
     // return {false}
     null;
-  }
-  else {
+  } else {
     // console.log('authenticate: In the else');
     return function (dispatch) {
     fetch(`/authenticate/${authToken}`)
@@ -843,10 +960,10 @@ export function signIn(user) {
       }
       return response.json();
       // else {
-      //   const res = response.json();
-      //   console.log('signIn.then else part.  Pass', res, user.email);
-      //   localStorage.setItem('token', res.token);
-      //   dispatch(loadSession(user.email));
+      //  const res = response.json();
+      //  console.log('signIn.then else part.  Pass', res, user.email);
+      //  localStorage.setItem('token', res.token);
+      //  dispatch(loadSession(user.email));
       // }
     }).then( theUser => {
       if (theUser.approved === 'Y') {
@@ -1055,22 +1172,34 @@ export function assignNewProjectScope(scope) {
 }
 
 export function updateProject(project) {
+  // console.log('updateProject project', project);
   return function (dispatch, getState) {
     if (project.classification) {
-      const { avffControls, avffRelationships } = getState();
+      const { avffControls } = getState();
+      // const { avffControls, avffRelationships } = getState();
       const menuControl = avffControls.find(c=>c.entity_type === 'MENU' && c.category === project.classification);
-      // const menuChildren = avffRelationships.filter(r=>r.parent_id === menuControl.id);
+      // console.log('updateProject menuControl', menuControl);
 
-      let a = avffRelationships.filter(child => child.parent_id === menuControl.id);
-      let c = [];
-      for (let i = 0; i < a.length; i++) {
-        let b = avffControls.find(control => control.id === a[i].control_id);
-        // Find the menu that has the actions... cusnew or volnew.
-        ['MENU', 'ACTION'].includes(b.entity_type) && b.name.includes('new')? c.push({ ...b, ...a[i] }):null;
-      }
-      // console.log('updateProject', a, c[0].id);
+      // ********************* 20-05-21 Mods
+      // let a = avffRelationships.filter(child => child.parent_id === menuControl.id);
+      // console.log('updateProject a', a);
+      // let c = [];
+      // for (let i = 0; i < a.length; i++) {
+      //   let b = avffControls.find(control => control.id === a[i].control_id);
+      //   console.log('updateProject b', b);
+      //   // Find the menu that has the actions... cusnew or volnew.
+      //   ['MENU', 'ACTION'].includes(b.entity_type) && b.name.includes('new')? c.push({ ...b, ...a[i] }):null;
+      // }
+      // console.log('updateProject a, c', a, c[0].id);
       const theProject = Object.assign({}, project, { categoryID: menuControl.id, url: menuControl.url });
-      dispatch(loadCurrentMenu(c[0].id));
+      // console.log('updateProject theProject', theProject);
+      // dispatch(loadCurrentMenu(c[0].id));
+      // ********************* 20-05-21 Mods
+      dispatch(loadCurrentMenu(menuControl.id));
+
+      // Views need to be loaded upon 3 events:
+      // from initial menu, picking a new project, switching views
+      dispatch(loadViews(menuControl.id));
       dispatch(currentProjectLoaded(theProject));
     } else {
       dispatch(currentProjectLoaded(project));
@@ -1095,7 +1224,7 @@ export function clearProject() {
 // loadCurrentView(parent_id)
 export function getChildren(controls, relationships, theParent) {
   // console.log('In masterData');
-    let c_rship = relationships.filter(child => child.parent_id === theParent.id);
+    let c_rship = relationships.filter(child => child.parent_id === theParent.id && child.hidden!=='Y');
     if (!c_rship) return [];
 
     let children = [];
@@ -1111,25 +1240,105 @@ export function getChildren(controls, relationships, theParent) {
     return children;
 
 }
+
+// Views are loaded / updated upon 3 events:
+// from initial menu, picking a new project, switching views (removed feature right now)
 // Loading the current Menu based on passed parent id.
-export function loadViews(rootId) {
-  // console.log('In masterData');
+export function loadViews(rootId, localView = null, clear = false) {
+  // console.log('In loadViews');
+  return function (dispatch, getState) {
+    if (clear) {
+      dispatch(viewsLoaded([]));
+    } else {
+      const { avffControls, avffRelationships } = getState();
+
+      const rootData = avffControls.find(control => control.id === rootId);
+      // console.log('loadViews: rootData', rootData);
+
+      const children = getChildren(avffControls, avffRelationships, rootData);
+      // console.log('loadViews: children', children);
+
+      const rootTree = { ...rootData, children: [...children] }
+      // console.log('rootTree', rootTree);
+
+      if (localView) {
+        // return rootTree;
+        // console.log('loadViews: localView', rootTree);
+        dispatch(localViewLoaded(rootTree));
+      } else {
+        // console.log('loadViews: main view', rootTree);
+        dispatch(viewsLoaded(rootTree));
+      }
+    }
+  };
+}
+export function loadViewsByName(name) {
+  // console.log('In loadViews');
   return function (dispatch, getState) {
     const { avffControls, avffRelationships } = getState();
-
-    const rootData = avffControls.find(control => control.id === rootId);
+    const rootData = avffControls.find(control => control.name === name);
+    // console.log('loadViews: rootData', rootData);
     const children = getChildren(avffControls, avffRelationships, rootData);
-
+    // console.log('loadViews: children', children);
     const rootTree = { ...rootData, children: [...children] }
     // console.log('rootTree', rootTree);
-
+    // console.log('loadViews: main view', rootTree);
     dispatch(viewsLoaded(rootTree));
-
   };
 }
 function viewsLoaded(rootTree) {
   return {
     type: "VIEWS_LOADED",
     value: rootTree
+  };
+}
+
+export function loadLocalView(viewName, clear = false) {
+  return function (dispatch, getState) {
+
+    if (clear) {
+      // console.log('loadLocalView: clearing');
+      dispatch(localViewLoaded({}));
+    } else {
+      // console.log('loadLocalView', viewName);
+      const { avffControls } = getState();
+      const rootData = avffControls.find(control => control.name === viewName && control.entity_type === 'VIEW');
+
+      // const rootTree = loadViews(rootData.id, true)
+      dispatch(loadViews(rootData.id, true));
+      // console.log('rootTree', rootTree);
+
+      // dispatch(localViewLoaded(rootTree));
+    };
+  };
+}
+function localViewLoaded(rootTree) {
+  return {
+    type: "LOCAL_VIEW_LOADED",
+    value: rootTree
+  };
+}
+
+// Pulling the Project History.  Revisions right now.
+export function loadProjectHistory(project_id, clear=false) {
+  return function (dispatch) {
+    if (clear) {
+      // console.log('loadLocalView: clearing');
+      dispatch(projectHistoryLoaded([]));
+    } else {
+      fetch(`/projecthistory/${project_id}`)
+      .then( (response) => {
+        return response.json();
+      }).then((history) => {
+        // console.log('geos', geos);
+        dispatch(projectHistoryLoaded(history));
+      });
+    }
+  };
+}
+function projectHistoryLoaded(history) {
+  return {
+    type: "PROJECT_HISTORY_LOADED",
+    value: history
   };
 }

@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from "react";
+
 // import "../css/App.css";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
@@ -23,7 +24,7 @@ import WelcomeContainer from "../containers/WelcomeContainer";
 import UnderConstruction from "../components/UnderConstruction";
 import ProjectCustomContainer from "../containers/ProjectCustomContainer";
 import SearchContainer from '../containers/SearchContainer';
-// import AppContainer from "../containers/AppContainer";
+// import ProjectTabularContainer from "../containers/ProjectTabularContainer";
 
 import blueGrey from '@material-ui/core/colors/blueGrey';
 
@@ -102,7 +103,7 @@ class App extends Component {
     super(props);
     this.state = {
       authenticated: localStorage.getItem('token') || false,
-      open: false,
+      open: false,  // navBar
       welcome: true,
       authInProgress: false
       // settings: !this.props.session.settings?{accent_color: '#42a5f5'}:this.props.session.settings,
@@ -126,12 +127,13 @@ class App extends Component {
     this.props.loadCities();
     this.props.loadSubdivisions();
     this.props.loadContacts();
+    this.props.loadUsers();
     // this.props.loadRequestors();  // a subset of contacts
     this.props.getLookup('STATE');
     this.props.getLookup('COUNTRY');
     this.props.getLookup('TRELLO_LIST');
     this.props.getLookup('PROJECT_STATUS');
-    this.props.getLookup('SCOPE');
+    // this.props.getLookup('SCOPE');
     this.props.getLookup('CLASSIFICATION');
     this.props.getLookup('MASONRY');
     this.props.getLookup('YN');
@@ -144,12 +146,18 @@ class App extends Component {
     this.props.getLookup('COVERED_PATIO');
     this.props.getLookup('PITA');
     this.props.getLookup('DWELLING_TYPE');
+    this.props.getLookup('DATE_SEARCH');
+    this.props.getLookup('REV_REASON');
+    this.props.getLookup('REV_RESP');
 
     this.props.loadGeotechs();
     // 1 = MLALABS
     this.props.loadGeoMasterData(1);
     this.props.loadControls();
     this.props.loadRelationships();
+
+    this.props.loadScope();
+
 
   }
 
@@ -230,6 +238,7 @@ class App extends Component {
           </Drawer>
           <Grid item xs={12} >
             <Switch>
+              {/*when you get here, the currentMenu is loaded.*/}
               <Route path="/volumeproject" component={ProjectCustomContainer} />
               <Route path="/customproject" component={ProjectCustomContainer} />
               <Route path="/search" component={SearchContainer} />
@@ -316,7 +325,11 @@ class App extends Component {
     const { classes, session } = this.props;
     const settings = session.userSettings;
 
-    // console.log('Render Apps.js', session);
+    // console.log('Render Apps.js',
+    //   'designers:', this.props.designers,
+    //   'revReasonLookup:', this.props.revReasonLookup,
+    //   'revRespLookup:', this.props.revRespLookup,
+    // );
 
     // if (session.authInProgress) return null;
     if (this.state.authInProgress) {
@@ -501,3 +514,6 @@ export default withStyles(styles)(App);
 //     <Footer />
 //   </div>
 // </BrowserRouter>
+
+
+// <Route path="/search" component={()=> <ProjectCustomContainer VIEW='TABULAR'/>} />

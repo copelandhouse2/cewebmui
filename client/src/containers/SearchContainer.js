@@ -1,6 +1,7 @@
 import { connect } from "react-redux";
 import Search from "../components/Search";
-import { loadFind, loadViews, loadCurrentMenu, updateProject } from "../actions";
+import { loadFind, loadViews, loadViewsByName, loadCurrentMenu, updateProject,
+createAddress, commitAddresses, loadMessage, deleteProject } from "../actions";
 
 function mapStateToProps(state) {
   return {
@@ -10,6 +11,8 @@ function mapStateToProps(state) {
     currentViews: state.currentViews,
     currentMenu: state.currentMenu,
     currentProject: state.currentProject,
+    avffControls: state.avffControls,
+    dups: state.dups,
   };
 }
 
@@ -18,14 +21,29 @@ function mapDispatchToProps(dispatch) {
     loadViews: function (parent_id, scope) {
       dispatch(loadViews(parent_id, scope));
     },
-    loadFind: function (searchFilter) {
-      dispatch(loadFind(searchFilter));
+    loadViewsByName: function (name) {
+      dispatch(loadViewsByName(name));
+    },
+    loadFind: function (searchFilter, searchFields) {
+      dispatch(loadFind(searchFilter, searchFields));
     },
     loadCurrentMenu: function (parent_id) {
       dispatch(loadCurrentMenu(parent_id));
     },
     updateProject: function (project) {
       dispatch(updateProject(project));
+    },
+    deleteProject: function (id) {
+      dispatch(deleteProject(id));
+    },
+    createAddress: (project, v2, updateSearch) => {
+      dispatch(createAddress(project, v2, updateSearch));
+    },
+    commitAddresses: (userID, projects, create, v2, updateSearch) => {
+      dispatch(commitAddresses(userID, projects, create, v2, updateSearch));
+    },
+    loadMessage: function (message, type) {
+      dispatch(loadMessage(message, type));
     },
   };
 }

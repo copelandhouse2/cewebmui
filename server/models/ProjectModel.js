@@ -10,25 +10,87 @@ const sqlPromise = (SQLstmt, values) => {
   });
 };
 
-const SQL_PROJECT_SELECT = `SELECT s.id, s.id address_id, s.job_number, s.story, s.revision, s.revision_desc, s.client_id, s.user_id, s.contact_id, s.city, s.subdivision, s.address1, s.address2, s.phase, s.section
-, s.lot, s.block, s.fnd_height_fr, s.fnd_height_fl, s.fnd_height_rr, s.fnd_height_rl, s.plan_type, s.elevation, s.masonry, s.garage_type
-, s.garage_entry, s.garage_swing, s.garage_drop, s.garage_extension, s.covered_patio, s.bay_window, s.master_shower_drop
-, s.bath1_shower_drop, s.bath2_shower_drop, s.bath3_shower_drop, s.geo_lab, s.geo_report_num, date_format(s.geo_report_date, '%Y-%m-%d') geo_report_date
-, s.geo_pi, s.em_center, s.em_edge, s.ym_center, s.ym_edge, s.soil_notes, s.additional_options, s.comments, s.status, s.project_status, s.scope, s.classification, date_format(s.onboard_date, '%Y-%m-%d') onboard_date, date_format(s.start_date, '%Y-%m-%d') start_date
-, date_format(s.due_date, '%Y-%m-%d') due_date, date_format(s.final_due_date, '%Y-%m-%d') final_due_date, date_format(s.transmittal_date, '%Y-%m-%d') transmittal_date, s.main_contact, s.billing_contact, s.builder_contact, s.foundation_type, s.floor_type
-, s.roof_type, s.num_stories, s.square_footage, s.pita_factor, s.dwelling_type, s.trello_list_id, l.name trello_list, s.trello_card_id, s.box_folder
-, s.created_by, s.last_updated_by, date_format(s.creation_date, '%Y-%m-%d') creation_date, date_format(s.last_updated_date, '%Y-%m-%d') last_updated_date
-, cl.name client, co.full_name requestor, co2.full_name creator, c.id city_id, su.id subdivision_id`
-+ ' from projects s'
-+ ' left join clients cl on s.client_id = cl.id'  // allowing client_id to be null
-+ ' left join contacts co on s.contact_id = co.id'  // allowing contact_id to be null
-+ ' left join contacts co2 on s.user_id = co2.user_id'  // user id should NEVER be null
-+ ' left join cities c on s.city = c.city'  // allowing city_id to be null
-+ ' left join subdivisions su on s.subdivision = su.subdivision'  // allowing subdivision to be null
-+ ' left join lookups l on IFNULL(s.trello_list_id, \'\') = l.code'
+const SQL_PREQUERY = `SELECT DISTINCT p.id`
+
+// p.fnd_height_fr, p.fnd_height_fl, p.fnd_height_rr, p.fnd_height_rl, p.plan_type, p.elevation, p.masonry, p.garage_type
+// , p.garage_entry, p.garage_swing, p.garage_drop, p.garage_extension, p.covered_patio, p.bay_window, p.master_shower_drop
+// , p.bath1_shower_drop, p.bath2_shower_drop, p.bath3_shower_drop,
+
+
+// p.additional_options, p.comments,
+
+
+// p.foundation_type, p.floor_type
+// , p.roof_type, p.num_stories, p.square_footage, p.pita_factor, p.dwelling_type,
+
+const SQL_PROJECT_SELECT = `SELECT p.id, p.id address_id, p.job_number, p.story, p.revision, p.revision orig_rev, p.revision_desc, p.revision_desc orig_rev_desc, p.client_id, p.user_id, p.contact_id, p.city, p.subdivision, p.address1, p.address2, p.phase, p.section
+, p.lot, p.block,    p.geo_lab, p.geo_report_num, date_format(p.geo_report_date, '%Y-%m-%d') geo_report_date
+, p.geo_pi, p.em_center, p.em_edge, p.ym_center, p.ym_edge, p.soil_notes,   p.status, p.project_status, p.scope, p.classification, date_format(p.onboard_date, '%Y-%m-%d') onboard_date, date_format(p.start_date, '%Y-%m-%d') start_date
+, date_format(p.due_date, '%Y-%m-%d') due_date, date_format(p.final_due_date, '%Y-%m-%d') final_due_date, date_format(p.transmittal_date, '%Y-%m-%d') transmittal_date, p.main_contact, p.billing_contact, p.builder_contact
+  , p.trello_list_id, l.name trello_list, p.trello_card_id, p.box_folder
+, p.created_by, p.last_updated_by, date_format(p.creation_date, '%Y-%m-%d') creation_date, date_format(p.last_updated_date, '%Y-%m-%d') last_updated_date
+, cl.name client, co.full_name requestor, co2.full_name entered_by, c.id city_id, su.id subdivision_id`
+// + ' from projects s'
+// + ' left join clients cl on p.client_id = cl.id'  // allowing client_id to be null
+// + ' left join contacts co on p.contact_id = co.id'  // allowing contact_id to be null
+// + ' left join contacts co2 on p.user_id = co2.user_id'  // user id should NEVER be null
+// + ' left join cities c on p.city = c.city'  // allowing city_id to be null
+// + ' left join subdivisions su on p.subdivision = su.subdivision'  // allowing subdivision to be null
+// + ' left join lookups l on IFNULL(p.trello_list_id, \'\') = l.code'
+// + ' where l.type = "TRELLO_LIST"';
+
+const SQL_TABLES = ' from projects p'
++ ' left join clients cl on p.client_id = cl.id'  // allowing client_id to be null
++ ' left join contacts co on p.contact_id = co.id'  // allowing contact_id to be null
++ ' left join contacts co2 on p.user_id = co2.user_id'  // user id should NEVER be null
++ ' left join cities c on p.city = c.city'  // allowing city_id to be null
++ ' left join subdivisions su on p.subdivision = su.subdivision'  // allowing subdivision to be null
++ ' left join lookups l on IFNULL(p.trello_list_id, \'\') = l.code'
++ ' where l.type = "TRELLO_LIST"';
+
+const SQL_TABLES_SCOPE = ' from projects p'
++ ' left join clients cl on p.client_id = cl.id'  // allowing client_id to be null
++ ' left join contacts co on p.contact_id = co.id'  // allowing contact_id to be null
++ ' left join contacts co2 on p.user_id = co2.user_id'  // user id should NEVER be null
++ ' left join cities c on p.city = c.city'  // allowing city_id to be null
++ ' left join subdivisions su on p.subdivision = su.subdivision'  // allowing subdivision to be null
++ ' left join lookups l on IFNULL(p.trello_list_id, \'\') = l.code'
++ ' left join projects_scope ps on p.id = ps.project_id'
 + ' where l.type = "TRELLO_LIST"';
 
 const ProjectModel = {
+  getProjectsByArr: function(list, orderField = 'job_number', callback = null) {
+
+    let values = [];
+    let qMark = '';
+    // console.log('getProjectsByArr: ', list);
+    values = list.map(i=>i.id);
+    // console.log('getProjectsByArr: ', values);
+    values.forEach((id,i)=>{
+      i===0? qMark='?' : qMark=qMark+',?';
+    })
+
+    const idFilter = ` and p.id IN (${qMark})`;
+    // check the order field and set order by appropriately... Right now
+    // default becomes job number
+    const orderBy = orderField === 'last_updated_date'? ' order by p.last_updated_date desc':
+    ' order by p.job_number';
+
+    let SQLstmt = SQL_PROJECT_SELECT
+    + SQL_TABLES
+    + idFilter
+    + orderBy;
+
+    // console.log('getProjectsByArr: ', SQLstmt, values);
+    if (callback) {
+      // console.log('getProjects: in the callback version');
+      return sql().query(SQLstmt, values, callback);
+    } else {
+      // console.log('getProjects: in the promise version');
+      return sqlPromise(SQLstmt, values);
+    }
+  },
+
   getProjects: function(params, callback = null) {
 
     // Stripping the first character (:)
@@ -37,7 +99,7 @@ const ProjectModel = {
     // Pulling out the search parameters.  Initializing values array.
     const { pending, dateRange, enteredBy, jobNumber, address, requestedBy, client, city, subdivision, status, ver, filter } = params;
     let values = [];
-    console.log('ProjectModel params', pending, dateRange, enteredBy, jobNumber, address, requestedBy, client, city, subdivision, status, ver, filter);
+    // console.log('ProjectModel params', pending, dateRange, enteredBy, jobNumber, address, requestedBy, client, city, subdivision, status, ver, filter);
 
     // Initiating the where clauses.
     let pendingClause = '', enteredByClause = '', jobNumberClause = '', addressClause = '', requestedByClause = ''
@@ -45,59 +107,59 @@ const ProjectModel = {
 
     // Based on search parameter, set the where clauses.
     if (enteredBy !== '' && enteredBy !== null) {
-      enteredByClause = ' and s.user_id = ?';
+      enteredByClause = ' and p.user_id = ?';
       values.push(Number(enteredBy));
     };
 
     if (pending === 'true') {
-      pendingClause = ' and s.status = "PENDING"';
+      pendingClause = ' and p.status = "PENDING"';
     }
     else {
       if (jobNumber !== '' && jobNumber !== null) {
-        jobNumberClause = ' and s.job_number = ?';
+        jobNumberClause = ' and p.job_number = ?';
         values.push(Number(jobNumber));
       };
       if (address !== '' && address !== null) {
-        addressClause = ' and s.address1 like ?';
+        addressClause = ' and p.address1 like ?';
         values.push('%'+address+'%');
       };
       if (requestedBy !== '' && requestedBy !== null) {
-        requestedByClause = ' and s.contact_id = ?';
+        requestedByClause = ' and p.contact_id = ?';
         values.push(Number(requestedBy));
       };
       if (client !== '' && client !== null && client !== 'null') {
-        clientClause = ' and s.client_id = ?';
+        clientClause = ' and p.client_id = ?';
         values.push(Number(client));
       };
       if (city !== '' && client !== null) {
-        cityClause = ' and s.city = ?';
+        cityClause = ' and p.city = ?';
         values.push(city);
       };
       if (subdivision !== '' && client !== null) {
-        subdivisionClause = ' and s.subdivision = ?';
+        subdivisionClause = ' and p.subdivision = ?';
         values.push(subdivision);
       };
       if (status !== '' && status !== null) {
-        statusClause = ' and s.project_status = ?'
+        statusClause = ' and p.project_status = ?'
         values.push(status);
       };
       if (dateRange !== '' && dateRange !== null) {
         const year = new Date().getFullYear();
         switch (dateRange) {
           case 'CURYEAR':
-            dateRangeClause = ' and s.last_updated_date BETWEEN "?-01-01" AND "?-12-31"';
+            dateRangeClause = ' and p.last_updated_date BETWEEN "?-01-01" AND "?-12-31"';
             values.push(Number(year));
             values.push(Number(year));
             break;
           case 'LASTYEAR':
-            dateRangeClause = ' and s.last_updated_date BETWEEN "?-01-01" AND "?-12-31"';
+            dateRangeClause = ' and p.last_updated_date BETWEEN "?-01-01" AND "?-12-31"';
             values.push(Number(year)-1);
             values.push(Number(year)-1);
             break;
           case 'ALLTIME':
             break;
           default:
-            dateRangeClause = ' and s.last_updated_date >= NOW() - INTERVAL ? DAY';
+            dateRangeClause = ' and p.last_updated_date >= NOW() - INTERVAL ? DAY';
             values.push(Number(dateRange));
           break;
         };
@@ -105,6 +167,7 @@ const ProjectModel = {
     };
 
     let SQLstmt = SQL_PROJECT_SELECT
+    + SQL_TABLES
     + enteredByClause  // make sure you have where after left joins.  Not doing so returns all rows (Cartesian join?)
     + pendingClause
     + jobNumberClause
@@ -115,7 +178,8 @@ const ProjectModel = {
     + subdivisionClause
     + statusClause
     + dateRangeClause
-    + ' order by s.job_number';
+    + ' order by p.job_number'
+    + ' LIMIT 0, 200';
 
     // console.log('ProjectModel: SQL', SQLstmt, values);
     if (callback) {
@@ -145,26 +209,26 @@ const ProjectModel = {
     , findClause = '', orderBy = '', andClause = '';
 
     if (enteredBy) {
-      enteredByClause = ' and s.user_id = ?';
+      enteredByClause = ' and p.user_id = ?';
       values.push(Number(enteredBy));
     };
 
     if (filter) {
       switch (filter) {
         case 'U':
-          statusClause = ' and s.status = ?'
+          statusClause = ' and p.status = ?'
           values.push('UNAPPROVED');
           break;
         case 'P':
-          statusClause = ' and s.status = ?'
+          statusClause = ' and p.status = ?'
           values.push('PENDING');
           break;
         default:
-          dateRangeClause = ' and s.last_updated_date >= NOW() - INTERVAL ? DAY';
+          dateRangeClause = ' and p.last_updated_date >= NOW() - INTERVAL ? DAY';
           values.push(Number(filter));
         break;
       };
-      orderBy = ' order by s.last_updated_date desc';  // changing to last updated date.
+      orderBy = ' order by p.last_updated_date desc';  // changing to last updated date.
     }
 
     if (find) {
@@ -174,56 +238,76 @@ const ProjectModel = {
       let val = '';
       criteria.forEach((e, i)=> {
         // const e = elementWithSpaces.trim();
-        if (e.startsWith('job_number:')) { val = e.slice(11)+'%'; andClause = ` and s.job_number like ?`}
-        else if (e.startsWith('job:')) { val = e.slice(4)+'%'; andClause = ` and s.job_number like ?`}
-        else if (e.startsWith('story:')) { val = '%'+e.slice(6)+'%'; andClause = ` and s.story like ?`}
+        if (e.startsWith('job_number:')) { val = e.slice(11)+'%'; andClause = ` and p.job_number like ?`}
+        else if (e.startsWith('job:')) { val = e.slice(4)+'%'; andClause = ` and p.job_number like ?`}
+        else if (e.startsWith('story:')) { val = '%'+e.slice(6)+'%'; andClause = ` and p.story like ?`}
 
-        else if (e.startsWith('revision:')) { val = e.slice(9); andClause = ` and s.revision = ?`}
-        else if (e.startsWith('rev:')) { val = e.slice(4); andClause = ` and s.revision = ?`}
-        else if (e.startsWith('revision_desc:')) { val = '%'+e.slice(14)+'%'; andClause = ` and s.revision_desc like ?`}
-        else if (e.startsWith('rdesc:')) { val = '%'+e.slice(6)+'%'; andClause = ` and s.revision_desc like ?`}
+        else if (e.startsWith('revision:')) { val = e.slice(9); andClause = ` and p.revision = ?`}
+        else if (e.startsWith('rev:')) { val = e.slice(4); andClause = ` and p.revision = ?`}
+        else if (e.startsWith('revision_desc:')) { val = '%'+e.slice(14)+'%'; andClause = ` and p.revision_desc like ?`}
+        else if (e.startsWith('rdesc:')) { val = '%'+e.slice(6)+'%'; andClause = ` and p.revision_desc like ?`}
 
-        else if (e.startsWith('address:')) { val = e.slice(8)+'%'; andClause = ` and s.address1 like ?`}
-        else if (e.startsWith('addr:')) { val = e.slice(5)+'%'; andClause = ` and s.address1 like ?`}
-        else if (e.startsWith('city:')) { val = e.slice(5)+'%'; andClause = ` and s.city like ?`}
-        else if (e.startsWith('subdivision:')) { val = '%'+e.slice(12)+'%'; andClause = ` and s.subdivision like ?`}
-        else if (e.startsWith('sub:')) { val = '%'+e.slice(4)+'%'; andClause = ` and s.subdivision like ?`}
-        else if (e.startsWith('phase:')) { val = e.slice(6); andClause = ` and s.phase = ?`}
-        else if (e.startsWith('section:')) { val = e.slice(8); andClause = ` and s.section = ?`}
-        else if (e.startsWith('sec:')) { val = e.slice(4); andClause = ` and s.section = ?`}
-        else if (e.startsWith('lot:')) { val = e.slice(4); andClause = ` and s.lot = ?`}
-        else if (e.startsWith('block:')) { val = e.slice(6); andClause = ` and s.block = ?`}
+        else if (e.startsWith('address:')) { val = '%'+e.slice(8)+'%'; andClause = ` and p.address1 like ?`}
+        else if (e.startsWith('addr:')) { val = '%'+e.slice(5)+'%'; andClause = ` and p.address1 like ?`}
+        else if (e.startsWith('city:')) { val = e.slice(5)+'%'; andClause = ` and p.city like ?`}
+        else if (e.startsWith('subdivision:')) { val = '%'+e.slice(12)+'%'; andClause = ` and p.subdivision like ?`}
+        else if (e.startsWith('sub:')) { val = '%'+e.slice(4)+'%'; andClause = ` and p.subdivision like ?`}
+        else if (e.startsWith('phase:')) { val = e.slice(6); andClause = ` and p.phase = ?`}
+        else if (e.startsWith('section:')) { val = e.slice(8); andClause = ` and p.section = ?`}
+        else if (e.startsWith('sec:')) { val = e.slice(4); andClause = ` and p.section = ?`}
+        else if (e.startsWith('lot:')) { val = e.slice(4); andClause = ` and p.lot = ?`}
+        else if (e.startsWith('block:')) { val = e.slice(6); andClause = ` and p.block = ?`}
 
         else if (e.startsWith('client:')) { val = '%'+e.slice(7)+'%'; andClause = ` and cl.name like ?`}
         else if (e.startsWith('cli:')) { val = '%'+e.slice(4)+'%'; andClause = ` and cl.name like ?`}
 
-        else if (e.startsWith('geo_lab:')) { val = e.slice(8)+'%'; andClause = ` and s.geo_lab like ?`}
-        else if (e.startsWith('lab:')) { val = e.slice(4)+'%'; andClause = ` and s.geo_lab like ?`}
-        else if (e.startsWith('geo_report_num:')) { val = e.slice(15)+'%'; andClause = ` and s.geo_report_num like ?`}
-        else if (e.startsWith('grep:')) { val = e.slice(5)+'%'; andClause = ` and s.geo_report_num like ?`}
-        else if (e.startsWith('geo_pi:')) { val = e.slice(7)+'%'; andClause = ` and s.geo_pi like ?`}
-        else if (e.startsWith('pi:')) { val = e.slice(3)+'%'; andClause = ` and s.geo_pi like ?`}
-        else if (e.startsWith('soil_notes:')) { val = '%'+e.slice(11)+'%'; andClause = ` and s.soil_notes like ?`}
-        else if (e.startsWith('snote:')) { val = '%'+e.slice(6)+'%'; andClause = ` and s.soil_notes like ?`}
+        else if (e.startsWith('geo_lab:')) { val = e.slice(8)+'%'; andClause = ` and p.geo_lab like ?`}
+        else if (e.startsWith('lab:')) { val = e.slice(4)+'%'; andClause = ` and p.geo_lab like ?`}
+        else if (e.startsWith('geo_report_num:')) { val = e.slice(15)+'%'; andClause = ` and p.geo_report_num like ?`}
+        else if (e.startsWith('grep:')) { val = e.slice(5)+'%'; andClause = ` and p.geo_report_num like ?`}
+        else if (e.startsWith('geo_pi:')) { val = e.slice(7)+'%'; andClause = ` and p.geo_pi like ?`}
+        else if (e.startsWith('pi:')) { val = e.slice(3)+'%'; andClause = ` and p.geo_pi like ?`}
+        else if (e.startsWith('soil_notes:')) { val = '%'+e.slice(11)+'%'; andClause = ` and p.soil_notes like ?`}
+        else if (e.startsWith('snote:')) { val = '%'+e.slice(6)+'%'; andClause = ` and p.soil_notes like ?`}
 
-        else if (e.startsWith('creation_date:') && !isNaN(e.slice(13))) { val = e.slice(13); andClause = ` and s.creation_date >= NOW() - INTERVAL ? DAY`}
-        else if (e.startsWith('cdate:') && !isNaN(e.slice(6))) { val = e.slice(6); andClause = ` and s.creation_date >= NOW() - INTERVAL ? DAY`}
-        else if (e.startsWith('last_updated_date:') && !isNaN(e.slice(18))) { val = e.slice(18); andClause = ` and s.last_updated_date >= NOW() - INTERVAL ? DAY`}
-        else if (e.startsWith('ldate:') && !isNaN(e.slice(6))) { val = e.slice(6); andClause = ` and s.last_updated_date >= NOW() - INTERVAL ? DAY`}
-        // else if (!isNaN(e)) { val = e; andClause = ` and s.last_updated_date >= NOW() - INTERVAL ? DAY`}
+        else if (e.startsWith('creation_date:') && !isNaN(e.slice(13))) { val = e.slice(13); andClause = ` and p.creation_date >= NOW() - INTERVAL ? DAY`}
+        else if (e.startsWith('cdate:') && !isNaN(e.slice(6))) { val = e.slice(6); andClause = ` and p.creation_date >= NOW() - INTERVAL ? DAY`}
+        else if (e.startsWith('last_updated_date:') && !isNaN(e.slice(18))) { val = e.slice(18); andClause = ` and p.last_updated_date >= NOW() - INTERVAL ? DAY`}
+        else if (e.startsWith('ldate:') && !isNaN(e.slice(6))) { val = e.slice(6); andClause = ` and p.last_updated_date >= NOW() - INTERVAL ? DAY`}
+        // else if (!isNaN(e)) { val = e; andClause = ` and p.last_updated_date >= NOW() - INTERVAL ? DAY`}
 
         else if (e.startsWith('entered:')) { val = e.slice(8)+'%'; andClause = ` and co2.full_name like ?`}
         else if (e.startsWith('ent:')) { val = e.slice(4)+'%'; andClause = ` and co2.full_name like ?`}
         else if (e.startsWith('requested:')) { val = e.slice(10)+'%'; andClause = ` and co.full_name like ?`}
         else if (e.startsWith('req:')) { val = e.slice(4)+'%'; andClause = ` and co.full_name like ?`}
+        else if (e.startsWith('status:')) { val = e.slice(7)+'%'; andClause = ` and p.status like ?`}
+
+        // scope search
+        else if (e.startsWith('scope:')) { val = e.slice(6)+'%'; andClause = ` and ps.scope like ?`}
+        else if (e.startsWith('revision_desc_scope:')) { val = e.slice(20)+'%'; andClause = ` and ps.revision_desc like ?`}
+        else if (e.startsWith('rdescs:')) { val = e.slice(7)+'%'; andClause = ` and ps.revision_desc like ?`}
+        else if (e.startsWith('plan_type:')) { val = e.slice(10)+'%'; andClause = ` and ps.plan_type like ?`}
+        else if (e.startsWith('pt:')) { val = e.slice(3)+'%'; andClause = ` and ps.plan_type like ?`}
+        else if (e.startsWith('garage_type:')) { val = e.slice(12)+'%'; andClause = ` and ps.garage_type like ?`}
+        else if (e.startsWith('gt:')) { val = e.slice(3)+'%'; andClause = ` and ps.garage_type like ?`}
+        else if (e.startsWith('garage_swing:')) { val = e.slice(13)+'%'; andClause = ` and ps.garage_swing like ?`}
+        else if (e.startsWith('gs:')) { val = e.slice(3)+'%'; andClause = ` and ps.garage_swing like ?`}
+        else if (e.startsWith('foundation_type:')) { val = e.slice(16)+'%'; andClause = ` and ps.foundation_type like ?`}
+        else if (e.startsWith('ft:')) { val = e.slice(3)+'%'; andClause = ` and ps.foundation_type like ?`}
+        else if (e.startsWith('floor_type:')) { val = e.slice(11)+'%'; andClause = ` and ps.floor_type like ?`}
+        else if (e.startsWith('flrt:')) { val = e.slice(4)+'%'; andClause = ` and ps.floor_type like ?`}
+        else if (e.startsWith('roof_type:')) { val = e.slice(10)+'%'; andClause = ` and ps.roof_type like ?`}
+        else if (e.startsWith('rt:')) { val = e.slice(3)+'%'; andClause = ` and ps.roof_type like ?`}
 
         else {
-          // if (!isNaN(e)) { val = e; andClause = ` and s.last_updated_date >= NOW() - INTERVAL ? DAY`}
+          // if (!isNaN(e)) { val = e; andClause = ` and p.last_updated_date >= NOW() - INTERVAL ? DAY`}
           // else {
-            andClause = ` and CONCAT_WS('~', s.job_number, s.address1, s.story, s.subdivision
-            , s.city, cl.name, co.full_name, s.revision_desc
-            , s.geo_lab, s.geo_report_num, s.geo_pi, s.soil_notes
-            , s.additional_options, s.comments, co.full_name, co2.full_name)
+            andClause = ` and CONCAT_WS( '~', p.job_number, p.address1, p.story, p.subdivision
+            , p.city, cl.name, co.full_name, p.revision_desc
+            , p.geo_lab, p.geo_report_num, p.geo_pi, p.soil_notes
+            , p.additional_options, p.comments, p.status, co.full_name, co2.full_name
+            , ps.scope, ps.revision_desc, ps.plan_type, ps.garage_type, ps.garage_swing
+            , ps.foundation_type, ps.floor_type, ps.roof_type )
              like ?`;
             val = '%'+e+'%';
           // }
@@ -235,16 +319,18 @@ const ProjectModel = {
 
       })
 
-      orderBy = ' order by job_number';
+      orderBy = ' order by p.job_number';
 
     }
 
-    let SQLstmt = SQL_PROJECT_SELECT
+    let SQLstmt = SQL_PREQUERY
+    + SQL_TABLES_SCOPE
     + enteredByClause  // make sure you have where after left joins.  Not doing so returns all rows (Cartesian join?)
     + statusClause
     + dateRangeClause
     + findClause
-    + orderBy;
+    + orderBy
+    + ' LIMIT 0, 200';
 
     // console.log('searchProjects', SQLstmt, values);
     if (callback) {
@@ -259,9 +345,10 @@ const ProjectModel = {
   getPendingProjects: function(userID, callback = null) {
 
     let SQLstmt = SQL_PROJECT_SELECT
-    + ' and s.user_id = ?'  // make sure you have where after left joins.  Not doing so returns all rows (Cartesian join?)
-    + ' and s.status = "PENDING"'
-    + ' order by s.job_number';
+    + SQL_TABLES
+    + ' and p.user_id = ?'  // make sure you have where after left joins.  Not doing so returns all rows (Cartesian join?)
+    + ' and p.status = "PENDING"'
+    + ' order by p.job_number';
     // console.log('ProjectModel: userID, SQL', userID, SQLstmt);
 
     if (callback) {
@@ -297,26 +384,27 @@ const ProjectModel = {
     // Pulling out the search parameters.  Initializing values array.
     const { test, address, subdivision, phase, section, block, lot } = params;
     let values = [];
-    // console.log('ProjectModel params', pending, dateRange, enteredBy, jobNumber, address, requestedBy, client, city, subdivision, status);
+    // console.log('ProjectModel params', test, address, subdivision, phase, section, block, lot);
 
     // Initiating the where clauses.  These will make it return 0
     let addressClause = '', lotClause = '';
 
     // Based on search parameter, set the where clauses.
     if (test === 'ADDRESS' && address) {
-      addressClause = ' AND ( UPPER(s.address1) = UPPER(?) )';
-      values.push(address);
+      addressClause = ' AND ( UPPER(p.address1) LIKE UPPER(?) )';
+      values.push('%'+address+'%');
     } else
 
     if (test === 'LOT' && subdivision && block && lot) {
-      lotClause = ' AND ( s.subdivision = ? and s.block = ? and s.lot = ? )';
+      lotClause = ' AND ( p.subdivision = ? and p.block = ? and p.lot = ? )';
       values.push(subdivision, block, lot);
     }
 
     let SQLstmt = SQL_PROJECT_SELECT
+    + SQL_TABLES
     + addressClause  // make sure you have where after left joins.  Not doing so returns all rows (Cartesian join?)
     + lotClause
-    + ' order by s.job_number';
+    + ' order by p.job_number';
 
     // console.log('ProjectModel: SQL', SQLstmt, values);
 
@@ -324,7 +412,7 @@ const ProjectModel = {
       // console.log('Model addProject: in the callback version');
       return sql().query(SQLstmt, values, callback);
     } else {
-      console.log('Model getDups: in the promise version');
+      // console.log('Model getDups: in the promise version');
       return sqlPromise(SQLstmt, values);
     }
 
@@ -333,7 +421,8 @@ const ProjectModel = {
   getProjectByID: function(id, callback = null){
 
     let SQLstmt = SQL_PROJECT_SELECT
-    + ' and s.id = ?';
+    + SQL_TABLES
+    + ' and p.id = ?';
 
     if (callback) {
       // console.log('Model addProject: in the callback version');
@@ -352,7 +441,7 @@ const ProjectModel = {
   addProject: function(project, callback = null){
 
   //inserting into mysql
-  const {id, address_id, job_number, story, revision, revision_desc, client_id, client, owner_id, contact_id, city, subdivision, address1, address2, phase, section, lot, block
+  const {id, address_id, job_number, story, revision, revision_desc, client_id, client, user_id, contact_id, city, subdivision, address1, address2, phase, section, lot, block
     , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation, masonry, garage_type
     , garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window, master_shower_drop
     , bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num, geo_report_date
@@ -365,7 +454,7 @@ const ProjectModel = {
   // console.log("dwelling_type", dwelling_type);
   // console.log("job_number", job_number);
   // console.log("city", city);
-  // console.log("user_id", owner_id);
+  // console.log("addProject user_id", user_id);
   // console.log('addProject: Values', values)
   // console.log('addProject: Values', project, 'what is scope?', typeof scope);
   // Supports old v1 scope at project level just in case.  Sets variable to null if scope is the array.
@@ -398,7 +487,7 @@ const ProjectModel = {
   , roof_type = ?, num_stories = ?, square_footage = ?, pita_factor = ?, dwelling_type = ?, trello_list_id = ?, trello_card_id = ?, box_folder = ?
   , last_updated_by = ?, scope = ?`;
 
-  const values = [id?id:address_id, job_number, story, revision, revision_desc, client_id, owner_id, contact_id, city, subdivision, address1, address2 // 11
+  const values = [id?id:address_id, job_number, story, revision, revision_desc, client_id, user_id, contact_id, city, subdivision, address1, address2 // 11
   , phase, section, lot, block, fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation // 10
   , masonry, garage_type, garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window // 8
   , master_shower_drop, bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num  // 6
@@ -408,7 +497,7 @@ const ProjectModel = {
   , pita_factor, dwelling_type, trello_list_id, trello_card_id, box_folder // 5
   , created_by, last_updated_by, project_scope // 3
 
-  , job_number, story, revision, revision_desc, client_id, owner_id, contact_id, city, subdivision, address1, address2, phase, section, lot, block // 14
+  , job_number, story, revision, revision_desc, client_id, user_id, contact_id, city, subdivision, address1, address2, phase, section, lot, block // 14
   , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation, masonry, garage_type // 8
   , garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window, master_shower_drop // 7
   , bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num, geo_report_date // 6
@@ -466,9 +555,11 @@ const ProjectModel = {
 
   commitProjectByID: (ID, cardID) => {
     const SQLstmt = 'update projects'
-      + ' set status = ?, trello_card_id = ?'
+      // + ' set status = ?, trello_card_id = ?'
+      + ' set trello_card_id = ?'
       + ' where id = ?';
-    const values = ['ACTIVE', cardID, ID];
+    // const values = ['ACTIVE', cardID, ID];
+    const values = [cardID, ID];
 
     return sqlPromise(SQLstmt, values);
   },
@@ -497,7 +588,7 @@ const ProjectModel = {
   // console.log("dwelling_type", dwelling_type);
   // console.log("job_number", job_number);
   // console.log("city", city);
-  // console.log("user_id", owner_id);
+  // console.log("user_id", user_id);
   // console.log('addProject: Values', values)
 
   const SQLstmt = `INSERT INTO projects_scope (id, project_id, scope, job_number, description, revision, revision_desc, scope_status
@@ -561,6 +652,68 @@ const ProjectModel = {
     const SQLstmt = "DELETE from projects_scope where id = ?";
     const values = [id];
     return sqlPromise(SQLstmt, values);
+  },
+
+  // right now only used when deleting the project.
+  deleteProjectScopeAll: (id) => {
+    const SQLstmt = "DELETE from projects_scope where project_id = ?";
+    const values = [id];
+    return sqlPromise(SQLstmt, values);
+  },
+
+  getRevScopeItems: function(rev, callback = null) {
+
+    let SQLstmt = `select ph1.record_revision, ph1.parent_revision
+      , ph1.dt_datetime, ph1.id, ph1.project_id, ph1.scope, ifnull(ph1.revision,'ORIG') revision
+      , ph1.revision_desc
+      from (
+        select id, revision, max(record_revision) maxrev
+        from projects_scope_history ph2
+        where ph2.project_id = ?
+        group by ph2.id, ph2.revision
+      ) maxrevs,
+      projects_scope_history ph1
+      where ph1.project_id = ?
+      and maxrevs.id = ph1.id
+      and maxrevs.maxrev = ph1.record_revision
+      and ifnull(ph1.revision, 'ORIG') = ifnull(?, 'ORIG')
+      order by ph1.id`;
+
+    const values = [rev.id, rev.id, rev.revision];
+
+    if (callback) {
+      // console.log('getScopeItems: in the callback version');
+      return sql().query(SQLstmt, values, callback);
+    } else {
+      // console.log('getScopeItems: in the promise version');
+      return sqlPromise(SQLstmt, values);
+    }
+    // return sql().query(SQLstmt, [userID], callback);
+  },
+
+  getRevisions: function(projectID, callback = null) {
+
+    let SQLstmt = `select ph1.record_revision, date_format(ph1.dt_datetime, '%Y-%m-%d') rev_date
+    , ph1.id, ph1.job_number, ifnull(ph1.revision,'ORIG') revision, ph1.revision_desc
+      from (
+        select revision, max(record_revision) maxrev
+        from projects_history ph2
+        where ph2.id = ?
+        group by ph2.revision
+      ) maxrevs,
+      projects_history ph1
+      where ph1.id = ?
+      and maxrevs.maxrev = ph1.record_revision
+      order by record_revision desc`;
+
+    if (callback) {
+      // console.log('getScopeItems: in the callback version');
+      return sql().query(SQLstmt, [projectID, projectID], callback);
+    } else {
+      // console.log('getScopeItems: in the promise version');
+      return sqlPromise(SQLstmt, [projectID, projectID]);
+    }
+    // return sql().query(SQLstmt, [userID], callback);
   },
 
 };

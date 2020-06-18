@@ -1,6 +1,6 @@
 import { connect } from "react-redux";
 import Welcome from "../components/Welcome";
-import { loadCurrentMenu, assignNewProjectScope } from "../actions";
+import { loadCurrentMenu, assignNewProjectScope, loadViews } from "../actions";
 
 function mapStateToProps(state) {
   return {
@@ -17,6 +17,10 @@ function mapDispatchToProps(dispatch) {
     },
     assignNewProjectScope: function (scope) {
       dispatch(assignNewProjectScope(scope));
+    },
+    // only using to clear currentViews state.
+    loadViews: function (parent_id, scope, clear) {
+      dispatch(loadViews(parent_id, scope, clear));
     },
   };
 }

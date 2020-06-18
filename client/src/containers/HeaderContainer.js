@@ -8,6 +8,7 @@ function mapStateToProps(state) {
     currentMenu: state.currentMenu,
     currentViews: state.currentViews,
     currentProject: state.currentProject,
+    pageTitle: state.pageTitle,
   };
 }
 

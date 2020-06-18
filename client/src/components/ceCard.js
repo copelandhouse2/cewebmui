@@ -21,8 +21,8 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 
 import FileCopyIcon from '@material-ui/icons/FileCopy';
-import EditIcon from '@material-ui/icons/Edit';
-import DeleteIcon from '@material-ui/icons/Delete';
+// import EditIcon from '@material-ui/icons/Edit';
+// import DeleteIcon from '@material-ui/icons/Delete';
 
 const styles = theme => ({
   card: {
@@ -61,7 +61,7 @@ const ceCard = (props) => {
           </Grid>
           <Grid item xs={2}>
             <Typography variant='subtitle2'>
-              {project.job_number}
+              {project.job_number}{project.revision||''}
             </Typography>
           </Grid>
           <Grid item xs={12}>
@@ -98,21 +98,14 @@ const ceCard = (props) => {
         >
           <FileCopyIcon />
         </IconButton>
+
         {/*<IconButton
-          title='Edit project'
-          aria-label="Edit"
-          color='secondary'
-          onClick={(e) => props.updateProject(project)}
-        >
-          <EditIcon />
-        </IconButton>*/}
-        <IconButton
           title='Delete project'
           aria-label="Delete"
           color='secondary'
         >
           <DeleteIcon />
-        </IconButton>
+        </IconButton>*/}
       </CardActions>
     </Card>
   )

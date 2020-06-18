@@ -4,7 +4,7 @@ import { createAddress, commitAddresses
   , showHideClientDialog, showHideContactDialog, showHideSubdivisionDialog
   , showHideCityDialog, showHideGeotechDialog
   , loadMessage, searchForDups, clearProject, updateProject
-  , loadFind } from "../actions";
+  , loadFind, setPageTitle } from "../actions";
 
 function mapStateToProps(state) {
   return {
@@ -28,8 +28,8 @@ function mapDispatchToProps(dispatch) {
     createAddress: (project, v2) => {
       dispatch(createAddress(project, v2));
     },
-    commitAddresses: (userID, addresses, search, create, v2) => {
-      dispatch(commitAddresses(userID, addresses, search, create, v2));
+    commitAddresses: (userID, addresses, create, v2) => {
+      dispatch(commitAddresses(userID, addresses, create, v2));
     },
     showHideClientDialog: () => {
       dispatch(showHideClientDialog());
@@ -54,6 +54,9 @@ function mapDispatchToProps(dispatch) {
     },
     loadFind: (search) => {
       dispatch(loadFind(search));
+    },
+    setPageTitle: (title) => {
+      dispatch(setPageTitle(title));
     },
   };
 }

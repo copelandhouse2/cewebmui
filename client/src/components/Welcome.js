@@ -176,6 +176,9 @@ const styles = theme => ({
   },
 });
 
+// categoryID = menuID = avffControls.id
+// There is a category field on the table to "categorize" a base menu.
+// id = 3 (volume), 4 (custom), 5 (inspection), 6 (search / update / revise)
 class Welcome extends Component {
   constructor(props) {
     super(props);
@@ -199,10 +202,16 @@ class Welcome extends Component {
   };
 
   componentDidMount() {
-    // console.log('Welcome CDM', this.props.currentProject);
+    // console.log('Welcome CDM: currentProject', this.props.currentProject);
 
     // this.props.assignNewProjectScope({ menuFlow: newPrevious, categoryID: id, url: url, initialScope: [], scope: [] });
     // this.setState( { url: url, redirect: true } );
+
+    // clearing currentViews.  Needs to be clear so that whenever I render
+    // any upcoming screen the loading feature can work and load the new info
+    // Without it, currentViews would have values from the previous screen
+    // and try to render the screen without waiting for the new info to show up.
+    this.props.loadViews(null, null, true);
     if (this.props.currentProject.menuFlow) {
       const { menuFlow } = this.props.currentProject;
 
@@ -236,14 +245,18 @@ class Welcome extends Component {
     if (name === 'top') {
       this.setState(this.initState);
       this.props.loadCurrentMenu(id);
-    } else if (name ==='setup'||name ==='volume'||name==='custom'||name==='inspection') {
+    } else if (name ==='setup'||name==='inspection') {
       this.setState( { categoryID: id, url: url, previous: newPrevious } )
       this.props.loadCurrentMenu(id);
     } else if (name==='volnew'||name === 'cusnew') {
       this.setState( { previous: newPrevious } )
       this.props.loadCurrentMenu(id);
-    } else if (name==='update'||name === 'volupdate'||name === 'cusupdate') {
+    } else if (name==='update'||name === 'volupdate'||name === 'cusupdate'||name ==='volume'||name==='custom') {
       // console.log('Update', newPrevious);
+
+      // At this point, we are leaving the menu and moving out to project pages.
+      this.props.loadCurrentMenu(id);
+      this.props.loadViews(id);
       this.props.assignNewProjectScope({ menuFlow: newPrevious, categoryID: id, url: url, initialScope: [], scope: [] });
       this.setState( { url: url, redirect: true } );
     } else {
@@ -291,22 +304,6 @@ class Welcome extends Component {
     // })();
 
   }
-  // getLink = () => {
-  //
-  //   // test if there is no scope.  Just go back to the beginning.
-  //   if (this.state.scope.length === 0) {
-  //     return '/';
-  //   }
-  //
-  //   //Got here.  There are scope items selected.  Testing if they have a screen.
-  //   let defaultLink = '/underconstruction'; // not ready yet.
-  //   let filtered = [];
-  //
-  //   filtered = this.state.scope.filter(scope => scope.url !== defaultLink);
-  //
-  //   return filtered.length > 0? filtered[0].url : defaultLink;
-  //
-  // }
 
   useSvg = (svg) => {
     const blob = new Blob([svg], {type: 'image/svg+xml'});
@@ -315,8 +312,13 @@ class Welcome extends Component {
   }
 
   render() {
-    // console.log('Welcome render', this.state);
+    // console.log('Welcome render');
 
+    // const { classes, currentMenu, currentProject } = this.props;
+    const { classes, currentMenu } = this.props;
+    // console.log('the state', this.state);
+    // console.log('controls', currentMenu);
+    // console.log('currentProject', currentProject);
 
     if (this.state.redirect) {
       console.log('REDIRECTING...', this.state.url)
@@ -324,11 +326,6 @@ class Welcome extends Component {
         <Redirect to={this.state.url} />
       );
     }
-
-    const { classes, currentMenu } = this.props;
-    // console.log('the state', this.state);
-    // console.log('controls', currentMenu);
-    // console.log('currentProject', currentProject);
 
     let { name } = currentMenu;
 
@@ -376,7 +373,7 @@ class Welcome extends Component {
             <Grid
               container
               // justify='flex-start'
-              justify='space-around'
+              justify='space-between'
               alignItems='flex-start'
               // spacing={16}
             >

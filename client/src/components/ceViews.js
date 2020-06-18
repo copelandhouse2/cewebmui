@@ -18,9 +18,14 @@ import SubdivisionDialogContainer from '../containers/SubdivisionDialogContainer
 import CityDialogContainer from '../containers/CityDialogContainer';
 import DupsDialogContainer from '../containers/DupsDialogContainer';
 
-import fullView from '../img/fullView.svg';
+import RevisionDialogContainer from '../containers/RevisionDialogContainer';
+
+// import fullView from '../img/fullView.svg';
 import listView from '../img/listView.svg';
-import columnView from '../img/columnView2.svg';
+// import columnView from '../img/columnView2.svg';
+
+import { Redirect, Link } from "react-router-dom"
+import Tooltip from "@material-ui/core/Tooltip";
 
 
 const styles = theme => ({
@@ -40,7 +45,7 @@ const styles = theme => ({
     backgroundColor: theme.palette.secondary.main
   },
   imageSrc: {
-    height: 16,
+    height: 20,
     color: theme.palette.secondary.contrastText,
     fill: theme.palette.secondary.contrastText,
   },
@@ -77,7 +82,9 @@ const styles = theme => ({
   findIconButton: {
     // padding: 10,
   },
-
+  linkStyle: {
+    textDecoration: 'none'
+  }
 });
 
 // const promiseFn = theFunction => {
@@ -96,59 +103,46 @@ const date = (dayAdj=0) => {
 }
 
 const viewButtonList = (props) => {
-  const { classes, handleViewButton, width } = props;
+  // const { classes, handleViewButton, width } = props;
+  const { classes } = props;
 
   return (
-    <div>
-      <Button
-        variant="contained"
-        color="secondary"
-        size="small"
-        // disabled={true}
-        title='Single View: Future design'
-        // className={classes.button}
-        // endIcon={<fullView />}
-        onClick={ (e) => {handleViewButton('SINGLE')} }
-      >
-        <img src={fullView} alt={'Single Entry'} className={classes.imageSrc} />
-      </Button>
+    <Link to={'/search'}>
+    <Tooltip title="Tabular View / Search" placement="left">
 
-      {(width !== 'xs' && width !== 'sm') &&
-        <Button
-          variant="contained"
-          color="secondary"
-          size="small"
-          // disabled={true}
-          title='Tabular View: Future design'
-
-          // className={classes.button}
-          // onClick={ (e) => {handleViewButton('TABULAR')} }
-        >
-          <img src={listView} alt={'Tabular Entry'} className={classes.imageSrc} />
-        </Button>
-      }
-
-      <Button
-        variant="contained"
-        color="secondary"
-        size="small"
-        // disabled={true}
-        title='Guided View: Future design'
-        // className={classes.button}
-        // onClick={ (e) => {handleViewButton('GUIDED')} }
-      >
-        <img src={columnView} alt={'Guided Entry'} className={classes.imageSrc} />
-      </Button>
-    </div>
+    <Button
+      variant="contained"
+      color="secondary"
+      size="small"
+      // disabled={true}
+      // title='Tabular View: Future design'
+      // className={classes.button}
+      // onClick={ (e) => {handleViewButton('TABULAR')} }
+    >
+      <img src={listView} alt={'Tabular Entry'} className={classes.imageSrc} />
+    </Button>
+    </Tooltip>
+    </Link>
   )
 }
 
-const actionButtonList = (state, props, clearState, saveProject, handleChange, handleListChange) => {
+const actionButtonList = (state, props, clearState, saveProject, handleChange, handleListChange, reviseProject) => {
 
   const { classes } = props;
 
   return (
   <Grid container justify="flex-end" style={{marginTop: 10, marginBottom: 10}} spacing={16}>
+    <Grid item >
+      <Link to={`/`} className={classes.linkStyle}>
+        <Button title='Return to menu'
+          variant="contained"
+          size='small'
+          color="secondary"
+        >
+          Cancel
+        </Button>
+      </Link>
+    </Grid>
     <Grid item className={classes.grow}>
       <Button title='Clear the fields and scope'
         variant="contained"
@@ -205,12 +199,13 @@ class singleView extends Component {
       openScopeDialog: false,
       openCreateDialog: false,
       openDupsDialog: false,
+      openRevDialog: false,
       dialogValue: '',  // used by the sub, city, client creation dupsDialogs
       categoryID: this.props.currentProject.categoryID,
       contact_id: this.props.session.contact_id,  // contact_id
       requestor: this.props.session.full_name,       // contact full name
-      owner_id: this.props.session.id,      // user_id
-      owner: this.props.session.full_name,           // contact full name of the user_id
+      user_id: this.props.session.id,      // user_id.  Originally owner_id
+      user: this.props.session.full_name,           // contact full name of the user_id, originally owner
       created_by: this.props.session.id,
       last_updated_by: this.props.session.id,
       onboard_date: this.today,
@@ -220,37 +215,68 @@ class singleView extends Component {
       classification: this.props.currentViews.category,
       geo_lab: this.props.currentViews.category === 'VOLUME'?'MLALABS':null,
       dwelling_type: this.props.currentViews.category === 'VOLUME'?'PT 1 UNIT':null,
+      redirectUrl: null,
     };
 
     this.initState = {...this.state};
 
     this.childArr = [];
-    this.VIEW = 'SINGLE';
     this.oID = 0;
+    this.currentView = []
 
   }
 
   componentDidMount = () => {
-    // if (this.state.scope) {
-      if (this.state.scope.length === 0) {
-        const initScope = this.props.currentProject.initialScope.map(scope => {
-          return {control_id: scope.control_id, name: scope.name, label: scope.label}
-        })
-        this.setState({ scope: initScope });
-      }
+    const { currentViews, setPageTitle } = this.props;
+    // console.log('Project CDM');
+    // console.log('currentMenu', this.props.currentMenu);
+    // console.log('currentViews', this.props.currentViews);
+    // console.log('currentProject', this.props.currentProject);
+    // console.log('currentView', this.currentView);
+    // console.log('VIEW', this.props.);
+
+    // if (this.state.scope.length === 0) {
+    //   const initScope = this.props.currentProject.initialScope.map(scope => {
+    //     return {control_id: scope.control_id, name: scope.name, label: scope.label}
+    //   })
+    //   this.setState({ scope: initScope });
     // }
+
+    // Setting this.currentView and the page Title upon startup.
+    if (currentViews.children) {
+      this.currentView = currentViews.children.filter((view) => view.category === this.props.VIEW)  // array of subviews (sections) that make up whole view.
+      setPageTitle(this.currentView[0].label);
+    }
+
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const { currentProject, updateProject } = nextProps;
-    // console.log('in getDerivedStateFromProps');
-    // console.log('nextProps', currentProject);
+    const { currentProject, updateProject, currentViews, VIEW, setPageTitle } = nextProps;
+    // console.log('in getDerivedStateFromProps', VIEW);
+    // VIEW?console.log('view category', VIEW):null;
+    // console.log('currentViews', currentViews);
     // console.log('prevState', prevState);
-    if (currentProject.address1) {  // props currentProject was recently populated with a project to edit.
-      // console.log('updating state');
+
+    // props currentProject was recently populated with a project to edit.
+    if (!prevState.clear && currentProject.address1) {
+      // console.log('gDSFP: updating state');
       // let init = {categoryID: currentProject.categoryID, url: currentProject.url}
+
       updateProject({});
+      // using the first view entry to set title of page.
+      let titleView = '';
+      if (currentViews.children) {
+        titleView = currentViews.children.filter((view) => view.category === VIEW )  // array of subviews (sections) that make up whole view.
+        setPageTitle(titleView[0].label);
+      }
       return {...currentProject };
+
+
+      // updateProject({});
+      // setPageTitle(currentView[0].label);
+      // return {...currentProject };
+    } else if (prevState.clear) {
+      return { clear: false };
     }
     return null;
   }
@@ -270,6 +296,7 @@ class singleView extends Component {
                 fieldGroup = {child}
                 toggleScopeDialog={this.toggleScopeDialog}
                 removeScope={false}
+                reviseProject={this.reviseProject}
               />
             );
             if (child.children) this.viewChildren(child.children);  // recursive call.
@@ -343,6 +370,11 @@ class singleView extends Component {
     return (
       <div />
     )
+  }
+
+  updateState = (updatedValues) => {
+    // console.log('updateState', updatedValues);
+    this.setState(updatedValues);
   }
 
   handleChange = (name, arrID) => event => {
@@ -486,9 +518,21 @@ class singleView extends Component {
     } else {
       const keys = Object.keys(this.state)
       const stateReset = keys.reduce((acc, v) => ({ ...acc, [v]: undefined }), {})
-      this.setState({ ...stateReset, ...this.initState });
+      this.setState({ ...stateReset, ...this.initState, clear:true });
     }
 
+  }
+
+  reviseProject = () => {
+    if (this.state.id) {
+      this.setState({ openRevDialog: !this.state.openRevDialog, });
+    } else {
+      this.props.loadMessage(
+        { ok:false,
+          status: 'Missing Data',
+          statusText: "Select an existing project to revise"
+        }, "ERROR");
+    }
   }
 
   saveProject = (andCommit = false) => {
@@ -496,18 +540,25 @@ class singleView extends Component {
 
     if (this.state.address1 && this.state.client_id && this.state.city ) {
 
+      if (andCommit) {
+        this.setState({status: 'ACTIVE'}, ()=> {
+          this.props.commitAddresses(this.props.session.id, [this.state], true, true)
+          this.clearState();
+        });
+      } else {
+        this.setState({status: 'PENDING'}, ()=> {
+          this.props.createAddress(this.state, true);
+          this.clearState();
+        });
+      }
 
-      this.setState({status: 'PENDING'}, ()=> {
-        andCommit?
-            this.props.commitAddresses(this.props.session.id, [this.state], {}, true, true)
-          : this.props.createAddress(this.state, true);
-        this.clearState();
-      });
+      // this.setState({status: 'PENDING'}, ()=> {
+      //   andCommit?
+      //       this.props.commitAddresses(this.props.session.id, [this.state], {}, true, true)
+      //     : this.props.createAddress(this.state, true);
+      //   this.clearState();
+      // });
 
-        // andCommit?
-        //     this.props.commitAddresses(this.props.session.id, [this.state], {}, true, true)
-        //   : this.props.createAddress(this.state, true);
-        // this.clearState();
     }
     else {
       this.props.loadMessage(
@@ -559,7 +610,7 @@ class singleView extends Component {
   }
 
   createDialogValue = (newValue, field) => {
-    console.log('create Dialog', newValue, field.name);
+    // console.log('create Dialog', newValue, field.name);
     this.setState({ dialogValue: newValue, openCreateDialog: field.name });
   };
 
@@ -611,18 +662,47 @@ class singleView extends Component {
   }
 
   render() {
+    // Test to make sure we can render Screen.  Only set to true when
+    // currentProject and currentViews are populated.
+    // If currentProject is empty, go back to Main menu.
+
+    // Commented out 20-05-20.  I think added recently.
+    // if (!this.state.renderScreen) {
+    //   console.log('loading...');
+    //   // test for empty Project object.  If so, user refreshed browser.  Go back to main menu.
+    //   if (this.props.currentProject.constructor === Object && Object.keys(this.props.currentProject).length === 0) {
+    //     return (
+    //       <Redirect to={'/'} />
+    //     );
+    //   }
+    //   return null;
+    // }
+
+    // const { classes, currentViews, width, setPageTitle, currentProject } = this.props;
+    const { classes, currentViews, width } = this.props;
     this.oID=0;
     this.childArr = [];
-    const { classes, currentViews, width } = this.props;
-    // console.log('ceViews Render', 'state:', this.state, 'currentProject:', currentProject, 'currentViews', currentViews);
-    let currentView = [];
+    // console.log('ceViews Render',
+    // 'state:', this.state,
+    // 'currentProject:',currentProject,
+    // 'currentViews:', currentViews,
+    // 'currentView:', this.currentView
+    // );
+
+    if (this.state.redirectUrl) return <Redirect to={this.state.redirectUrl} />
+
+    // console.log('ceViews Render', 'state:', this.state);
+    // let currentView = [];
     if (currentViews.children) {
-      currentView = currentViews.children.filter((view) => view.category === this.VIEW)  // array of subviews (sections) that make up whole view.
+      this.currentView = currentViews.children.filter((view) => view.category === this.props.VIEW)  // array of subviews (sections) that make up whole view.
     }
+
+    // console.log('currentViews', currentViews);
     // console.log('currentView', currentView);
 
     return (
       <Fragment>
+
         <Grid container
           justify='space-between'
           className={classes.titleContainer}
@@ -650,12 +730,12 @@ class singleView extends Component {
           </Grid>
 
           <Grid item xs={6} md={2}>
+            {this.state.job_number &&
             <Paper elevation={4} className={classes.titleText}>
-            <Typography align='center' variant={width==='xs'?'subtitle2':'h6'} className={classes.titleText}>
-              {!this.state.job_number?currentView[0].label:'Job #: '+this.state.job_number}
-            </Typography>
-
-            </Paper>
+              <Typography align='center' variant={width==='xs'?'subtitle2':'h6'} className={classes.titleText}>
+                {`Job #: ${this.state.job_number}${this.state.revision||''}`}
+              </Typography>
+            </Paper>}
           </Grid>
 
           <Grid item >
@@ -680,7 +760,7 @@ class singleView extends Component {
           className={classes.container}
         >
           {
-            currentView? currentView.forEach(view => {  // could have multiple subviews
+            this.currentView? this.currentView.forEach(view => {  // could have multiple subviews
               view.scope_section === 'Y'? this.viewScope(view.children): this.viewChildren(view.children)
             }) : null
           }
@@ -691,7 +771,7 @@ class singleView extends Component {
           */}
           {this.childArr}
 
-          {actionButtonList(this.state, this.props, this.clearState, this.saveProject, this.handleChange, this.handleListChange)}
+          {actionButtonList(this.state, this.props, this.clearState, this.saveProject, this.handleChange, this.handleListChange, this.reviseProject)}
 
         </Grid>
         {
@@ -734,7 +814,12 @@ class singleView extends Component {
           curRec = {this.state}
           selectAllowed = {true}
         />}
-
+        {this.state.openRevDialog &&
+        <RevisionDialogContainer
+          open = {this.state.openRevDialog}
+          parentState = {this.state}
+          updateParentState = {this.updateState}
+        />}
       </Fragment>
 
     )
@@ -758,13 +843,13 @@ class tabularView extends Component {
   }
 
   render() {
-    console.log('render... state:', this.state);
+    // console.log('render... state:', this.state);
     const { classes, currentViews } = this.props;
     let currentView = [];
     if (currentViews.children) {
       currentView = currentViews.children.filter((view) => view.category === this.VIEW)  // gets all sections (views) that apply.
     }
-    console.log('currentView', currentView);
+    // console.log('currentView', currentView);
 
     return (
       <div>
@@ -804,13 +889,13 @@ class guidedView extends Component {
   }
 
   render() {
-    console.log('render... state:', this.state);
+    // console.log('render... state:', this.state);
     const { classes, currentViews } = this.props;
     let currentView = [];
     if (currentViews.children) {
       currentView = currentViews.children.filter((view) => view.category === this.VIEW)  // gets all sections (views) that apply.
     }
-    console.log('currentView', currentView);
+    // console.log('currentView', currentView);
 
     return (
       <div>

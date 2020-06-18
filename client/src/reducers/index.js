@@ -1,5 +1,12 @@
 import {combineReducers} from "redux";
 
+function pageTitle(state = '', action) {
+  if (action.type === "TITLE_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
 function session(state = {}, action) {
   if (action.type === "SESSION_LOADED") {
     return action.value;
@@ -42,6 +49,27 @@ function address(state = [], action) {
 
 function clients(state = [], action) {
   if (action.type === "CLIENTS_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
+function users(state = [], action) {
+  if (action.type === "USERS_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
+function requestors(state = [], action) {
+  if (action.type === "REQUESTORS_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
+function designers(state = [], action) {
+  if (action.type === "DESIGNERS_LOADED") {
     return action.value;
   }
   return state;
@@ -208,6 +236,27 @@ function dwellingTypeLookup(state = [], action) {
   return state;
 }
 
+function dateSearchLookup(state = [], action) {
+  if (action.type === "DATESEARCH_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
+function revReasonLookup(state = [], action) {
+  if (action.type === "REVREASON_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
+function revRespLookup(state = [], action) {
+  if (action.type === "REVRESP_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
 function showClientDialog(state = false, action) {
   if (action.type === "SHOW_CLIENT_DIALOG") {
     return !state;
@@ -291,13 +340,6 @@ function currentProject(state = {}, action) {
   return state;
 }
 
-function requestors(state = [], action) {
-  if (action.type === "REQUESTORS_LOADED") {
-    return action.value;
-  }
-  return state;
-}
-
 function saveType(state = [], action) {
   if (action.type === "SAVE_TYPES_LOADED") {
     return action.value;
@@ -312,8 +354,22 @@ function search(state = {}, action) {
   return state;
 }
 
+function localView(state = {}, action) {
+  if (action.type === "LOCAL_VIEW_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
+function projectHistory(state = [], action) {
+  if (action.type === "PROJECT_HISTORY_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
 const rootReducer = combineReducers({
-  session, message, addresses, dups, address, clients, contacts, cities
+  pageTitle, session, message, addresses, dups, address, clients, contacts, cities
   , subdivisions, jobnumberseqs, stateLookup, countryLookup
   , roleLookup, trelloListLookup, showClientDialog, showSubdivisionDialog
   , showCityDialog, showContactDialog, recordStatusLookup, projectStatusLookup
@@ -321,6 +377,7 @@ const rootReducer = combineReducers({
   , garageEntryLookup, garageSwingLookup, floorTypeLookup, roofTypeLookup
   , coveredPatioLookup, dwellingTypeLookup, pitaLookup, geos, geoMasterData
   , avffControls, avffRelationships, currentMenu, currentViews, currentProject
-  , requestors, saveType, search
+  , requestors, saveType, search, localView, projectHistory, users
+  , dateSearchLookup, revReasonLookup, revRespLookup, designers
 });
 export default rootReducer;

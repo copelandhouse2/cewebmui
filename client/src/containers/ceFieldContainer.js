@@ -1,5 +1,5 @@
 import { connect } from "react-redux";
-import { Field, Field2 } from "../components/ceField";
+import { Field, Field2, ColumnField } from "../components/ceField";
 import { searchForDups, loadFind, loadMessage  } from "../actions";
 
 function mapStateToProps(state) {
@@ -15,6 +15,7 @@ function mapStateToProps(state) {
     addresses: state.addresses,
     dups: state.dups,
     contacts: state.contacts,
+    users: state.users,
     requestors: state.requestors,
     trelloListLookup: state.trelloListLookup,
     projectStatusLookup: state.projectStatusLookup,
@@ -31,6 +32,7 @@ function mapStateToProps(state) {
     coveredPatioLookup: state.coveredPatioLookup,
     pitaLookup: state.pitaLookup,
     dwellingTypeLookup: state.dwellingTypeLookup,
+    dateSearchLookup: state.dateSearchLookup,
     showClientDialog: state.showClientDialog,
     showContactDialog: state.showContactDialog,
     showSubdivisionDialog: state.showSubdivisionDialog,
@@ -39,6 +41,9 @@ function mapStateToProps(state) {
     geos: state.geos,
     geoMasterData: state.geoMasterData,
     saveType: state.saveType,
+    revReasonLookup: state.revReasonLookup,
+    revRespLookup: state.revRespLookup,
+    designers: state.designers,
   };
 }
 
@@ -59,3 +64,5 @@ function mapDispatchToProps(dispatch) {
 export const FieldContainer = connect(mapStateToProps, mapDispatchToProps)(Field);
 
 export const Field2Container = connect(mapStateToProps, mapDispatchToProps)(Field2);
+
+export const ColumnContainer = connect(mapStateToProps, mapDispatchToProps)(ColumnField);

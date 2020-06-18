@@ -1,7 +1,15 @@
 import { sql } from "../mysqldb";
 
-const SQL_CONTACT_SELECT = `select id, id code, user_id, client_id, first_name, last_name, full_name, full_name name
-    , email, mobile, other, requestor, role, active, comments, concat('(',id,') ',full_name) label from contacts`;
+const SQL_CONTACT_SELECT = `select c.id, c.id code, c.user_id, c.client_id, c.first_name, c.last_name, c.full_name, c.full_name name
+, c.email, c.mobile, c.other, c.requestor, c.designer, c.role, c.active, c.comments, concat('(',c.id,') ',c.full_name) label
+, u.username, u.approved
+from contacts c
+left join users u on c.user_id = u.id`;
+
+// const SQL_CONTACT_SELECT = `select id, id code, user_id, client_id
+// , first_name, last_name, full_name, full_name name
+// , email, mobile, other, requestor, role, active, comments, concat('(',id,') ',full_name) label
+// from contacts`;
 
 const ContactModel = {
   getContacts: function(callback) {
@@ -11,7 +19,7 @@ const ContactModel = {
 
   getContactByID: function(id, callback){
     const SQLstmt = SQL_CONTACT_SELECT
-    + ' where id = ?';
+    + ' where c.id = ?';
     return sql().query(SQLstmt, [id], callback);
   },
 
