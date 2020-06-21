@@ -417,12 +417,25 @@ export const commit = (request, response) => {
 
         var dueDate = '';
         if (due_date) {
-          const hourOffset = 17 + (new Date().getTimezoneOffset() / 60);
-          const dateTime = `${due_date}T${hourOffset}:00:00Z`
-          dueDate = new Date(dateTime);
+          // const hourOffset = 17 + (new Date().getTimezoneOffset() / 60);
+          // const dateTime = `${due_date}T${hourOffset}:00:00Z`
+          // dueDate = new Date(dateTime);
+          // console.log('Due Date:source,offset,string,final', due_date, hourOffset, dateTime, dueDate);
 
-          // console.log('Date info', due_date, dateTime, dueDate.toString(), hourOffset);
+          // console.log('Due Date info', due_date, dateTime, dueDate.toString(), hourOffset);
+
+          dueDate = new Date(due_date);
+          const saveDate = new Date(due_date);
+          const tzOffset = dueDate.getTimezoneOffset() + 1020; // in minutes.  1020 min is 17 hours, which will set time to 5pm.
+          dueDate.setMinutes(tzOffset);
+          console.log('       Due Date:source,converted,offset,final', due_date, saveDate, tzOffset, dueDate);
         }
+
+        // const newDate = new Date(final_due_date);
+        // const saveDate = new Date(final_due_date);
+        // const tzOffset = newDate.getTimezoneOffset();
+        // newDate.setMinutes(tzOffset);
+        // console.log('final due date:', final_due_date, saveDate, newDate, tzOffset);
 
         // Defining the trello card.  If trello list is set, then it will create / move
         // the card to that list.
@@ -505,9 +518,11 @@ export const commit = (request, response) => {
                   // console.log('design due date', final_due_date);
                   if (final_due_date) {
                     const newDate = new Date(final_due_date);
-                    const tzOffset = new Date(final_due_date).getTimezoneOffset();
+                    const saveDate = new Date(final_due_date);
+                    const tzOffset = newDate.getTimezoneOffset();
                     newDate.setMinutes(tzOffset);
-                    // console.log('dates', final_due_date, newDate);
+                    console.log(' Final Due Date:source,converted,offset,final', final_due_date, saveDate, tzOffset, newDate);
+
                     value = {
                       value: {'date': newDate.toString()}  // need to fix when null.  only update when value exists.
                     };
@@ -654,7 +669,7 @@ export const commit = (request, response) => {
                   // console.log('Onboard Date', onboard_date);
                   if (onboard_date) {
                     const newDate = new Date(onboard_date);
-                    const tzOffset = new Date(onboard_date).getTimezoneOffset();
+                    const tzOffset = newDate.getTimezoneOffset();
                     newDate.setMinutes(tzOffset);
                     // console.log('dates', onboard_date, newDate);
                     value = {
@@ -703,9 +718,11 @@ export const commit = (request, response) => {
                   // console.log('Transmittal Date', transmittal_date);
                   if (transmittal_date) {
                     const newDate = new Date(transmittal_date);
-                    const tzOffset = new Date(transmittal_date).getTimezoneOffset();
+                    const saveDate = new Date(transmittal_date);
+                    const tzOffset = newDate.getTimezoneOffset();
                     newDate.setMinutes(tzOffset);
-                    // console.log('dates', transmittal_date, newDate);
+                    console.log('Tranmittal Date:source,converted,offset,final', transmittal_date, saveDate, tzOffset, newDate);
+
                     value = {
                       value: {'date': newDate.toString()}  // need to fix when null.  only update when value exists.
                     };
@@ -727,9 +744,11 @@ export const commit = (request, response) => {
                   // console.log('Start Date', start_date);
                   if (start_date) {
                     const newDate = new Date(start_date);
-                    const tzOffset = new Date(start_date).getTimezoneOffset();
+                    const saveDate = new Date(start_date);;
+                    const tzOffset = newDate.getTimezoneOffset();
                     newDate.setMinutes(tzOffset);
-                    // console.log('dates', start_date, newDate);
+
+                    console.log('     State Date:source,converted,offset,final', start_date, saveDate, tzOffset, newDate);
                     value = {
                       value: {'date': newDate.toString()}  // need to fix when null.  only update when value exists.
                     };
@@ -844,11 +863,12 @@ export const commit = (request, response) => {
                     // const newDate = new Date(dateTime);
 
                     const newDate = new Date(geo_report_date);
+                    const saveDate = new Date(geo_report_date);;
                     const tzOffset = newDate.getTimezoneOffset();
                     newDate.setMinutes(tzOffset);
 
-                    // console.log('dates', geo_report_date, dateTime, newDate, hourOffset);
-                    // console.log('dates', geo_report_date, newDate, tzOffset);
+                    console.log('Geo Report Date:source,converted,offset,final', geo_report_date, saveDate, tzOffset, newDate);
+
                     value = {
                       value: {'date': newDate.toString()}  // need to fix when null.  only update when value exists.
                     };
