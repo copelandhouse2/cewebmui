@@ -338,8 +338,17 @@ export const commit = (request, response) => {
 
       // these scope type values used to be stored at project level.  Need to pull them out at scope
       // level now.
-      const fdn = newRecord.scope.find(s => s.name === 'volfoundation');
-      const frm = newRecord.scope.find(s => s.name === 'cusframing');
+      let fdn, frm, frm1, frm2;
+      if (newRecord.classification === 'VOLUME') {
+        fdn = newRecord.scope.find(s => s.name === 'volfoundation');
+        frm1 = newRecord.scope.find(s => s.name === 'volmf');
+        frm2 = newRecord.scope.find(s => s.name === 'volssf');
+        frm = frm2?frm2:frm1;  // single site frame will take precedence over master frame if both on there.  But its actually a mistake.
+      } else {
+        fdn = newRecord.scope.find(s => s.name === 'cusfoundation');
+        frm = newRecord.scope.find(s => s.name === 'cusframing');
+      };
+
 
       // console.log('fdn, frm', fdn, frm);
 
@@ -358,8 +367,12 @@ export const commit = (request, response) => {
       }
 
       if (frm) {
-        var {foundation_type, floor_type, roof_type, num_stories, square_footage, pita_factor}
+        var {floor_type, roof_type, num_stories, square_footage, pita_factor}
         = frm;
+        // both foundation and framing sections can have these values.  Foundation scope values supercedes.
+        foundation_type = foundation_type?foundation_type:frm.foundation_type;
+        plan_type = plan_type?plan_type:frm.plan_type;
+        elevation = elevation?elevation:frm.elevation;
       }
 
       // console.log('values', trello_list_id, trello_card_id, due_date, revision, revision_desc);
@@ -389,27 +402,32 @@ export const commit = (request, response) => {
           currentDesc.search('__________') > -1? currentDesc.slice(currentDesc.search('__________')+10):
           currentDesc;
         // Defining the title (or name) of the card.
-        const subStr = subdivision !=='' ? ' - ' + subdivision : '';
-        const cityStr = city !=='' ? ' - ' + city : '';
-        const cardName = job_number + ' - ' + address1 + subStr + cityStr + ' - ' + client;
+        const subStr = subdivision? ' - ' + subdivision : '';
+        const cityStr = city? ' - ' + city : '';
+        const cardName = job_number + revision + ' - ' + address1 + subStr + cityStr + ' - ' + client;
 
         // Defining the description for volume client cards.
+        const pt = plan_type? plan_type:'';
+        const ele = elevation? elevation:'';
         const gs = garage_swing? garage_swing === 'RIGHT'? 'R':'L' : '';
         // console.log('masonry', ':'||masonry||':');
-        const ms = masonry === 'PLAN'? ', PLAN' : masonry === null||masonry ===''? '' : `, ${masonry}SM`
+        const ms = masonry === 'PLAN'? ', PLAN' : masonry? `, ${masonry}SM`:''
+        // const ms = masonry === 'PLAN'? ', PLAN' : masonry === null||masonry ===''? '' : `, ${masonry}SM`
         const gext = garage_extension? `X${garage_extension}` : '';
         const gdrop = garage_drop? `D${garage_drop}` : '';
         const gt = garage_type? `, ${garage_type}${gext}${gdrop}` : '';
         const cp = covered_patio === 'EXTCP'? ', ExtCP' :
                    covered_patio === 'Y'? ', CP' : '';
         const bw = bay_window === 'Y'? ', BW':'';
-        const pi = geo_pi === null? '' : geo_pi;
+        const pi = geo_pi? geo_pi:'';
+        // const pi = geo_pi === null? '' : geo_pi;
         const rev = revision? `**REV ${revision}:** ${revision_desc}` : '';  //Removing the new line characters.  If custom, this is the first value.
         const soil = soil_notes? `\n\n**SOIL NOTES:** ${soil_notes}` : '';
         const opt = additional_options? `\n\n**ADDL OPTIONS:** ${additional_options}` : '';
         const com = comments? `\n\n**COMMENTS:** ${comments}` : '';
         const end = `\n\n*Do not erase line below.  Used by webtools.  All information above line is auto-generated.  Anything below line is for your use and will be protected from overwrite.*\n__________`;
-        const cardDesc = trello_list === 'CUSTOM QUEUE'? `${rev}${soil}${opt}${com}${end}${enteredDesc}`: `**${plan_type} ${elevation}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**\n\n${rev}${soil}${opt}${com}${end}${enteredDesc}`;
+        // const cardDesc = trello_list === 'CUSTOM QUEUE'? `${rev}${soil}${opt}${com}${end}${enteredDesc}`: `**${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**\n\n${rev}${soil}${opt}${com}${end}${enteredDesc}`;
+        const cardDesc = `**${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**\n\n${rev}${soil}${opt}${com}${end}${enteredDesc}`;
 
         // console.log('card name', cardName);
         // console.log('gs, cp, bw, ms, pi', gs, cp, bw, ms, pi);
@@ -428,7 +446,7 @@ export const commit = (request, response) => {
           const saveDate = new Date(due_date);
           const tzOffset = dueDate.getTimezoneOffset() + 1020; // in minutes.  1020 min is 17 hours, which will set time to 5pm.
           dueDate.setMinutes(tzOffset);
-          console.log('       Due Date:source,converted,offset,final', due_date, saveDate, tzOffset, dueDate);
+          console.log('  Due Date:source,converted,offset,final', due_date, saveDate, tzOffset, dueDate);
         }
 
         // const newDate = new Date(final_due_date);
@@ -518,10 +536,10 @@ export const commit = (request, response) => {
                   // console.log('design due date', final_due_date);
                   if (final_due_date) {
                     const newDate = new Date(final_due_date);
-                    const saveDate = new Date(final_due_date);
+                    // const saveDate = new Date(final_due_date);  // just used for console.log
                     const tzOffset = newDate.getTimezoneOffset();
                     newDate.setMinutes(tzOffset);
-                    console.log(' Final Due Date:source,converted,offset,final', final_due_date, saveDate, tzOffset, newDate);
+                    // console.log(' Final Due Date:source,converted,offset,final', final_due_date, saveDate, tzOffset, newDate);
 
                     value = {
                       value: {'date': newDate.toString()}  // need to fix when null.  only update when value exists.
@@ -718,10 +736,10 @@ export const commit = (request, response) => {
                   // console.log('Transmittal Date', transmittal_date);
                   if (transmittal_date) {
                     const newDate = new Date(transmittal_date);
-                    const saveDate = new Date(transmittal_date);
+                    // const saveDate = new Date(transmittal_date);
                     const tzOffset = newDate.getTimezoneOffset();
                     newDate.setMinutes(tzOffset);
-                    console.log('Tranmittal Date:source,converted,offset,final', transmittal_date, saveDate, tzOffset, newDate);
+                    // console.log('Tranmittal Date:source,converted,offset,final', transmittal_date, saveDate, tzOffset, newDate);
 
                     value = {
                       value: {'date': newDate.toString()}  // need to fix when null.  only update when value exists.
@@ -744,11 +762,11 @@ export const commit = (request, response) => {
                   // console.log('Start Date', start_date);
                   if (start_date) {
                     const newDate = new Date(start_date);
-                    const saveDate = new Date(start_date);;
+                    // const saveDate = new Date(start_date);;
                     const tzOffset = newDate.getTimezoneOffset();
                     newDate.setMinutes(tzOffset);
+                    // console.log('     State Date:source,converted,offset,final', start_date, saveDate, tzOffset, newDate);
 
-                    console.log('     State Date:source,converted,offset,final', start_date, saveDate, tzOffset, newDate);
                     value = {
                       value: {'date': newDate.toString()}  // need to fix when null.  only update when value exists.
                     };
@@ -858,16 +876,11 @@ export const commit = (request, response) => {
                 case 'GEO REPORT DATE':
                   // console.log('Geotech report Date', geo_report_date);
                   if (geo_report_date) {
-                    // const hourOffset = 0 + (new Date(geo_report_date).getTimezoneOffset() / 60);
-                    // const dateTime = `${geo_report_date}T0${hourOffset}:00:00Z`;
-                    // const newDate = new Date(dateTime);
-
                     const newDate = new Date(geo_report_date);
-                    const saveDate = new Date(geo_report_date);;
+                    // const saveDate = new Date(geo_report_date);;
                     const tzOffset = newDate.getTimezoneOffset();
                     newDate.setMinutes(tzOffset);
-
-                    console.log('Geo Report Date:source,converted,offset,final', geo_report_date, saveDate, tzOffset, newDate);
+                    // console.log('Geo Report Date:source,converted,offset,final', geo_report_date, saveDate, tzOffset, newDate);
 
                     value = {
                       value: {'date': newDate.toString()}  // need to fix when null.  only update when value exists.
