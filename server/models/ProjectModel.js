@@ -210,6 +210,8 @@ const ProjectModel = {
     , subdivisionClause = '', statusClause = '', dateRangeClause = ''
     , findClause = '', orderBy = '', andClause = '';
 
+    let limitClause = ' LIMIT 0, 200';
+
     if (enteredBy) {
       enteredByClause = ' and p.user_id = ?';
       values.push(Number(enteredBy));
@@ -300,6 +302,12 @@ const ProjectModel = {
         else if (e.startsWith('flrt:')) { val = e.slice(4)+'%'; andClause = ` and ps.floor_type like ?`}
         else if (e.startsWith('roof_type:')) { val = e.slice(10)+'%'; andClause = ` and ps.roof_type like ?`}
         else if (e.startsWith('rt:')) { val = e.slice(3)+'%'; andClause = ` and ps.roof_type like ?`}
+        else if (e.startsWith('limit:')) {
+          let lim = e.slice(6);
+          if (lim === 'no') {limitClause = ''}
+          else if (isNaN(lim)) {limitClause = ' LIMIT 0, 200'}
+          else {limitClause = `  LIMIT 0, ${lim}`}
+        }
 
         else {
           // if (!isNaN(e)) { val = e; andClause = ` and p.last_updated_date >= NOW() - INTERVAL ? DAY`}
@@ -332,7 +340,7 @@ const ProjectModel = {
     + dateRangeClause
     + findClause
     + orderBy
-    + ' LIMIT 0, 200';
+    + limitClause;
 
     // console.log('searchProjects', SQLstmt, values);
     if (callback) {

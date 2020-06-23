@@ -152,10 +152,25 @@ export const show = (request, response) => {
 // function to create a address
 export const create = async (request, response) => {
 
-  // console.log('in ProjectController.create', request.body, request.params.v2);
-  // console.log('in ProjectController.create', request.params);
+  console.log('ProjectController Create', new Date());
+  console.log('Add / Update', request.body.job_number, request.body.address1);
+
+  // console.log('in ProjectController.create', request.body);
   var errors = [];
   var addRecordResponse;
+
+  /************** TEMPORARY FIX FOR RALPH *************/
+  /***** Populating plan type at project level ********/
+  let fdn;
+  if (request.body.classification === 'VOLUME') {
+    fdn = request.body.scope.find(s => s.name === 'volfoundation');
+  } else {
+    fdn = request.body.scope.find(s => s.name === 'cusfoundation');
+  };
+  request.body.plan_type = fdn?fdn.plan_type:request.body.plan_type;
+  request.body.elevation = fdn?fdn.elevation:request.body.elevation;
+  /**************** END TEMPORARY FIX  **************/
+  // console.log('Project:', request.body);
 
   try {
     addRecordResponse = await ProjectModel.addProject(request.body);
@@ -230,7 +245,7 @@ export const create = async (request, response) => {
       console.log('Done with error(s)', errors);
       return errors;
     }
-    console.log('Project(s) committed');
+    console.log('Project(s) saved');
     // const proj = [];
     // proj.push(project);
     // console.log('This is the proj', proj)
@@ -241,7 +256,7 @@ export const create = async (request, response) => {
       console.log('Done with error(s)', errors);
       return response.json(errors);
     }
-    console.log('Project(s) committed');
+    console.log('Project(s) saved');
     return response.json(project);
   }
   // if (errors.length > 0) {
@@ -254,14 +269,6 @@ export const create = async (request, response) => {
 // function to create a address
 export const commit = (request, response) => {
   // console.log('Project Controller.commit request', request.params);
-
-  //Central time offsets.  Treating these like Globals for this function rightn now.
-  // var CST_OFFSET = 360;  //starts fist sun in Nov
-  // var CDT_OFFSET = 300;  // starts 2nd sun in Mar
-  // // const tzoffset = dueDate.isDstObserved()? CDT_OFFSET : CST_OFFSET;
-  // var tzOffset = CST_OFFSET;
-  // console.log('query', SQLstmt);
-  // sql().query(SQLstmt, values, function (err, result) {
 
   // NEED TO PUT FOR LOOP ON OUTSIDE OF PROMISES.  ORDER OF PROMISES
   // Loop on request body (contains all pending records)
@@ -316,25 +323,34 @@ export const commit = (request, response) => {
         var {id, job_number} = request.body[i];
       }
 
+      console.log('ProjectController Commit: Date, tzOffset', new Date(), new Date().getTimezoneOffset()/60);
+      console.log('Building Trello Card', id, job_number);
+
       // console.log('6. the id, job_number: ', id, job_number);
       const {revision, revision_desc, client_id, client, owner_id, requestor, requestor_id, city, subdivision
         , address1, address2, phase, section, lot, block
         , geo_lab, geo_report_num, geo_report_date, geo_pi, em_center, em_edge, ym_center, ym_edge
-        , soil_notes, additional_options, comments, status, project_status, classification
+        , soil_notes, status, project_status, classification
         , due_date, final_due_date, start_date, onboard_date, transmittal_date
         , main_contact, billing_contact, builder_contact, dwelling_type
         , trello_list, trello_list_id, trello_card_id, box_folder, created_by, last_updated_by
-      } = request.body[i];
+      } = newRecord;
+      // } = request.body[i];
 
-      let scope = '';
+
+      let scope = '', description = '', additional_options = '', comments = '';
       newRecord.scope.forEach(s=> {
         // console.log('s', s);
         scope = scope+s.scope+',';
+        description = s.description?`${description}\n${s.scope} - ${s.description}`:description;
+        additional_options = s.additional_options?`${additional_options}\n${s.scope} - ${s.additional_options}`:additional_options;
+        comments = s.comments?`${comments}\n${s.scope} - ${s.comments}`:comments;
+
         // console.log('for each scope', scope);
       });
       scope = scope.slice(0,scope.length-1);  // remove the last comma.
 
-      // console.log('scope', scope);
+      // console.log('scope, description, additional_options, comments', scope, description, additional_options, comments);
 
       // these scope type values used to be stored at project level.  Need to pull them out at scope
       // level now.
@@ -375,6 +391,8 @@ export const commit = (request, response) => {
         elevation = elevation?elevation:frm.elevation;
       }
 
+      // fdn = newRecord.scope.find(s => s.name === 'volfoundation');
+
       // console.log('values', trello_list_id, trello_card_id, due_date, revision, revision_desc);
 
       // trello card id exists, locating the description and board id for later.
@@ -404,7 +422,7 @@ export const commit = (request, response) => {
         // Defining the title (or name) of the card.
         const subStr = subdivision? ' - ' + subdivision : '';
         const cityStr = city? ' - ' + city : '';
-        const cardName = job_number + revision + ' - ' + address1 + subStr + cityStr + ' - ' + client;
+        const cardName = job_number + ' - ' + address1 + subStr + cityStr + ' - ' + client;
 
         // Defining the description for volume client cards.
         const pt = plan_type? plan_type:'';
@@ -423,13 +441,14 @@ export const commit = (request, response) => {
         // const pi = geo_pi === null? '' : geo_pi;
         const rev = revision? `**REV ${revision}:** ${revision_desc}` : '';  //Removing the new line characters.  If custom, this is the first value.
         const soil = soil_notes? `\n\n**SOIL NOTES:** ${soil_notes}` : '';
+        const desc = description? `\n\n**SCOPE DESCRIPTION:** ${description}` : '';
         const opt = additional_options? `\n\n**ADDL OPTIONS:** ${additional_options}` : '';
         const com = comments? `\n\n**COMMENTS:** ${comments}` : '';
         const end = `\n\n*Do not erase line below.  Used by webtools.  All information above line is auto-generated.  Anything below line is for your use and will be protected from overwrite.*\n__________`;
         // const cardDesc = trello_list === 'CUSTOM QUEUE'? `${rev}${soil}${opt}${com}${end}${enteredDesc}`: `**${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**\n\n${rev}${soil}${opt}${com}${end}${enteredDesc}`;
-        const cardDesc = `**${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**\n\n${rev}${soil}${opt}${com}${end}${enteredDesc}`;
+        const cardDesc = `**${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**\n\n${rev}${soil}${desc}${opt}${com}${end}${enteredDesc}`;
 
-        // console.log('card name', cardName);
+        console.log('card name', cardName);
         // console.log('gs, cp, bw, ms, pi', gs, cp, bw, ms, pi);
         // console.log('card desc', cardDesc);
 
@@ -446,7 +465,7 @@ export const commit = (request, response) => {
           const saveDate = new Date(due_date);
           const tzOffset = dueDate.getTimezoneOffset() + 1020; // in minutes.  1020 min is 17 hours, which will set time to 5pm.
           dueDate.setMinutes(tzOffset);
-          console.log('  Due Date:source,converted,offset,final', due_date, saveDate, tzOffset, dueDate);
+          // console.log('Due Date Info:converted,offset,final', saveDate, tzOffset, dueDate);
         }
 
         // const newDate = new Date(final_due_date);
