@@ -152,8 +152,15 @@ export const show = (request, response) => {
 // function to create a address
 export const create = async (request, response) => {
 
-  console.log('ProjectController Create', new Date());
-  console.log('Add / Update', request.body.job_number, request.body.address1);
+  let processDate = new Date();
+  const min = processDate.getMinutes();
+  const tzOffset = processDate.getTimezoneOffset(); // in minutes.
+  // processDate.setMinutes(min-tzOffset);
+  console.log('*************************************************');
+  console.log('ProjectController Create / Update');
+  console.log(processDate+'');
+  console.log(request.body.job_number+'    ', request.body.address1);
+  console.log('*************************************************');
 
   // console.log('in ProjectController.create', request.body);
   var errors = [];
