@@ -190,6 +190,7 @@ export const create = async (request, response) => {
       // console.log('In the scope section.', request.body.scope);
       let scopePromises = [];
       request.body.scope.forEach((item, i) => {
+        console.log('Scope: Adding / Adjusting: ', item.id, item.delete, item.scope);
         if (!item.delete) {  // checking to see if we are to delete scope.
           item.project_id = request.body.id? request.body.id:addRecordResponse.insertId;
           scopePromises.push(ProjectModel.addProjectScope(item));
@@ -202,7 +203,7 @@ export const create = async (request, response) => {
 
       try {
         const scopeResponses = await Promise.all(scopePromises);
-        // console.log('scope records created / updated: ', scopeResponses);
+        console.log('scope records created / updated: ', scopeResponses);
       } catch (err) {
         console.log('Scope record create error:', err);
         errors.push(err);

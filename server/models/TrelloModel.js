@@ -23,6 +23,7 @@ const TrelloModel = {
   },
 
   put: (uri, object) => {
+    // console.log('Trello put: ', uri, object);
     return new Promise((resolve, reject) => {
       trello.put(uri, object, (err, response) => {
         if (err) reject(err);
