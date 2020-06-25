@@ -580,8 +580,7 @@ const ProjectModel = {
 
   // This function handles BOTH ADD and UPDATE.
   // Basically an UPSERT feature.
-  addProjectScope: function(scope_item, callback = null){
-
+  addProjectScope: function(scope_item, callback = null) {
   //inserting into mysql
   const {id, scope_id, project_id, control_id, scope, name, job_number, description, revision, revision_desc, scope_status  // 10
     , onboard_date, start_date, due_date, final_due_date, transmittal_date  // 5

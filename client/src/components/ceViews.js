@@ -509,11 +509,13 @@ class singleView extends Component {
     //     return s;
     // });
     if (this.state.rememberData && !clearAction ) {
+      const scope = this.state.scope.map(s=> {return {...s, id: null, scope_id: null, project_id: null}});
       this.setState( {
         address_id: null,
         id: null,
         job_number: null,
         trello_card_id: null,
+        scope: scope
       });
     } else {
       const keys = Object.keys(this.state)

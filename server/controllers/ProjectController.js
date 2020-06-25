@@ -198,7 +198,7 @@ export const create = async (request, response) => {
       let scopePromises = [];
       request.body.scope.forEach((item, i) => {
         // console.log('Scope: Adding / Adjusting: ', item.id, item.delete, item.scope);
-        console.log('Scope: Adding / Adjusting: ', item.id, item.delete, item.name);
+        console.log('Scope: Adding / Adjusting: ', item.id, item.scope_id, item.delete, item.name);
         if (!item.delete) {  // checking to see if we are to delete scope.
           item.project_id = request.body.id? request.body.id:addRecordResponse.insertId;
           scopePromises.push(ProjectModel.addProjectScope(item));
