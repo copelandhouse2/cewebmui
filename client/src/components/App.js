@@ -41,7 +41,7 @@ const styles = theme => ({
     margin: "auto",
     minHeight: "100%",
     paddingTop: 60,  // ensures the app is crowned by header
-    paddingBottom: 100,  // ensures the app doesn't go behind footer.
+    paddingBottom: 60,  // ensures the app doesn't go behind footer.
     // zIndex: theme.zIndex.drawer+1,
     // overflow: 'auto',
   },

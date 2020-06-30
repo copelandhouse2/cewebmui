@@ -13,9 +13,9 @@ const styles = theme => ({
     // top: 'auto',
     // bottom: 0,
     // zIndex: theme.zIndex.drawer + 1,
-    height: 100,
-    padding: 40,
-    marginTop: -100,
+    height: 60,
+    // padding: 40,
+    marginTop: -60,
   },
 });
 

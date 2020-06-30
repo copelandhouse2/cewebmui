@@ -620,12 +620,14 @@ const creatableListField = (props) => {
   // const { theme, field, state, arrID, updateState, searchMode, dupCheck } = props;// passed thru call
   // const { searchForDups } = props;  // passed thru container
 
-  // field.name === 'city'?console.log('creatableListField', field, state[field.name], state[field.name_id], props[field.lookup_list]):null;
 
   let currentValue = {};
   if (field.name_id) {
-    currentValue = state[field.name_id]?
-      props[field.lookup_list].find(option => option.id == state[field.name_id]) :
+    currentValue = state[field.name_id]>=0?
+      props[field.lookup_list].find(option => {
+        // field.name === 'client'?console.log('option',option):null;
+        return option.id === state[field.name_id]
+      }) :
       {code: '', label: '', name: ''};
   } else {
     currentValue = state[field.name]?
@@ -633,7 +635,9 @@ const creatableListField = (props) => {
       {code: '', label: '', name: ''};
   }
 
-  if (currentValue.id) Object.assign(currentValue, {label: `(${currentValue.id}) ${currentValue.name}`});
+  // field.name === 'client'?console.log('creatableListField', field, state[field.name], state[field.name_id], props[field.lookup_list], currentValue):null;
+
+  if (currentValue && currentValue.id>=0) Object.assign(currentValue, {label: `(${currentValue.id}) ${currentValue.name}`});
   // field.name === 'city'?console.log('currentValue: city', currentValue):null;
   // field.name === 'client'?console.log('currentValue: client', currentValue):null;
 

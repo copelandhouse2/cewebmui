@@ -242,6 +242,14 @@ class singleView extends Component {
     //   this.setState({ scope: initScope });
     // }
 
+    // This will be temporary.  Preferences will assign this as a default.
+    if (this.props.currentViews.category === 'VOLUME') {
+      const initScope = [];
+      initScope.push({control_id: 28, name: 'volfoundation'});
+      this.setState({ scope: initScope });
+    }
+
+
     // Setting this.currentView and the page Title upon startup.
     if (currentViews.children) {
       this.currentView = currentViews.children.filter((view) => view.category === this.props.VIEW)  // array of subviews (sections) that make up whole view.
@@ -485,7 +493,8 @@ class singleView extends Component {
   }
 
   assignScope = (newScope)=> {
-    this.setState({ openScopeDialog: !this.state.openScopeDialog, scope: newScope});
+    this.setState({ openScopeDialog: false, scope: newScope});
+    // this.setState({ openScopeDialog: !this.state.openScopeDialog, scope: newScope});
   }
 
   removeScope = (selected) => {
@@ -515,7 +524,9 @@ class singleView extends Component {
         id: null,
         job_number: null,
         trello_card_id: null,
-        scope: scope
+        scope: scope,
+        revision: null,
+        revision_desc: null
       });
     } else {
       const keys = Object.keys(this.state)
@@ -539,9 +550,39 @@ class singleView extends Component {
 
   saveProject = (andCommit = false) => {
     // console.log('save Project and', andCommit);
+    let noScope = false;
+    if (this.state.scope.length === 0) {
+      noScope = true;
+    } else {
+      const deletedScope = this.state.scope.filter(s => s.delete === true);
+      noScope = this.state.scope.length === deletedScope.length?true:false;
+    }
 
-    if (this.state.address1 && this.state.client_id && this.state.city ) {
-
+    if (!this.state.address1) {
+      this.props.loadMessage(
+        { ok:false,
+          status: 'Missing Data',
+          statusText: "Missing Address.  Please fill in"
+        }, "ERROR");
+    } else if (!('client_id' in this.state) || this.state.client_id===null) {  // need to allow for 0 (CE)
+      this.props.loadMessage(
+        { ok:false,
+          status: 'Missing Data',
+          statusText: "Missing Client.  Please fill in"
+        }, "ERROR");
+    } else if (this.state.classification === 'VOLUME' && !this.state.city) {
+      this.props.loadMessage(
+        { ok:false,
+          status: 'Missing Data',
+          statusText: "Missing City.  Please fill in"
+        }, "ERROR");
+    } else if (noScope) {
+      this.props.loadMessage(
+        { ok:false,
+          status: 'Missing Data',
+          statusText: "Missing scope record.  Must have at least one.  If you are not sure of the scope category at this time, use Other and describe the request as best you can."
+        }, "ERROR");
+    } else {
       if (andCommit) {
         this.setState({status: 'ACTIVE'}, ()=> {
           this.props.commitAddresses(this.props.session.id, [this.state], true, true)
@@ -553,32 +594,7 @@ class singleView extends Component {
           this.clearState();
         });
       }
-
-      // this.setState({status: 'PENDING'}, ()=> {
-      //   andCommit?
-      //       this.props.commitAddresses(this.props.session.id, [this.state], {}, true, true)
-      //     : this.props.createAddress(this.state, true);
-      //   this.clearState();
-      // });
-
     }
-    else {
-      this.props.loadMessage(
-        { ok:false,
-          status: 'Missing Data',
-          statusText: "Missing Address, Client, or City.  Please fill in"
-        }, "ERROR");
-    }
-
-    // if (!andCommit) {
-    //   console.log('committing record', this.props.currentProject)
-    //   const createResp = await promiseFn(this.props.createAddress(this.props.currentProject, true));
-    //   // console.log('createAddress response', createResp);
-    //   // await promiseFn(this.setState(this.props.currentProject));
-    // } else {
-    //
-    // }
-
   }
 
   findProjects = (search) => {

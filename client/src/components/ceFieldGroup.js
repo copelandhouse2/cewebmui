@@ -177,19 +177,116 @@ const styles = theme => ({
       // minWidth: 70,
     }
   },
+  lockCellProps: {
+    // borderLeftWidth: 1,
+    // borderLeftStyle: 'solid',
+    // borderLeftColor: 'lightgray',
+    paddingLeft:5,
+    paddingRight:5,
+    '&:last-child': {
+      paddingLeft:5,
+      paddingRight:5,
+      // minWidth: 70,
+    }
+  },
   tableCellHeaderProps: {
     color: theme.palette.secondary.contrastText,
     backgroundColor: theme.palette.secondary.light,
     // fontWeight: 'bold',
     fontSize: 13,
-    padding: '0px 10px',
+    padding: '3px 10px',
     // minWidth:60
     // margin: 'auto'
+    position: 'sticky',
+    top: 0,
+    zIndex: 1000,
   },
-  scroll: {
+  hCol0: {
+    left: 36*0,
+    position: 'sticky',
+    zIndex: 1100,
+    minWidth:36,
+  },
+  hCol1: {
+    left: 36*1,
+    zIndex: 1100,
+    minWidth:36,
+  },
+  hCol2: {
+    left: 36*2,
+    zIndex: 1100,
+    minWidth:36,
+  },
+  hCol2xl: {
+    left: 36*2,
+    zIndex: 1100,
+    minWidth:72+6,
+  },
+  hCol3: {
+    left: 36*3,
+    zIndex: 1100,
+    minWidth:36,
+  },
+  hCol3xl: {
+    left: 36*4+6,
+    zIndex: 1100,
+    minWidth:36,
+  },
+  hCol4: {
+    left: 36*4,
+    zIndex: 1100,
+  },
+  hCol4xl: {  // used only when in edit mode
+    left: 36*5+6,
+    zIndex: 1100,
+  },
+  col0: {
+    left: 36*0,
+    position: 'sticky',
+    zIndex: 1000,
+    background: theme.palette.primary.contrastText
+  },
+  col1: {
+    left: 36*1,
+    position: 'sticky',
+    zIndex: 1000,
+    background: theme.palette.primary.contrastText
+  },
+  col2: {
+    left: 36*2,
+    position: 'sticky',
+    zIndex: 1000,
+    background: theme.palette.primary.contrastText
+  },
+  col3: {
+    left: 36*3,
+    position: 'sticky',
+    zIndex: 1000,
+    background: theme.palette.primary.contrastText
+  },
+  col3xl: {
+    left: 36*4+6,
+    position: 'sticky',
+    zIndex: 1000,
+    background: theme.palette.primary.contrastText
+  },
+  col4: {
+    left: 36*4,
+    position: 'sticky',
+    zIndex: 1000,
+    background: theme.palette.primary.contrastText
+  },
+  col4xl: {  // used only when in edit mode
+    left: 36*5+6,
+    position: 'sticky',
+    zIndex: 1000,
+    background: theme.palette.primary.contrastText
+  },
+  tableSize: {
     // width: '100%',
+    maxHeight: 530,
     overflowX: 'auto',
-    overflowY: 'auto',
+
   },
   actionButtons: {
     padding: 6,
@@ -207,7 +304,10 @@ const styles = theme => ({
     // '&:first-child': {
     //   paddingLeft:24,
     // },
-  }
+  },
+  dropHeader: {
+
+  },
 });
 
 const reorder = (list, startIndex, endIndex) => {
@@ -521,12 +621,13 @@ class fieldGroupTabular extends Component {
 }
 
 // Table Column Bar is the Droppable area.  Procedure uses implicit return.
-const DroppableComponent = (onDragEnd: (result, provided) => void) => (props) => (
+const DroppableComponent = (onDragEnd: (result, provided) => void, classes) => (props) => (
   <DragDropContext onDragEnd={onDragEnd}>
     <Droppable droppableId={'1'} direction="horizontal">
       {(provided) => {
+        // console.log('Droppable', provided, props);
         return (
-          <tr ref={provided.innerRef} {...provided.droppableProps} {...props}>
+          <tr ref={provided.innerRef} {...provided.droppableProps} {...props} className={classes.dropHeader}>
             {props.children}
             {provided.placeholder}
           </tr>
@@ -695,7 +796,7 @@ class extends Component {
         </Grid>
 
         <Grid item xs={12}>
-        <Paper className={classes.scroll} style={{position: 'sticky'}}>
+        <Paper className={classes.tableSize}>
           <Table>
             <TableHead>
               <TableRow component={DroppableComponent(this.onDragEnd)}>
@@ -947,12 +1048,18 @@ class extends Component {
   render() {
     const { classes, theme, fieldGroup, data, parentState
       , subGroupKey, subFG, fgTools } = this.props;
-    // console.log('FG tabular state', fieldGroup, this.state);
+    // console.log('FG tabular state', this.state);
     // console.log('FG tabular state sub table', subGroupKey, subFG);
+    const editedRows = this.state.editedRows.filter(r=>{
+      if (r) return r;
+      return null;
+    });
+    const editActive = editedRows.length>0?true:false;
+    // console.log('Active edits?', editActive);
 
     return (
       <Grid container justify='center'>
-        <Grid item xs={12} style={ {marginTop: 20, marginBottom: 20, borderTop: '1px solid black'} }>
+        <Grid item xs={12} style={ {marginTop: 10, marginBottom: 10, borderTop: '1px solid black'} }>
           <Toolbar variant='dense' className={classes.toolbar}>
             <Typography align='left' style={{fontWeight: 500}} className={classes.titleFG}>
               {fieldGroup.label}
@@ -963,21 +1070,21 @@ class extends Component {
         </Grid>
 
         <Grid item xs={12}>
-        <Paper className={classes.scroll} style={{position: 'sticky'}}>
-          <Table >
+        <Paper className={classes.tableSize}>
+          <Table  >
             <TableHead>
-              <TableRow component={DroppableComponent(this.onDragEnd)}>
-                <TableCell padding='checkbox' classes={{root: classes.tableCellHeaderProps}}/>
-                <TableCell padding='checkbox' classes={{root: classes.tableCellHeaderProps}}/>
-                <TableCell padding='checkbox' classes={{root: classes.tableCellHeaderProps}}/>
-                <TableCell padding='checkbox' classes={{root: classes.tableCellHeaderProps}}/>
+              <TableRow component={DroppableComponent(this.onDragEnd, classes)} >
+                <TableCell padding='checkbox' classes={{root: `${classes.tableCellHeaderProps} ${classes.hCol0}`}}/>
+                <TableCell padding='checkbox' classes={{root: `${classes.tableCellHeaderProps} ${classes.hCol1}`}}/>
+                <TableCell padding='checkbox' classes={{root: editActive?`${classes.tableCellHeaderProps} ${classes.hCol2xl}`:`${classes.tableCellHeaderProps} ${classes.hCol2}`}}/>
+                <TableCell padding='checkbox' classes={{root: editActive?`${classes.tableCellHeaderProps} ${classes.hCol3xl}`:`${classes.tableCellHeaderProps} ${classes.hCol3}`}}/>
                 {this.state.columns.map((c,i)=>(
                   <TableCell
                     key={c.name}
                     component={DraggableComponent(c.name, i, theme, c.column_width)}
                     // padding='none'
                     align='center'
-                    classes={{root: `${classes.tableCellProps} ${classes.tableCellHeaderProps}`}}
+                    classes={{root: i===0?editActive?`${classes.lockCellProps} ${classes.tableCellHeaderProps} ${classes.hCol4xl}`:`${classes.lockCellProps} ${classes.tableCellHeaderProps} ${classes.hCol4}`:`${classes.tableCellProps} ${classes.tableCellHeaderProps}`}}
                   >
                     {c.label}
                   </TableCell>
@@ -994,7 +1101,7 @@ class extends Component {
                 return (
                   <Fragment key={ri}>
                   <TableRow key={ri}>
-                    <TableCell padding='checkbox' className={classes.tableActionProps}>
+                    <TableCell padding='checkbox' className={`${classes.tableActionProps} ${classes.col0}`}>
                       <IconButton aria-label='Expand'
                         onClick={()=>this.handleExpand(ri)}
                         className={classes.actionButtons}
@@ -1002,7 +1109,7 @@ class extends Component {
                         {this.state.expand[ri] ? <ExpandLess /> : <ExpandMore />}
                       </IconButton>
                     </TableCell>
-                    <TableCell padding='checkbox' className={classes.tableActionProps}>
+                    <TableCell padding='checkbox' className={`${classes.tableActionProps} ${classes.col1}`}>
                       <Tooltip title='Works in conjunction with EDIT button.  Edit the project in full screen mode.' aria-label='Edit the project in full screen mode'>
                       <Checkbox
                         onChange={()=>this.onRowSelected(ri)}
@@ -1011,7 +1118,7 @@ class extends Component {
                       />
                       </Tooltip>
                     </TableCell>
-                    <TableCell padding='checkbox' className={classes.tableActionProps}>
+                    <TableCell padding='checkbox' className={`${classes.tableActionProps} ${classes.col2}`}>
                       {!this.state.editedRows[ri] && //parentState.editMode[ri]
                       <Tooltip title='Edit the project here' aria-label='Edit the project here'>
                       <IconButton aria-label='Expand'
@@ -1043,7 +1150,7 @@ class extends Component {
                       </Grid>
                       }
                     </TableCell>
-                    <TableCell padding='checkbox' className={classes.tableActionProps}>
+                    <TableCell padding='checkbox' className={editActive?`${classes.tableActionProps} ${classes.col3xl}`:`${classes.tableActionProps} ${classes.col3}`}>
                     {!this.state.editedRows[ri] && //parentState.editMode[ri]
                       <Tooltip title='Delete the project' aria-label='Delete the project'>
                         <IconButton aria-label='Expand'
@@ -1077,7 +1184,7 @@ class extends Component {
                         <TableCell
                           key={ci}
                           // padding='none'
-                          classes={{root: classes.tableCellProps}}
+                          classes={{root: ci===0?editActive?`${classes.lockCellProps} ${classes.col4xl}`:`${classes.lockCellProps} ${classes.col4}`:`${classes.tableCellProps}`}}
                         >
                         <ColumnContainer
                           key={ci}
@@ -1108,7 +1215,7 @@ class extends Component {
                           <TableCell
                             key={ci}
                             // padding='none'
-                            classes={{root: classes.tableCellProps}}
+                            classes={{root: ci===0?editActive?`${classes.lockCellProps} ${classes.col4xl}`:`${classes.lockCellProps} ${classes.col4}`:`${classes.tableCellProps}`}}
                           />
                         )
                       } else {
@@ -1116,7 +1223,7 @@ class extends Component {
                           <TableCell
                             key={ci}
                             // padding='none'
-                            classes={{root: classes.tableCellProps}}
+                            classes={{root: ci===0?editActive?`${classes.lockCellProps} ${classes.col4xl}`:`${classes.lockCellProps} ${classes.col4}`:`${classes.tableCellProps}`}}
                           >
                             {r && c.name!=='scope' && c.name in r?r[c.name]:
                             childID>-1 && c.name in r.scope[childID]?r.scope[childID][c.name]:
@@ -1165,7 +1272,7 @@ export const DefaultFG = withStyles(styles, { withTheme: true })(
 
   return (
     <Grid container>
-      <Grid item xs={12} style={ {marginTop: 20, marginBottom: 0, borderTop: '1px solid black'} }>
+      <Grid item xs={12} style={ {marginTop: 10, marginBottom: 0, borderTop: '1px solid black'} }>
         <Toolbar variant='dense' className={classes.toolbar}>
           <Typography align='left' style={{fontWeight: 500}} className={classes.titleFG}>
             {fieldGroup.label}
