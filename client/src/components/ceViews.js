@@ -210,7 +210,7 @@ class singleView extends Component {
       last_updated_by: this.props.session.id,
       onboard_date: this.today,
       // due_date: this.due,
-      scope: [],
+      scope: this.props.currentViews.category === 'VOLUME'?[{control_id: 28, name: 'volfoundation'}]:[],
       saveValue: '',  // stores previous values of address/lot/block to test for change
       classification: this.props.currentViews.category,
       geo_lab: this.props.currentViews.category === 'VOLUME'?'MLALABS':null,
@@ -218,7 +218,30 @@ class singleView extends Component {
       redirectUrl: null,
     };
 
-    this.initState = {...this.state};
+    this.initState = {
+      jobNumUnlock: false,
+      rememberData: false,
+      openScopeDialog: false,
+      openCreateDialog: false,
+      openDupsDialog: false,
+      openRevDialog: false,
+      dialogValue: '',  // used by the sub, city, client creation dupsDialogs
+      categoryID: this.props.currentProject.categoryID,
+      contact_id: this.props.session.contact_id,  // contact_id
+      requestor: this.props.session.full_name,       // contact full name
+      user_id: this.props.session.id,      // user_id.  Originally owner_id
+      user: this.props.session.full_name,           // contact full name of the user_id, originally owner
+      created_by: this.props.session.id,
+      last_updated_by: this.props.session.id,
+      onboard_date: this.today,
+      // due_date: this.due,
+      // scope: this.props.currentViews.category === 'VOLUME'?[{control_id: 28, name: 'volfoundation'}]:[],
+      saveValue: '',  // stores previous values of address/lot/block to test for change
+      classification: this.props.currentViews.category,
+      geo_lab: this.props.currentViews.category === 'VOLUME'?'MLALABS':null,
+      dwelling_type: this.props.currentViews.category === 'VOLUME'?'PT 1 UNIT':null,
+      redirectUrl: null,
+     };
 
     this.childArr = [];
     this.oID = 0;
@@ -243,11 +266,11 @@ class singleView extends Component {
     // }
 
     // This will be temporary.  Preferences will assign this as a default.
-    if (this.props.currentViews.category === 'VOLUME') {
-      const initScope = [];
-      initScope.push({control_id: 28, name: 'volfoundation'});
-      this.setState({ scope: initScope });
-    }
+    // if (this.props.currentViews.category === 'VOLUME') {
+    //   const initScope = [];
+    //   initScope.push({control_id: 28, name: 'volfoundation'});
+    //   this.setState({ scope: initScope });
+    // }
 
 
     // Setting this.currentView and the page Title upon startup.
@@ -529,9 +552,13 @@ class singleView extends Component {
         revision_desc: null
       });
     } else {
+      // console.log('state, initstate', this.state, this.initState);
       const keys = Object.keys(this.state)
       const stateReset = keys.reduce((acc, v) => ({ ...acc, [v]: undefined }), {})
-      this.setState({ ...stateReset, ...this.initState, clear:true });
+      let scope = [];
+      if (this.props.currentViews.category === 'VOLUME') scope.push({control_id: 28, name: 'volfoundation'});
+      // console.log('reset, init, scope', stateReset, this.initState, scope);
+      this.setState({ ...stateReset, ...this.initState, scope: scope, clear:true });
     }
 
   }
@@ -701,7 +728,7 @@ class singleView extends Component {
     this.oID=0;
     this.childArr = [];
     // console.log('ceViews Render',
-    // 'state:', this.state,
+    // 'state:', this.state, this.initState,
     // 'currentProject:',currentProject,
     // 'currentViews:', currentViews,
     // 'currentView:', this.currentView
