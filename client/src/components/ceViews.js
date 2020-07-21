@@ -282,7 +282,7 @@ class singleView extends Component {
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const { currentProject, updateProject, currentViews, VIEW, setPageTitle } = nextProps;
+    const { currentProject, updateProject, currentViews, VIEW, setPageTitle, closeDrawers } = nextProps;
     // console.log('in getDerivedStateFromProps', VIEW);
     // VIEW?console.log('view category', VIEW):null;
     // console.log('currentViews', currentViews);
@@ -300,6 +300,7 @@ class singleView extends Component {
         titleView = currentViews.children.filter((view) => view.category === VIEW )  // array of subviews (sections) that make up whole view.
         setPageTitle(titleView[0].label);
       }
+      closeDrawers();
       return {...currentProject };
 
 

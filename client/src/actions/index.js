@@ -334,11 +334,11 @@ export function createAddress(c, v2 = false, updateSearch = false) {
         // console.log('createAddress loadFind');
         dispatch(loadFind(search.find, null));
       }
-      dispatch(loadMessage(
-        { ok:false,
-          status: `New / Updated Job #`,
-          statusText: response.job_number
-        }, 'INFO'));
+      // dispatch(loadMessage(
+      //   { ok:false,
+      //     status: `New / Updated Job #`,
+      //     statusText: response.job_number
+      //   }, 'INFO'));
     });
   };
 }
@@ -365,11 +365,11 @@ export function commitAddresses(userID, c, create, v2 = false, updateSearch = fa
         // console.log('update find');
         dispatch(loadFind(search.find, null));
       }
-      dispatch(loadMessage(
-        { ok:false,
-          status: `New / Updated Job #`,
-          statusText: response.job_number
-        }, 'INFO'));
+      // dispatch(loadMessage(
+      //   { ok:false,
+      //     status: `New / Updated Job #`,
+      //     statusText: response.job_number
+      //   }, 'INFO'));
     }).catch(err => {
       dispatch(loadMessage(
         { ok:false,

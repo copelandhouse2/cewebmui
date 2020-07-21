@@ -236,7 +236,7 @@ const ProjectModel = {
     }
 
     if (find) {
-      const criteria = find.toLowerCase().split('and').map(e=>e.trim());
+      const criteria = find.toLowerCase().split(' and ').map(e=>e.trim());
 
       console.log('/*** criteria ***/', criteria);
       let val = '';
