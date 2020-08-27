@@ -17,7 +17,7 @@ import addIconWhite from '../img/add1-white.svg';
 
 import Minus from '@material-ui/icons/RemoveRounded';
 
-// import { DesignRevSvg } from '../img/revise';
+import { DesignRevSvg } from '../img/revise';
 import { SaveUpload } from '../img/saveUpload';
 
 import { Field2Container, ColumnContainer } from '../containers/ceFieldContainer';
@@ -31,6 +31,9 @@ import Divider from '@material-ui/core/Divider';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 import Checkbox from '@material-ui/core/Checkbox';
+import ClearIcon from '@material-ui/icons/Clear';
+import { AddIcon } from '../img/addIcon.js';
+
 import IconButton from '@material-ui/core/IconButton';
 
 import Toolbar from '@material-ui/core/Toolbar';
@@ -157,7 +160,7 @@ const styles = theme => ({
     color: theme.palette.secondary.main,
   },
   revButton: {
-    color: theme.palette.secondary.main,
+    // color: theme.palette.secondary.main,
   },
   tableActionProps: {
     paddingLeft:0,
@@ -205,17 +208,20 @@ const styles = theme => ({
     left: 36*0,
     position: 'sticky',
     zIndex: 1100,
-    minWidth:36,
+    minWidth:36, // weirdly, need this if object is empty.  Width alone wont do it.  It will be 0.
+    width:36     // added to help with the revision table dialog box.
   },
   hCol1: {
     left: 36*1,
     zIndex: 1100,
-    minWidth:36,
+    minWidth:36, // weirdly, need this if object is empty.  Width alone wont do it.  It will be 0.
+    width:36     // added to help with the revision table dialog box.
   },
   hCol2: {
     left: 36*2,
     zIndex: 1100,
-    minWidth:36,
+    minWidth:36, // weirdly, need this if object is empty.  Width alone wont do it.  It will be 0.
+    width:36     // added to help with the revision table dialog box.
   },
   hCol2xl: {
     left: 36*2,
@@ -225,7 +231,8 @@ const styles = theme => ({
   hCol3: {
     left: 36*3,
     zIndex: 1100,
-    minWidth:36,
+    minWidth:36, // weirdly, need this if object is empty.  Width alone wont do it.  It will be 0.
+    width:36     // added to help with the revision table dialog box.
   },
   hCol3xl: {
     left: 36*4+6,
@@ -353,7 +360,7 @@ const toTitleCase = (str) => {
 // }
 
 const defaultFG = (props) => {
-  const { classes, fieldGroup, removeScope } = props;
+  const { classes, fieldGroup, removeScope, theme } = props;
   // console.log(fieldGroup);
   switch(fieldGroup.name) {
     case 'soil':
@@ -379,12 +386,12 @@ const defaultFG = (props) => {
               {fieldGroup.label}
             </Typography>
             <div className={classes.grow} />
-            {(fieldGroup.name === 'project'||fieldGroup.name === 'vol_single_project') &&
+            {(fieldGroup.name === 'story'||fieldGroup.name === 'vol_single_project') &&
               <Tooltip title={'Manage Revisions'} aria-label='Manage Revisions'>
-              <IconButton aria-label='Manage Revisions' onClick={props.reviseProject} className={classes.revButton}>
-                {/*<DesignRevSvg size={32} color={theme.palette.secondary.main} />*/}
-                <TrackChangesIcon className={classes.settings} />
-              </IconButton>
+                <Fab size='small' color='secondary' aria-label='Manage Revisions' className={classes.revButton} onClick={props.reviseProject}>
+                  <DesignRevSvg size={26} color={theme.palette.secondary.contrastText} />
+                  {/*<TrackChangesIcon className={classes.settings} />*/}
+                </Fab>
               </Tooltip>
             }
             {/*
@@ -625,7 +632,7 @@ const DroppableComponent = (onDragEnd: (result, provided) => void, classes) => (
   <DragDropContext onDragEnd={onDragEnd}>
     <Droppable droppableId={'1'} direction="horizontal">
       {(provided) => {
-        // console.log('Droppable', provided, props);
+        // console.log('Droppable', classes);
         return (
           <tr ref={provided.innerRef} {...provided.droppableProps} {...props} className={classes.dropHeader}>
             {props.children}
@@ -711,15 +718,16 @@ class extends Component {
     super(props);
 
     this.state = {
-      columns: [],
-      expand: []
+      columns: this.props.fieldGroup.children,
+      expand: [],
+      editedRows: [],
     };
 
     this.initState = {...this.state};
   }
 
   componentDidMount = () => {
-
+    // console.log('CDM', this.props.fieldGroup.children);
     this.setState({ columns: this.props.fieldGroup.children });
   }
 
@@ -778,14 +786,92 @@ class extends Component {
     this.setState({ expand: expandArr });
   }
 
+  handleRowChange = (updatedValues, arrID)=> {
+    // console.log('handleRowChange', updatedValues);
+    if (updatedValues.openDupsDialog) {
+      // console.log('opening dups dialog');
+      this.props.updateState({...updatedValues, dupRec: this.state.editedRows[arrID]});
+    }
+
+    let edited = [...this.state.editedRows];
+    edited[arrID] = {...edited[arrID], ...updatedValues};
+    this.setState({ editedRows: edited });
+    // this.props.handleRowChange(updatedValues, arrID);
+  }
+
+  handleEdit = (row)=> {
+    let edited = [...this.state.editedRows];
+    // trying to do a deep copy here.  Copying scope separately since it is an
+    // array by itself.
+    // const scope = edited[row]?[...edited[row].scope]:[...this.props.data[row].scope];
+    const editRow = edited[row]?edited[row]:{...this.props.data[row]};
+    // const theRow = Object.assign({}, {...editRow}, {scope: scope});
+    const theRow = Object.assign({}, {...editRow});
+
+    edited[row] = {...theRow}
+    // console.log('handleEdit... edited', edited[row], Object.keys(edited));
+    this.setState({ editedRows: edited });
+    // this.props.handleEdit(row);
+  }
+
+  handleSave = (row, andCommit = false)=> {
+    // console.log('Save project ', this.state.editedRows[row]);
+    // updating local state.
+    let edited = [...this.state.editedRows];
+    edited[row] = undefined;
+
+    // we pass one row.  However, it is received as an Array
+    // in case we want to pass a group of rows.
+    // see handleSaveAll
+    let rowToPass = [];
+    rowToPass.push(this.state.editedRows[row]);
+
+    this.setState({ editedRows: edited });
+    this.props.handleSave(rowToPass, andCommit);
+
+  }
+
+  handleDelete = (row)=> {
+    // console.log('Delete project ', row);
+    this.props.handleDelete(row);
+  }
+
+  handleCancel = (row)=> {
+    let edited = [...this.state.editedRows];
+    edited[row] = undefined;
+    // console.log('handleCanel... edited', edited, Object.keys(edited));
+
+    this.setState({ editedRows: edited });
+    // this.props.handleCancel(row);
+  }
+
   render() {
     const { classes, theme, fieldGroup, data, parentState, subGroupKey, subFG, fgTools } = this.props;
-    // console.log('FG tabular state', fieldGroup, this.state);
+    // console.log('FG tabular state', fieldGroup, data, this.state.columns);
     // console.log('FG tabular state sub table', subGroupKey, subFG);
+    const editedRows = this.state.editedRows.filter(r=>{
+      if (r) return r;
+      return null;
+    });
+    const editActive = editedRows.length>0?true:false;
+
+    // Code to set the column widths correctly based on which columns are active.
+    let hdr0 = classes.hCol0, hdr1 = classes.hCol1, hdr2 = classes.hCol2, hdr3 = classes.hCol3;
+    let clm0 = classes.col0, clm1 = classes.col1, clm2 = classes.col2, clm3 = classes.col3;
+    if (!subGroupKey && !parentState.selectedIndexes) {
+      hdr2 = classes.hCol0, hdr3 = classes.hCol1;
+      clm2 = classes.col0, clm3 = classes.col1;
+    } else if (!subGroupKey) {
+      hdr1 = classes.hCol0, hdr2 = classes.hCol1, hdr3 = classes.hCol2;
+      clm1 = classes.col0, clm2 = classes.col1, clm3 = classes.col2;
+    } else if (!parentState.selectedIndexes) {
+      hdr0 = classes.hCol0, hdr2 = classes.hCol1, hdr3 = classes.hCol2;
+      clm0 = classes.col0, clm2 = classes.col1, clm3 = classes.col2;
+    }
 
     return (
       <Grid container justify='center'>
-        <Grid item xs={12} style={ {marginTop: 20, marginBottom: 10, borderTop: '1px solid black'} }>
+        <Grid item xs={12} style={ {marginTop: 0, marginBottom: 0, borderTop: '0px solid black'} }>
           <Toolbar variant='dense' className={classes.toolbar}>
             <Typography align='left' style={{fontWeight: 500}} className={classes.titleFG}>
               {fieldGroup.label}
@@ -799,9 +885,16 @@ class extends Component {
         <Paper className={classes.tableSize}>
           <Table>
             <TableHead>
-              <TableRow component={DroppableComponent(this.onDragEnd)}>
-                <TableCell padding='checkbox' classes={{root: classes.tableCellHeaderProps}}/>
-                <TableCell padding='checkbox' classes={{root: classes.tableCellHeaderProps}}/>
+              <TableRow component={DroppableComponent(this.onDragEnd, classes)}>
+                {subGroupKey &&
+                  <TableCell padding='checkbox' classes={{root: `${classes.tableCellHeaderProps} ${hdr0}`}}/>
+                }
+                {parentState.selectedIndexes &&
+                  <TableCell padding='checkbox' classes={{root: `${classes.tableCellHeaderProps} ${hdr1}`}}/>
+                }
+                <TableCell padding='checkbox' classes={{root: `${classes.tableCellHeaderProps} ${hdr2}`}}/>
+                <TableCell padding='checkbox' classes={{root: `${classes.tableCellHeaderProps} ${hdr3}`}}/>
+
                 {this.state.columns.map((c,i)=>(
                   <TableCell
                     key={c.name}
@@ -825,30 +918,119 @@ class extends Component {
                 return (
                   <Fragment key={ri}>
                   <TableRow key={ri}>
-                    <TableCell padding='checkbox' className={classes.tableActionProps}>
-                      <IconButton aria-label='Expand' onClick={()=>this.handleExpand(ri)}>
+                    {subGroupKey &&
+                    <TableCell padding='checkbox' className={`${classes.tableActionProps} ${clm0}`}>
+                      <IconButton aria-label='Expand'
+                        onClick={()=>this.handleExpand(ri)}
+                        className={classes.actionButtons}
+                      >
                         {this.state.expand[ri] ? <ExpandLess /> : <ExpandMore />}
                       </IconButton>
                     </TableCell>
-                    <TableCell padding='checkbox' className={classes.tableActionProps}>
+                    }
+                    {parentState.selectedIndexes &&
+                    <TableCell padding='checkbox' className={`${classes.tableActionProps} ${clm1}`}>
                       <Checkbox
                         onChange={()=>this.onRowSelected(ri)}
-                        checked={parentState.selectedIndexes[0]===ri}
+                        // checked={parentState.selectedIndexes[0]===ri}
+                        className={classes.actionButtons}
                       />
                     </TableCell>
-                    {this.state.columns.map((c,i)=>{
-                      return (
-                        <TableCell
-                          key={i}
-                          // padding='none'
-                          classes={{root: classes.tableCellProps}}
-                        >
-                          {r[c.name]}
-                        </TableCell>
-                      )
-                      })
                     }
+
+                    <TableCell padding='checkbox' className={`${classes.tableActionProps} ${clm2}`}>
+                      {!this.state.editedRows[ri] && //parentState.editMode[ri]
+                      <Tooltip title='Edit the project here' aria-label='Edit the project here'>
+                      <IconButton aria-label='Expand'
+                        onClick={()=>this.handleEdit(ri)}
+                        className={classes.actionButtons}
+                      >
+                        <Edit />
+                      </IconButton>
+                      </Tooltip>
+                      }
+                      {this.state.editedRows[ri] && //parentState.editMode[ri]
+                      <Tooltip title='Just Save the project.  Changes not sent to Trello or Box yet.  Project status will be PENDING' aria-label='Just Save the project.  Changes not sent to Trello or Box yet.  Project status will be PENDING'>
+                        <IconButton aria-label='Expand'
+                          onClick={()=>this.handleSave(ri)}
+                          className={classes.actionButtons}
+                        >
+                          <Save />
+                        </IconButton>
+                      </Tooltip>
+                      }
+                    </TableCell>
+                    <TableCell padding='checkbox' className={`${classes.tableActionProps} ${clm3}`}>
+                    {!this.state.editedRows[ri] && //parentState.editMode[ri]
+                      <Tooltip title='Delete the project' aria-label='Delete the project'>
+                        <IconButton aria-label='Expand'
+                          onClick={()=>this.handleDelete(ri)}
+                          className={classes.actionButtons}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </Tooltip>
+                      }
+                      {this.state.editedRows[ri] && //parentState.editMode[ri]
+                      <Tooltip title='Cancel changes' aria-label='Cancel changes'>
+                        <IconButton aria-label='Expand'
+                          onClick={()=>this.handleCancel(ri)}
+                          className={classes.actionButtons}
+                        >
+                          <Cancel />
+                        </IconButton>
+                      </Tooltip>
+                      }
+                    </TableCell>
+
+                    {this.state.columns.map((c,ci)=>{
+                      if (this.state.editedRows[ri]) {
+                        return (
+                        <TableCell
+                          key={ci}
+                          // padding='none'
+                          classes={{root: `${classes.tableCellProps}`}}
+                        >
+                        <ColumnContainer
+                          key={ci}
+                          field = {c}
+                          childArrID = {false}
+                          // state = {parentState.editedRows[ri]}
+                          state = {this.state.editedRows[ri]}
+                          updateState = {(updatedValues)=>this.handleRowChange(updatedValues, ri)}
+                          dupCheck={false} // turn on dup check
+                          // turns off updating job number and creating client,city,sub via list
+                          searchMode={false}
+                          // props that are not used.
+                          handleListChange={false}
+                          handleFocus={false}
+                          handleBlur={false}
+                          // call to create new client, city, sub
+                          createDialogValue={false}
+                          altLookups={parentState.altLookups}
+
+                          // props functions in container
+                          // searchForDups
+                          // loadFind
+                          // loadMessage
+                        />
+                        </TableCell>
+                        )
+                      } else {
+                        return (
+                          <TableCell
+                            key={ci}
+                            // padding='none'
+                            classes={{root: classes.tableCellProps}}
+                          >
+                            {r[c.name]}
+                          </TableCell>
+                        )
+                      }
+
+                    }) }
                   </TableRow>
+                  {subGroupKey &&
                   <ChildDetailTable
                     pIdx={ri}
                     pRow={r}
@@ -856,6 +1038,7 @@ class extends Component {
                     subFG={subFG}
                     state={this.state}
                   />
+                  }
                   </Fragment>
                 )
               })}
@@ -978,10 +1161,10 @@ class extends Component {
 
   handleRowChange = (updatedValues, arrID)=> {
     // console.log('handleRowChange', updatedValues);
-    if (updatedValues.openDupsDialog) {
-      // console.log('opening dups dialog');
-      this.props.updateState({...updatedValues, dupRec: this.state.editedRows[arrID]});
-    }
+    // if (updatedValues.openDupsDialog) {
+    //   // console.log('opening dups dialog');
+    //   this.props.updateState({...updatedValues, dupRec: this.state.editedRows[arrID]});
+    // }
 
     let edited = [...this.state.editedRows];
     edited[arrID] = {...edited[arrID], ...updatedValues};
@@ -1363,24 +1546,37 @@ class extends Component {
     this.initState = {...this.state};
   }
 
-  handleClick = () => {
-    this.setState({ open: !this.state.open })
+  handleClear = () => {
+    // console.log('In handleClear');
+    // this.setState({ open: !this.state.open })
+    this.props.clearState();
+  }
+
+  handleSave = () => {
+    // console.log('In handleSave');
+    // this.setState({ open: !this.state.open });
+
+    // the save function passed takes an array to allow saving multiple
+    // rows at a time.
+    const rows = [];
+    rows.push(this.props.parentState)
+    this.props.saveState(rows);
   }
 
   toggleCheckbox = () => {
-    const { dialogState, updateState } = this.props;
-    updateState( { checkboxCopyDesc: !dialogState.checkboxCopyDesc })
+    const { parentState, updateState } = this.props;
+    updateState( { checkboxCopyDesc: !parentState.checkboxCopyDesc })
   }
 
   render() {
-    const { classes, fieldGroup, dialogState, updateState } = this.props;
+    const { classes, fieldGroup, parentState, updateState, theme } = this.props;
     // const { classes, theme, fieldGroup, dialogState, updateState } = this.props;
     // const { classes, theme, fieldGroup, toggleScopeDialog, removeScope, dialogState, scopeID, updateState } = props;
-    // console.log(fieldGroup);
+    // console.log('RevUpdateFG', dialogState.altLookups);
     let i=0;
     return (
       <Grid container>
-        {/*}<Grid item xs={12} style={ {marginTop: 20, marginBottom: 20, borderTop: '1px solid black'} }>
+        {/*<Grid item xs={12} style={ {marginTop: 20, marginBottom: 20, borderTop: '1px solid black'} }>
           <Typography align='left' style={{fontWeight: 500}}>
             {fieldGroup.label}
           </Typography>
@@ -1388,7 +1584,6 @@ class extends Component {
         <Grid item xs={12}>
           <List dense={true}>
             <ListItem key={i} >
-              <ListItemText className={classes.listItemText} primary='Project'/>
               {fieldGroup.children.map((field, id)=>{
                 if (field.hidden === 'Y') return null;
                 return (
@@ -1397,53 +1592,65 @@ class extends Component {
                     // key={field.id}
                     field = {field}
                     arrID = {false}
-                    state = {dialogState}
+                    state = {parentState}
                     updateState = {updateState}
+                    altLookups={parentState.altLookups}
                     // props that are not used.
                     loadFind={()=>{}}
                     searchForDups={()=>{}}
                     loadMessage={()=>{}}
-
                   />);
               })}
+              {/*}
               <Tooltip title='Cascade description to scope items' aria-label='Cascade Description'>
                 <Checkbox
                   onChange={this.toggleCheckbox}
                   checked={dialogState.checkboxCopyDesc}
                 />
               </Tooltip>
-              <IconButton aria-label='Expand' onClick={this.handleClick}>
-                {this.state.open ? <ExpandLess /> : <ExpandMore />}
-              </IconButton>
+              */}
+              <Tooltip title='Clear the selection' aria-label='Clear selection'>
+                <IconButton aria-label='Clear' onClick={this.handleClear} color='secondary' >
+                  <ClearIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title='Add Revison' aria-label='Add Revision'>
+                <IconButton aria-label='Add' onClick={this.handleSave} color='secondary' >
+                  <AddIcon size={30} />
+                </IconButton>
+              </Tooltip>
             </ListItem>
-            <Collapse in={this.state.open} timeout='auto'>
-            {dialogState.scope.map((scope,scopeID)=>{
-              return (
-                <ListItem key={i++}>
-                <ListItemText inset className={classes.listInset} primary={scope.label||toTitleCase(scope.scope)}/>
-                {fieldGroup.children.map((field, id)=>{
-                  // console.log('child', field, scopeID);
-                  if (field.hidden === 'Y') return null;
-                  if (field.name === 'revision_price') return null; // don't show revision price at scope level
-                  return (<Field2Container
-                    // key={field.id*(scopeID+2)}
-                    key={id}
-                    field = {field}
-                    arrID = {scopeID||scopeID===0?scopeID:false}
-                    state = {dialogState}
-                    updateState = {updateState}
-                    // props that are not used.
-                    loadFind={()=>{}}
-                    searchForDups={()=>{}}
-                    loadMessage={()=>{}}
+            {/*
+              <Collapse in={this.state.open} timeout='auto'>
+              {dialogState.scope.map((scope,scopeID)=>{
+                return (
+                  <ListItem key={i++}>
+                  <ListItemText inset className={classes.listInset} primary={scope.label||toTitleCase(scope.scope)}/>
+                  {fieldGroup.children.map((field, id)=>{
+                    // console.log('child', field, scopeID);
+                    if (field.hidden === 'Y') return null;
+                    if (field.name === 'revision_price') return null; // don't show revision price at scope level
+                    return (<Field2Container
+                      // key={field.id*(scopeID+2)}
+                      key={id}
+                      field = {field}
+                      arrID = {scopeID||scopeID===0?scopeID:false}
+                      state = {dialogState}
+                      updateState = {updateState}
+                      // props that are not used.
+                      loadFind={()=>{}}
+                      searchForDups={()=>{}}
+                      loadMessage={()=>{}}
 
-                  />);
-                })}
-              </ListItem>
-              )
-            })
-            }
-            </Collapse>
+                    />);
+                  })}
+                </ListItem>
+                )
+              })
+              }
+              </Collapse>
+            */}
+
             <Divider />
 
           </List>
@@ -1474,8 +1681,9 @@ class extends Component {
   render() {
     const { fieldGroup, history } = this.props;
     // const { classes, theme, fieldGroup, toggleScopeDialog, removeScope, dialogState, scopeID, updateState } = props;
-    // console.log('RevHistoryFG render', this.state);
+    console.log('RevHistoryFG render', this.state, history);
     // let i=500;
+    return null;
     return (
       <Grid container>
         {/*<Grid item xs={12} style={ {marginTop: 20, marginBottom: 20, borderTop: '1px solid black'} }>

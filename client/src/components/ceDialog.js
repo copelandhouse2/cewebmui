@@ -29,8 +29,8 @@ const styles = theme => ({
     // width: '100%',
   },
   dialog: {
-    // width: '20vw',
-    maxWidth: '60%'
+    // height: 500,  // dialog is set to full screen in Dialog object.  This reduces size.
+    margin: 'auto'
   },
   title: {
     backgroundColor: theme.palette.secondary.main,
@@ -67,13 +67,16 @@ const styles = theme => ({
   grow: {
     flexGrow: 1,
   },
+  dHeight: {
+    minHeight:500
+  }
 });
 
 const PaperComponent = (props) => {
   return (
-    <Draggable enableUserSelectHack={false}>
+    // <Draggable enableUserSelectHack={false}>
       <Paper {...props} />
-    </Draggable>
+    // </Draggable>
   );
 }
 
@@ -97,14 +100,17 @@ const handleClose = (handleClose) => {
 
 const CeDialog = (props) => {
   // console.log('CeDialog Render');
-  const { classes } = props;
-
+  const { classes, dialogWidth, dialogHeight } = props;
+  // console.log('classes', classes);
   return (
-    <Dialog fullWidth={true} maxWidth={false}
+    <Dialog fullWidth={true} maxWidth={dialogWidth}
+      // fullScreen
       open={props.open}
       PaperComponent={PaperComponent}
       aria-labelledby="dialog"
-      className={classes.dialog}
+      PaperProps={{
+        style: { minHeight: dialogHeight },
+      }}
     >
       <AppBar position='static' color='secondary'>
         <Toolbar className={classes.toolbar}>
@@ -130,12 +136,14 @@ const CeDialog = (props) => {
         >
           Close
         </Button>
-        <Button
-          onClick = {() => handleSubmit(props.handleSubmit)}
-          variant = 'contained' color='secondary'
-        >
-          Save
-        </Button>
+        {props.handleSubmit &&
+          <Button
+            onClick = {() => handleSubmit(props.handleSubmit)}
+            variant = 'contained' color='secondary'
+          >
+            Submit
+          </Button>
+        }
       </DialogActions>
       <AlertDialogContainer />
     </Dialog>

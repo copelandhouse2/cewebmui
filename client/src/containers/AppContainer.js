@@ -12,6 +12,8 @@ function mapStateToProps(state) {
     cities: state.cities,
     clients: state.clients,
     subdivisions: state.subdivisions,
+    avffControls: state.avffControls,
+    avffRelationships: state.avffRelationships,
   };
 }
 

@@ -368,6 +368,12 @@ function projectHistory(state = [], action) {
   return state;
 }
 
+function projectRevisions(state = [], action) {
+  if (action.type === "PROJECT_REVISIONS_LOADED") {
+    return action.value;
+  }
+  return state;
+}
 const rootReducer = combineReducers({
   pageTitle, session, message, addresses, dups, address, clients, contacts, cities
   , subdivisions, jobnumberseqs, stateLookup, countryLookup
@@ -378,6 +384,6 @@ const rootReducer = combineReducers({
   , coveredPatioLookup, dwellingTypeLookup, pitaLookup, geos, geoMasterData
   , avffControls, avffRelationships, currentMenu, currentViews, currentProject
   , requestors, saveType, search, localView, projectHistory, users
-  , dateSearchLookup, revReasonLookup, revRespLookup, designers
+  , dateSearchLookup, revReasonLookup, revRespLookup, designers, projectRevisions
 });
 export default rootReducer;

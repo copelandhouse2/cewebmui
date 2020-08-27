@@ -158,16 +158,22 @@ class App extends Component {
 
     this.props.loadScope();
 
-
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const { session } = nextProps;
-    // console.log('in getDerivedStateFromProps', session);
+    const { session, avffControls, avffRelationships } = nextProps;
+    // console.log('in getDerivedStateFromProps', session, avffControls, avffRelationships);
+
+    let updatedValues = {};
     if (!session.authInProgress) {
-      return {authInProgress: false} ;
+      Object.assign(updatedValues, {authInProgress: false});
     }
-    return null;
+
+    if (!prevState.renderScreen && avffControls.length > 0 && avffRelationships.length > 0) {
+      Object.assign(updatedValues, {renderScreen: true});
+    }
+
+    return updatedValues;
   }
 
   updateAccentColor = (color) => {
@@ -333,10 +339,17 @@ class App extends Component {
 
     // if (session.authInProgress) return null;
     if (this.state.authInProgress) {
-      // console.log('still authenticating');
+      console.log('still authenticating');
       return null;
     }
 
+    // Test to make sure we can render Screen.  Only set to true when
+    // avffControls and avffRelationships are populated.
+    if (!this.state.renderScreen) {
+      console.log('loading views and fields...');
+      return null;
+    }
+    
     let theme = createMuiTheme({
       typography: {
         useNextVariants: true,

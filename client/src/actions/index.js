@@ -1342,3 +1342,49 @@ function projectHistoryLoaded(history) {
     value: history
   };
 }
+
+// Pulling the Project Revisions.
+export function loadProjectRevisions(project_id, clear=false) {
+  return function (dispatch) {
+    if (clear) {
+      // console.log('loadLocalView: clearing');
+      dispatch(projectRevisionsLoaded([]));
+    } else {
+      fetch(`/revisions/${project_id}`)
+      .then( (response) => {
+        return response.json();
+      }).then((revisions) => {
+        // console.log('geos', geos);
+        dispatch(projectRevisionsLoaded(revisions));
+      });
+    }
+  };
+}
+function projectRevisionsLoaded(revisions) {
+  return {
+    type: "PROJECT_REVISIONS_LOADED",
+    value: revisions
+  };
+}
+
+
+// Action to save the revisions
+export function saveRevisions(project_id, revs) {
+  return function (dispatch) {
+    // console.log('saveRevisions', project_id, revs);
+    fetch("/revisions", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(revs)
+    }).then(() => dispatch(loadProjectRevisions(project_id)));
+  };
+}
+
+// Action to delete the Subdivision
+export function deleteRevision(project_id, id) {
+  return function (dispatch) {
+    fetch(`/revisions/${id}`, {
+      method: "DELETE"
+    }).then(() => dispatch(loadProjectRevisions(project_id)));
+  };
+}

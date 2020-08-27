@@ -1,6 +1,7 @@
 import express from 'express';
 // import { list, show, create, update, delete } from '../controllers/AddressController';
-import { list, show, create, remove, listPending, listSearch, commit, listDups, getHistory } from '../controllers/ProjectController';
+import { list, show, create, remove, listPending, listSearch, commit, listDups,
+  getHistory, getRevisions, saveRevisions, removeRevision } from '../controllers/ProjectController';
 const router = express.Router();
 
 //Getting the data... the entire list
@@ -36,6 +37,10 @@ router.put('/commits/:userID/:create/:v2', commit);
 router.get(`/dups/:test/:address/:subdivision/:phase/:section/:block/:lot`
   , listDups);
 
+// revisions calls
 router.get('/projecthistory/:id', getHistory);
+router.get('/revisions/:id', getRevisions);
+router.post('/revisions', saveRevisions); //handles add, update, delete.
+router.delete('/revisions/:id', removeRevision);
 
 export default router;

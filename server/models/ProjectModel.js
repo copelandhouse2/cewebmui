@@ -374,7 +374,8 @@ const ProjectModel = {
   getScopeItems: function(projectID, callback = null) {
     let SQLstmt = `SELECT ps.*, ps.scope name, ps.id scope_id`
       + ' from projects_scope ps'
-      + ' where ps.project_id = ?';
+      + ' where ps.project_id = ?'
+      + ' order by ps.id';
 
     if (callback) {
       // console.log('getScopeItems: in the callback version');
@@ -702,27 +703,94 @@ const ProjectModel = {
 
   getRevisions: function(projectID, callback = null) {
 
-    let SQLstmt = `select ph1.record_revision, date_format(ph1.dt_datetime, '%Y-%m-%d') rev_date
-    , ph1.id, ph1.job_number, ifnull(ph1.revision,'ORIG') revision, ph1.revision_desc
-      from (
-        select revision, max(record_revision) maxrev
-        from projects_history ph2
-        where ph2.id = ?
-        group by ph2.revision
-      ) maxrevs,
-      projects_history ph1
-      where ph1.id = ?
-      and maxrevs.maxrev = ph1.record_revision
-      order by record_revision desc`;
+    // let SQLstmt = `select ph1.record_revision, date_format(ph1.dt_datetime, '%Y-%m-%d') rev_date
+    // , ph1.id, ph1.job_number, ifnull(ph1.revision,'ORIG') revision, ph1.revision_desc
+    //   from (
+    //     select revision, max(record_revision) maxrev
+    //     from projects_history ph2
+    //     where ph2.id = ?
+    //     group by ph2.revision
+    //   ) maxrevs,
+    //   projects_history ph1
+    //   where ph1.id = ?
+    //   and maxrevs.maxrev = ph1.record_revision
+    //   order by record_revision desc`;
+
+    // let SQLstmt = `select revision, min(rev_date) rev_date
+    //   from projects_revisions
+    //   where project_id = ?
+    //   group by revision desc`;
+
+    let SQLstmt = `select pr.id, pr.project_id, ifnull(pr.scope_id, -1) scope_id, pr.revision
+      , pr.reason revision_reason_code, pr.responsibility revision_resp_code
+      , pr.description revision_desc, pr.price revision_price, pr.designer_id
+      , date_format(pr.rev_date, '%Y-%m-%dT%T') rev_date
+      , IFNULL(ps.scope, 'Project') scope, l1.name revision_reason, l2.name revision_resp, c.full_name designer
+      FROM projects_revisions pr
+      left join projects_scope ps on pr.scope_id = ps.id
+      left join lookups l1 on pr.reason = l1.code
+      left join lookups l2 on pr.responsibility = l2.code
+      left join contacts c on pr.designer_id = c.id
+      where pr.project_id = ?
+      order by pr.revision desc, pr.rev_date desc, pr.id desc`;
 
     if (callback) {
       // console.log('getScopeItems: in the callback version');
-      return sql().query(SQLstmt, [projectID, projectID], callback);
+      // return sql().query(SQLstmt, [projectID, projectID], callback);
+      return sql().query(SQLstmt, [projectID], callback);
     } else {
       // console.log('getScopeItems: in the promise version');
-      return sqlPromise(SQLstmt, [projectID, projectID]);
+      // return sqlPromise(SQLstmt, [projectID, projectID]);
+      return sqlPromise(SQLstmt, [projectID]);
     }
     // return sql().query(SQLstmt, [userID], callback);
+  },
+
+  addRevisions: function(rev, callback = null) {
+
+    //inserting into mysql
+    const {id, project_id, scope_id, revision, revision_reason_code
+      , revision_resp_code, revision_desc, revision_price, designer_id, rev_date
+      , created_by, last_updated_by
+    } = rev;
+
+    // const updDate = rev_date.replace('T', ' ');
+    const updDate = rev_date;
+    console.log("rev date", updDate);
+
+    const SQLstmt = `INSERT INTO projects_revisions (id, project_id, scope_id
+      , revision, reason, responsibility, description, price, designer_id, rev_date
+      , created_by, last_updated_by)
+      VALUES(?,?,?,?,?,?,?,?,?,? ,?,?)
+      ON DUPLICATE KEY UPDATE project_id = ?, scope_id = ?, revision = ?
+      , reason = ?, responsibility = ?, description = ?, price = ?, designer_id = ?
+      , rev_date = ?, created_by = ?, last_updated_by = ?`;
+
+    const values = [id, project_id, scope_id===-1?null:scope_id, revision, revision_reason_code
+      , revision_resp_code, revision_desc, revision_price, designer_id, updDate
+      , created_by, last_updated_by
+
+      , project_id, scope_id===-1?null:scope_id, revision, revision_reason_code
+      , revision_resp_code, revision_desc, revision_price, designer_id, updDate
+      , created_by, last_updated_by
+    ];
+
+    if (callback) {
+      // console.log('getScopeItems: in the callback version');
+      // return sql().query(SQLstmt, [projectID, projectID], callback);
+      return sql().query(SQLstmt, values, callback);
+    } else {
+      // console.log('getScopeItems: in the promise version');
+      // return sqlPromise(SQLstmt, [projectID, projectID]);
+      return sqlPromise(SQLstmt, values);
+    }
+    // return sql().query(SQLstmt, [userID], callback);
+  },
+
+  deleteRevision: (id) => {
+    const SQLstmt = "DELETE from projects_revisions where id = ?";
+    const values = [id];
+    return sqlPromise(SQLstmt, values);
   },
 
 };

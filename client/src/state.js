@@ -13,7 +13,7 @@ export default {
   subdivisions: [],
   users: [],  // People that have approved record in users table.
   requestors: [], // users and contacts with requestor flag = 'Y'.  User can enter "on behalf of".
-  designers: [],  // 
+  designers: [],  //
   contacts: [],  // all people in contacts table.
   jobnumberseqs: [],
   stateLookup: [],
@@ -81,5 +81,6 @@ export default {
     {name: 'commit', code: 'commit'}
   ],
   projectHistory: [],
+  projectRevisions: [],
 
 };

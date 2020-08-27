@@ -31,12 +31,28 @@ const timeout = (ms) => {
 
 // a function used by list and listPending to get the scope of each project.  Called by
 // Promise.all below.
-const getScope = async proj => {
-    const scopeData = await ProjectModel.getScopeItems(proj.id);
-    const returnData = {...proj, scope: scopeData};
-    return returnData;
-};
+// const getScope = async proj => {
+//     const scopeData = await ProjectModel.getScopeItems(proj.id);
+//     const returnData = {...proj, scope: scopeData};
+//     return returnData;
+// };
 
+const getScope = async proj => {
+    let promises = [];
+    promises.push(ProjectModel.getScopeItems(proj.id));
+    promises.push(ProjectModel.getRevisions(proj.id));
+    const childData = await Promise.all(promises);
+
+    // childData[0] = scope; childData[1] = revisions
+    // console.log('getScope data', childData);
+    const maxRev = childData[1].length > 0?childData[1][0].revision:null;
+    const maxRevDesc = childData[1].length > 0?childData[1][0].revision_desc:null;
+    const returnData = {...proj, scope: childData[0], revisions: childData[1], revision: maxRev, revision_desc: maxRevDesc};
+    return returnData;
+
+    // promises.push(TrelloModel.put(tUrl, value));
+
+};
 // function to get the list of addresses.
 export const list = async (request, response) => {
 
@@ -155,11 +171,13 @@ export const create = async (request, response) => {
   let processDate = new Date();
   const min = processDate.getMinutes();
   const tzOffset = processDate.getTimezoneOffset(); // in minutes.
+  const sList = request.body.scope.map(s=>{return s.name});
   // processDate.setMinutes(min-tzOffset);
   console.log('*************************************************');
   console.log('ProjectController Create / Update');
   console.log(processDate+'');
-  console.log(request.body.job_number+'    ', request.body.address1);
+  console.log(request.body.id+'    ', request.body.job_number+'    ', request.body.address1);
+  console.log(`Classification: ${request.body.classification}   Scope: ${sList.toString()}`);
   console.log('*************************************************');
 
   // console.log('in ProjectController.create', request.body);
@@ -1044,6 +1062,74 @@ export const getHistory = async (request, response) => {
     return response.json(historyData);
 
   } catch (err) {
+    return response.json(err);
+
+  }
+}
+
+export const getRevisions = async (request, response) => {
+
+  // The main section.  Get history of project, then loop on projects
+  // with map function to get the scope items.
+  try {
+    const revisionData = await ProjectModel.getRevisions(request.params.id);
+    // console.log('getHistory:', historyData);
+    return response.json(revisionData);
+
+  } catch (err) {
+    return response.json(err);
+
+  }
+}
+
+// function to create a address
+export const saveRevisions = async (request, response) => {
+
+  // console.log('in ProjectController.saveRevisions', request.body);
+  var errors = [];
+
+  let revPromises = [];
+  request.body.forEach((rev, i) => {
+    // console.log('rev: Adding / Adjusting: ', rev.id, rev.scope);
+
+    // rev.change is either unset or value = add, update, delete
+    // if unset, skip updating.
+    if (rev.change === 'delete') { //checking to see if we are to delete rev.
+      // console.log('delete scope', item.id);
+      revPromises.push(ProjectModel.deleteRevisions(rev.id));
+    } else if (rev.change) {  // wish to delete the scope record.
+      revPromises.push(ProjectModel.addRevisions(rev));
+    }
+
+  });
+
+  try {
+    const revResponses = await Promise.all(revPromises);
+    console.log('scope records created / updated: ', revResponses);
+  } catch (err) {
+    console.log('Scope record create error:', err);
+    errors.push(err);
+  }
+
+  // console.log('Create return... back to browser');
+  if (errors.length) {
+    console.log('Done with error(s)', errors);
+    return response.json(errors);
+  }
+  console.log('Revision(s) saved');
+  return response.json({message: 'Revisions committed'});
+
+}
+
+export const removeRevision = async (request, response) => {
+
+  try {
+    // console.log('in db update.  Params:', id, tCardID);
+    const deleteResp = await ProjectModel.deleteRevision(request.params.id);
+    return response.json('Revision Deleted');
+
+  } catch (err) {
+    // console.log('MySQL Update record Error: ', `${err.errno}:${err.code} - ${err.sqlMessage}`);
     return response.json(err);
 
   }

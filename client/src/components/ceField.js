@@ -142,7 +142,7 @@ const handleChange = (name, arrID, state, updateState) => event => {
 
 };
 
-const handleListChange = (selected, field, arrID, state, updateState) => {
+const handleListChange = (selected, field, arrID, state, updateState, altList = null) => {
   // console.log('in handleListChange:', field.name, selected);
 
   // switch (field.name) {
@@ -187,6 +187,16 @@ const handleListChange = (selected, field, arrID, state, updateState) => {
     }
   } else {
     switch (field.name) {
+      case altList?altList.name:'':
+        // console.log('handleListChange', altList);
+        selected?  // if selected
+          altList.name_id?  // then if field has an id
+            updateState({ [altList.name_id]: selected.code, [field.name]: selected.name }) :  // fill in id and value.
+            updateState({ [field.name]: selected.code }) :  // fill in value.
+          altList.name_id?  // else (selected is null)... now if field has an id...
+            updateState({ [altList.name_id]: null, [field.name]: null }) :  // clear out
+            updateState({ [field.name]: null });  // clear out
+        break;
       default:
         selected?  // if selected
           field.name_id?  // then if field has an id
@@ -533,7 +543,7 @@ const textField = (props) => {
 }
 
 const listField = (props) => {
-  const { theme, field, state, arrID, updateState } = props;  // passed thru call
+  const { theme, field, state, arrID, updateState, altLookups } = props;  // passed thru call
   // const { loadFind, loadMessage } = props;  // passed thru container
 
   // field.name === 'entered_by'? console.log('listField', field, props[field.lookup_list]): null;
@@ -549,7 +559,7 @@ const listField = (props) => {
   //     props[field.lookup_list].find(option => option.code === state[field.name]) :
   //     {code: '', name: ''};
   // }
-
+  let altList = null;
   if (arrID||arrID===0) {
     // console.log('scope: ', field.name, arrID, state.scope[arrID]);
     if (state.scope[arrID])
@@ -566,19 +576,39 @@ const listField = (props) => {
     }
     // currentValue = state.scope[arrID][field.name]||''
   } else {
-    // console.log('project: ', field.name, arrID);
-      if (field.name_id) {
-        currentValue = state[field.name_id]?
-          props[field.lookup_list].find(option => option.code == state[field.name_id]) :
-          {code: '', name: ''};
+      // field.name === 'scope'?console.log('project: ', field.name, arrID, altLookups):null;
+
+      // code has ability to pass a different "alternate" lookup list. Ex
+      // when selecting scope for a project, select from default list.
+      // For a revision, only want to select from the scope records assigned to project
+      if (altLookups) {
+        altList = altLookups.find(lkp => {return lkp.name === field.name});
+        // console.log('altList', altList);
+      };
+      if (altList) {
+        if (altList.name_id) {
+          currentValue = state[altList.name_id]?
+            altList.lookup_list.find(option => option.code == state[altList.name_id]) :
+            {code: '', name: ''};
+        } else {
+          currentValue = state[field.name]?
+            altList.lookup_list.find(option => option.code === state[field.name]) :
+            {code: '', name: ''};
+        }
       } else {
-        currentValue = state[field.name]?
-          props[field.lookup_list].find(option => option.code === state[field.name]) :
-          {code: '', name: ''};
+        if (field.name_id) {
+          currentValue = state[field.name_id]?
+            props[field.lookup_list].find(option => option.code == state[field.name_id]) :
+            {code: '', name: ''};
+        } else {
+          currentValue = state[field.name]?
+            props[field.lookup_list].find(option => option.code === state[field.name]) :
+            {code: '', name: ''};
+        }
       }
   }
 
-  // field.name === 'geo_boring_only'?console.log('currentValue', currentValue):null;
+  // field.name === 'scope'?console.log('currentValue', currentValue):null;
 
   return (
     <Grid item xs={12} md={field.display_width} style={ {zIndex: field.z_index } }>
@@ -588,14 +618,14 @@ const listField = (props) => {
         </InputLabel>
         <Select styles={createSelectProps(theme)}
           isClearable
-          options={props[field.lookup_list]}
+          options={altList?altList.lookup_list:props[field.lookup_list]}
           getOptionLabel={({name}) => name}
           getOptionValue={({code}) => code}
           value={currentValue}
           onChange={
             (selected) => {props.handleListChange?
               props.handleListChange(selected, field, arrID):
-              handleListChange(selected, field, arrID, state, updateState);  // use local
+              handleListChange(selected, field, arrID, state, updateState, altList);  // use local
               ;
             }
           }
@@ -892,7 +922,7 @@ const colField = (props) => {
 
 const colListField = (props) => {
   // const { theme, field, state, childArrID, updateState, searchMode, dupCheck } = props;  // passed thru call
-  const { theme, field, state, childArrID, updateState } = props;  // passed thru call
+  const { theme, field, state, childArrID, updateState, altLookups } = props;  // passed thru call
   // const { loadFind, searchForDups, loadMessage } = props;  // passed thru container
 
   // field.name === 'entered_by'? console.log('listField', field, props[field.lookup_list]): null;
@@ -909,6 +939,7 @@ const colListField = (props) => {
   //     {code: '', name: ''};
   // }
 
+  let altList = null;
   if (childArrID||childArrID===0) {
     // console.log('scope: ', field.name, arrID, state.scope[arrID]);
     if (state.scope[childArrID])
@@ -926,15 +957,38 @@ const colListField = (props) => {
     // currentValue = state.scope[arrID][field.name]||''
   } else {
     // console.log('project: ', field.name, arrID);
-      if (field.name_id) {
-        currentValue = state[field.name_id]?
-          props[field.lookup_list].find(option => option.code == state[field.name_id]) :
-          {code: '', name: ''};
+      if (altLookups) {
+        altList = altLookups.find(lkp => {return lkp.name === field.name});
+        // altList?console.log('altList, state', altList, state):null;
+      };
+      if (altList) {
+        if (altList.name_id) {
+          // console.log('before setting currentValue', altList, state);
+          currentValue = state[altList.name_id]?
+            altList.lookup_list.find(option => {
+              // console.log('option and state value', option, state[altList.name_id]);
+              return option.code == state[altList.name_id]
+            }) :
+            {code: '', name: ''};
+          // console.log('after setting currentValue', currentValue);
+        } else {
+          currentValue = state[field.name]?
+            altList.lookup_list.find(option => option.code === state[field.name]) :
+            {code: '', name: ''};
+        }
       } else {
-        currentValue = state[field.name]?
-          props[field.lookup_list].find(option => option.code === state[field.name]) :
-          {code: '', name: ''};
+        if (field.name_id) {
+          currentValue = state[field.name_id]?
+            props[field.lookup_list].find(option => option.code == state[field.name_id]) :
+            {code: '', name: ''};
+        } else {
+          currentValue = state[field.name]?
+            props[field.lookup_list].find(option => option.code === state[field.name]) :
+            {code: '', name: ''};
+        }
       }
+      // altList?console.log('current value', currentValue):null;
+
   }
 
   // field.name === 'geo_boring_only'?console.log('currentValue', currentValue):null;
@@ -945,14 +999,14 @@ const colListField = (props) => {
       <Select styles={colSelectProps(theme)}
         isClearable
         isDisabled={field.disabled === 'Y'? true:false}
-        options={props[field.lookup_list]}
+        options={altList?altList.lookup_list:props[field.lookup_list]}
         getOptionLabel={({name}) => name}
         getOptionValue={({code}) => code}
         value={currentValue}
         onChange={
           (selected) => {props.handleListChange?
             props.handleListChange(selected, field, childArrID):
-            handleListChange(selected, field, childArrID, state, updateState);  // use local
+            handleListChange(selected, field, childArrID, state, updateState, altList);  // use local
             ;
           }
         }
