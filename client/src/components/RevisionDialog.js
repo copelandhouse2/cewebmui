@@ -239,9 +239,16 @@ class RevisionDialog extends Component {
   // to update the state of the calling module, particularly the close toggle
   handleClose = () => {
     this.setState(this.initState);
-    const passedRev = this.props.projectRevisions.length>0? this.props.projectRevisions[0].revision :
-      null;
-    this.props.updateParentState({ openRevDialog: false, revision: passedRev });
+    let passedRev = null;
+    let passedRevDesc = null;
+
+    if (this.props.projectRevisions.length > 0) {
+      passedRev = this.props.projectRevisions[0].revision;
+      passedRevDesc = this.props.projectRevisions[0].revision_desc;
+    };
+
+    this.props.updateParentState({ openRevDialog: false
+      , revision: passedRev, revision_desc: passedRevDesc, revisions: this.props.projectRevisions });
     this.props.loadLocalView('', true);
     this.props.loadProjectRevisions(0, true);
   }

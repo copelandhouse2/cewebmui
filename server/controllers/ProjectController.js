@@ -246,7 +246,9 @@ export const create = async (request, response) => {
       project = {...p[0], categoryID: request.body.categoryID};
       if (request.params.v2 === 'true') {  // version 2 changes
         const scope = await ProjectModel.getScopeItems(proj_id);
-        Object.assign(project, {scope: scope});
+        // const rev = await ProjectModel.getRevisions(proj_id);
+
+        Object.assign(project, {scope: scope} );
         // project = {...p[0], scope: scope, categoryID: request.body.categoryID};
       }
       // console.log('Queried Project', project);
@@ -376,6 +378,13 @@ export const commit = (request, response) => {
         // console.log('for each scope', scope);
       });
       scope = scope.slice(0,scope.length-1);  // remove the last comma.
+
+      // let rev = '';
+      // newRecord.revisions.forEach(r=> {
+      //   console.log('r', r);
+      //   rev = rev?`${rev}\n${r.scope}:${r.revision} - ${r.revision_desc}`:`${r.scope}:${r.revision} - ${r.revision_desc}`;
+      //   // console.log('for each rev', rev);
+      // });
 
       // console.log('scope, description, additional_options, comments', scope, description, additional_options, comments);
 

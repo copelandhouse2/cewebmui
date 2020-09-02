@@ -729,7 +729,8 @@ class singleView extends Component {
     this.oID=0;
     this.childArr = [];
     // console.log('ceViews Render',
-    // 'state:', this.state, this.initState,
+    // 'state:', this.state,
+    // 'init state', this.initState,
     // 'currentProject:',currentProject,
     // 'currentViews:', currentViews,
     // 'currentView:', this.currentView
