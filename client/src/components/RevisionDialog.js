@@ -4,18 +4,11 @@ import { withStyles } from '@material-ui/core/styles';
 import { withWidth } from "@material-ui/core";
 import CeDialog from './ceDialog';
 
-import { DialogDefaultFG, RevUpdateFG, RevHistoryFG, MaterialTabularFG } from './ceFieldGroup';
+import { DialogDefaultFG, RevUpdateFG, MaterialTabularFG } from './ceFieldGroup';
 
 // import designRev from '../img/designrev-black.svg';
 // import designRevWhite from '../img/designrev-white.svg';
 import { DesignRevSvg } from '../img/revise';
-
-import IconButton from '@material-ui/core/IconButton';
-import addIcon from '../img/add1.svg';
-import addIconWhite from '../img/add1-white.svg';
-import UndoIcon from '@material-ui/icons/Undo';
-
-import Tooltip from '@material-ui/core/Tooltip';
 
 const styles = theme => ({
   image: {
@@ -67,6 +60,7 @@ class RevisionDialog extends Component {
       if (s.id !== null) {
         return {code: s.id,name: s.name}
       }
+      return null;
     });
     scopeLookup.unshift({code: -1, name: 'Project'});
     const altLookup = [
@@ -136,7 +130,7 @@ class RevisionDialog extends Component {
 
   image = () => {
     const { classes, theme } = this.props;
-    {/*<img src={theme.palette.secondary.contrastText === '#fff'?designRevWhite:designRev} alt={'Revision Update'} className={`${classes.image} ${classes.imageTitle}`} />*/}
+    // <img src={theme.palette.secondary.contrastText === '#fff'?designRevWhite:designRev} alt={'Revision Update'} className={`${classes.image} ${classes.imageTitle}`} />
     return (
       <div alt={'Revision Update'} className={classes.imageTitle}>
         <DesignRevSvg size={30} color={theme.palette.secondary.contrastText}  />

@@ -1,46 +1,32 @@
 import { connect } from "react-redux";
-import Search from "../components/Search";
-import { loadFind, loadViews, loadViewsByName, loadCurrentMenu, updateProject,
-createAddress, commitAddresses, loadMessage, deleteProject } from "../actions";
+import Geotech from "../components/Geotech";
+import { loadViewsByName, saveGeotechs, deleteGeotech
+  , findGeotechs, loadMessage } from "../actions";
 
 function mapStateToProps(state) {
   return {
     session: state.session,
-    search: state.search,
     message: state.message,
     currentViews: state.currentViews,
-    currentMenu: state.currentMenu,
     currentProject: state.currentProject,
-    avffControls: state.avffControls,
-    dups: state.dups,
+    geos: state.geos,
+    geoSearch: state.geoSearch,
   };
 }
 
 function mapDispatchToProps(dispatch) {
   return {
-    loadViews: function (parent_id, scope) {
-      dispatch(loadViews(parent_id, scope));
-    },
     loadViewsByName: function (name) {
       dispatch(loadViewsByName(name));
     },
-    loadFind: function (searchFilter, searchFields) {
-      dispatch(loadFind(searchFilter, searchFields));
+    saveGeotechs: (geos) => {
+      dispatch(saveGeotechs(geos));
     },
-    loadCurrentMenu: function (parent_id) {
-      dispatch(loadCurrentMenu(parent_id));
+    deleteGeotech: function (id) {
+      dispatch(deleteGeotech(id));
     },
-    updateProject: function (project) {
-      dispatch(updateProject(project));
-    },
-    deleteProject: function (id) {
-      dispatch(deleteProject(id));
-    },
-    createAddress: (project, v2, updateSearch) => {
-      dispatch(createAddress(project, v2, updateSearch));
-    },
-    commitAddresses: (userID, projects, create, v2, updateSearch) => {
-      dispatch(commitAddresses(userID, projects, create, v2, updateSearch));
+    findGeotechs: function (findString) {
+      dispatch(findGeotechs(findString));
     },
     loadMessage: function (message, type) {
       dispatch(loadMessage(message, type));
@@ -48,4 +34,4 @@ function mapDispatchToProps(dispatch) {
   };
 }
 
-export default connect(mapStateToProps,mapDispatchToProps)(Search);
+export default connect(mapStateToProps,mapDispatchToProps)(Geotech);

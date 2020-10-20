@@ -61,15 +61,27 @@ class ClientDialog extends Component {
   constructor(props) {
     super(props);
 
+    // this.state = {
+    //   id: null,
+    //   name: props.newValue,  // only seed data.
+    //   full_name: '',
+    //   compliance_dl: '',
+    //   active: 'Y',
+    //   notes: '',
+    //   created_by: null,
+    //   last_updated_by: null
+    // };
+
     this.state = {
+      change: 'add',
       id: null,
       name: props.newValue,  // only seed data.
-      full_name: '',
-      compliance_dl: '',
+      full_name: null,
+      compliance_dl: null,
       active: 'Y',
-      notes: '',
-      created_by: null,
-      last_updated_by: null
+      notes: null,
+      created_by: this.props.session.id,
+      last_updated_by: this.props.session.id
     };
 
     this.initState = {...this.state};
@@ -85,15 +97,17 @@ class ClientDialog extends Component {
   handleSubmit = () => {
     // console.log('In the handleSubmit');
 
-    this.setState({
-      created_by: this.props.session.id,
-      last_updated_by: this.props.session.id
-    },
-      ()=> {
-        this.props.createClient(this.state);
-      }
-    )
+    // this.setState({
+    //   created_by: this.props.session.id,
+    //   last_updated_by: this.props.session.id
+    // },
+    //   ()=> {
+    //     this.props.createClient(this.state);
+    //   }
+    // )
     // console.log('after the setState and createClient');
+
+    this.props.saveClients([this.state]);
 
   }
 
@@ -165,7 +179,7 @@ class ClientDialog extends Component {
               <TextField
                 id='name'
                 label='Client Name'
-                value={this.state.name}
+                value={this.state.name||''}
                 onChange={this.handleChange('name')}
                 fullWidth
               />
@@ -174,7 +188,7 @@ class ClientDialog extends Component {
               <TextField
                 id='fullName'
                 label='Full Name'
-                value={this.state.full_name}
+                value={this.state.full_name||''}
                 onChange={this.handleChange('full_name')}
                 fullWidth
               />
@@ -183,7 +197,7 @@ class ClientDialog extends Component {
               <TextField
                 id='notes'
                 label='Notes'
-                value={this.state.notes}
+                value={this.state.notes||''}
                 onChange={this.handleChange('notes')}
                 fullWidth
               />

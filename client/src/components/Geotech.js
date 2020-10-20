@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Redirect, Link } from "react-router-dom"
+import { Link } from "react-router-dom"
 // import { withNavigationFocus } from 'react-navigation';
 // import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
@@ -10,22 +10,20 @@ import Button from '@material-ui/core/Button';
 // import AddIcon from '@material-ui/icons/Add';
 // import Checkbox from '@material-ui/core/Checkbox';
 
-import { DefaultFG, SearchTabularFG } from './ceFieldGroup';
-import { Field2Container } from '../containers/ceFieldContainer';
+import { DefaultFG, MaterialTabularFG } from './ceFieldGroup';
+// import { Field2Container } from '../containers/ceFieldContainer';
 // import { ScopeSelectionContainer } from '../containers/ceScopeSelectionContainer';
 import CePageContainer from '../containers/cePageContainer';
 
 // import IconButton from '@material-ui/core/IconButton';
 // import SettingsIcon from '@material-ui/icons/Settings';
 
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
+// import FormControlLabel from '@material-ui/core/FormControlLabel';
+// import Switch from '@material-ui/core/Switch';
 
 // import fullView from '../img/fullView.svg';
 // import listView from '../img/listView.svg';
 // import columnView from '../img/columnView2.svg';
-
-import DupsDialogContainer from '../containers/DupsDialogContainer';
 
 const styles = theme => ({
   root: {
@@ -86,50 +84,31 @@ const styles = theme => ({
   }
 });
 
-// const date = (dayAdj=0) => {
-//   let returnDate = new Date();
-//   returnDate.setDate(returnDate.getDate()+dayAdj);
-//   const theMonth = returnDate.getMonth()+1 < 10? `0${returnDate.getMonth()+1}` : `${returnDate.getMonth()+1}`;
-//   const theDay = returnDate.getDate() < 10? `0${returnDate.getDate()}` : `${returnDate.getDate()}`;
-//
-//   return `${returnDate.getFullYear()}-${theMonth}-${theDay}`;
-// }
-
-class Search extends Component {
+class Geotech extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
+      object: 'GEOTECH',
       renderScreen: false,
       currentMenuID: this.props.currentViews.id,
       currentView: this.props.VIEW||'DEFAULT',
       saveValue: '',  // stores previous values of address/lot/block to test for change      selectedIndexes: [],
-      selectedIndexes: [],
+      // selectedIndexes: [],
       selected: null,
-      showSearchByFields: false,  // show the old Search By fields.  Hide the Find field.
-      scope: 'volfoundation',
       redirectUrl: null,
-      openDupsDialog: false,
-      dupRec: {},
+      created_by: this.props.session.id,
+      last_updated_by: this.props.session.id,
     };
 
     this.initState = {...this.state};
 
-    this.scopeField = {}
   }
 
   componentDidMount = () => {
     // console.log('CDM Search');
-    // if (this.state.currentMenuID) {
-    //   console.log('CDM: currentProject populated', this.props.currentProject, this.state);
-    //   this.props.loadViews(this.state.currentMenuID);
-    //   // this.props.loadFind('clear');
-    // }
-    if (this.props.currentViews.name !== 'update') this.props.loadViewsByName('update');
-    this.scopeField = this.props.avffControls.find(control=>control.entity_type === 'FIELD' && control.name === 'scope');
-    this.scopeField.display_width = 3;
+    if (this.props.currentViews.name !== 'geotech_maint') this.props.loadViewsByName('geotech_maint');
 
-    // console.log('scope field', this.scopeField);
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -139,7 +118,7 @@ class Search extends Component {
 
     // If the views object is populated, activate the screen render toggle.
     // currentViews is populated: from the menu, selecting a project.
-    if (currentViews.name === 'update' && currentViews.constructor === Object && Object.keys(currentViews).length !== 0) {
+    if (!prevState.renderScreen && currentViews.name === 'geotech_maint' && currentViews.constructor === Object && Object.keys(currentViews).length !== 0) {
       return {renderScreen: true };
     }
 
@@ -179,7 +158,6 @@ class Search extends Component {
 
     return (
     <Grid container justify="flex-end" style={{marginTop: 10, marginBottom: 10}} spacing={16}>
-
       <Grid item className={classes.grow}>
         <Link to={`/`} className={classes.linkStyle}>
           <Button title='Return to menu'
@@ -191,23 +169,14 @@ class Search extends Component {
           </Button>
         </Link>
       </Grid>
-      <Grid item>
-        <Button title='Select record'
-          variant="contained"
-          size='small'
-          color="secondary"
-          onClick={this.handleSelected}
-        >
-          Edit
-        </Button>
-      </Grid>
-
     </Grid>
     )
   }
 
   // actions that show in field group title bar
   fieldGroupTools = () => {
+
+    return null;
     // return (
     //   <Tooltip title={`Manage fields`} aria-label='Settings'>
     //     <IconButton aria-label='Field Group Settings' onClick={()=>{}}>
@@ -215,38 +184,41 @@ class Search extends Component {
     //     </IconButton>
     //   </Tooltip>
     // )
-    return (
-      <FormControlLabel
-        control={
-          <Switch
-            checked={this.state.showSearchByFields}
-            onChange={(e)=>{this.handleSwitch(e)}}
-            value='showSearchByFields'
-          />
-        }
-        label={this.state.showSearchByFields?'Back to Find Field':'Show Fields'}
-      />
-    )
+
+    // return (
+    //   <FormControlLabel
+    //     control={
+    //       <Switch
+    //         checked={this.state.showSearchByFields}
+    //         onChange={(e)=>{this.handleSwitch(e)}}
+    //         value='showSearchByFields'
+    //       />
+    //     }
+    //     label={this.state.showSearchByFields?'Back to Find Field':'Show Fields'}
+    //   />
+    // )
   }
 
   fieldGroupToolsTabular = () => {
     // const { classes, theme, width } = this.props;
-    return (
-      <Field2Container
-        field = {this.scopeField}
-        scopeID = {false}
-        state = {this.state}
-        updateState = {this.updateState}
-        // turns off dup check, creating client,city,sub via list
-        searchMode={true}
-        // props that are not used.
-        handleListChange={false}
-        handleFocus={false}
-        handleBlur={false}
-        // call to create new client, city, sub
-        createDialogValue={false}
-      />
-    )
+
+    return null;
+    // return (
+    //   <Field2Container
+    //     field = {this.scopeField}
+    //     scopeID = {false}
+    //     state = {this.state}
+    //     updateState = {this.updateState}
+    //     // turns off dup check, creating client,city,sub via list
+    //     searchMode={true}
+    //     // props that are not used.
+    //     handleListChange={false}
+    //     handleFocus={false}
+    //     handleBlur={false}
+    //     // call to create new client, city, sub
+    //     createDialogValue={false}
+    //   />
+    // )
   }
 
   // actions that show next to / below fields in field group
@@ -258,7 +230,7 @@ class Search extends Component {
         variant="contained"
         size='small'
         color="secondary"
-        onClick={this.findProjects}
+        onClick={this.findGeotechs}
       >
         Search
       </Button>
@@ -271,55 +243,38 @@ class Search extends Component {
     this.setState(updatedValues);
   }
 
-  handleSelected = () => {
-    // console.log('In the handleSelected', this.state.selectedIndexes[0]);
-    if (this.state.selectedIndexes[0] > -1) {  // gets 0 and above.
-      // console.log('In the if');
-      this.props.updateProject(this.props.search.findResults[this.state.selectedIndexes[0]]);
-      // this.props.clearDups();  // in container
-    } else {  // user selected first row (index = 0) which was the curent entry
-      // console.log('In the else');
-      // this.props.clearDups();  // in container
-    }
-  }
-
-  handleSwitch = (e) => {
-    // console.log('In the handleSwitch');
-
-    if (e.target.checked) {
-      this.updateState({
-        showSearchByFields:e.target.checked,
-        find: null
-      });
-    } else {
-      const keys = Object.keys(this.state)
-      const stateReset = keys.reduce((acc, v) => ({ ...acc, [v]: undefined }), {})
-      this.setState({ ...stateReset, ...this.initState });
-    }
-
-  }
+  // handleSelected = () => {
+  //   // console.log('In the handleSelected', this.state.selectedIndexes[0]);
+  //   if (this.state.selectedIndexes[0] > -1) {  // gets 0 and above.
+  //     // console.log('In the if');
+  //     this.props.updateGeotech(this.props.geoSearch.findResults[this.state.selectedIndexes[0]]);
+  //     // this.props.clearDups();  // in container
+  //   } else {  // user selected first row (index = 0) which was the curent entry
+  //     // console.log('In the else');
+  //     // this.props.clearDups();  // in container
+  //   }
+  // }
 
   // Only called by Search button.
-  findProjects = () => {
-
-    // console.log('find projects', this.state);
-    this.props.loadFind(null, this.state);
+  findGeotechs = () => {
+    // console.log('find geotechs');
+    this.props.findGeotechs(this.state.find);
   }
 
-  handleSave = (updatedRows, andCommit = false) => {
+  handleSave = (updatedRows) => {
     // let updated = updatedRows.filter(r=>{if (r) return r});
-    // console.log('handle Save', updatedRows);
+    // console.log('Geotech handle Save', updatedRows);
 
     // Testing to make sure all the edited projects still have
     // an address, client, and city.
     let dataOk = true;
     for (let i=0; i<updatedRows.length; i++) {
-      const { address1, client_id, city } = updatedRows[i];
-      if (!address1 || !client_id || !city ) {
+      const { geo_code, geotech } = updatedRows[i];
+      if (!geo_code || !geotech ) {
         this.props.loadMessage(
           { ok:false,
-            status: 'Missing Data for '+updatedRows[i].job_number,
-            statusText: "Missing Address, Client, or City.  Please fill in"
+            status: 'Missing Data',
+            statusText: "Missing geotech code and/or name.  Please fill in"
           }, "ERROR");
         dataOk = false;
         break;
@@ -329,32 +284,32 @@ class Search extends Component {
     // Testing to make sure all the edited projects still have
     // an address, client, and city.
     if (dataOk) {
-      for (let i=0; i<updatedRows.length; i++) {
-        // console.log('all is ok right now.  State:', updatedRows[i]);
-        if (andCommit) {
-          updatedRows[i].status = 'ACTIVE';
-          this.props.commitAddresses(this.props.session.id, updatedRows, true, true, true);
-        } else {
-          updatedRows[i].status = 'PENDING';
-          this.props.createAddress(updatedRows[i], true, true);
-        }
-      }
+      // for (let i=0; i<updatedRows.length; i++) {
+      //   // console.log('all is ok right now.  State:', updatedRows[i]);
+      //   this.props.saveGeotechs(updatedRows[i]);
+      // }
+      this.props.saveGeotechs(updatedRows);
     }  // if dataOk
 
   }  // end of function
 
   handleDelete = (row)=> {
-    // console.log('Delete project ', row);
-    this.props.deleteProject(this.props.search.findResults[row].id);
+    // console.log('Delete geotech ', this.props.geoSearch.findResults, row, row-1);
+
+    // This module supports an INSERT row as first row.  Must take into consideration
+    // that row passed will be based on the array id with insert row as first row
+    // Therefore need to subtract 1 to get right value for props geos array.
+    this.props.deleteGeotech(this.props.geoSearch.findResults[row-1].id);
   }
 
   render() {
-    const { currentViews } = this.props;
+    const { currentViews, geoSearch } = this.props;
     // const { classes, currentViews, width, currentProject, search } = this.props;
     // console.log('Geotech Render:',
-    //   'state:', this.state,
-    //   // 'currentProject:', currentProject,
-    //   // 'currentViews:', currentViews,
+    // 'state:', this.state,
+    // 'currentViews:', currentViews,
+    // 'props Geos', this.props.geos,
+    // 'props geoSearch', this.props.geoSearch,
     // );
 
     // Test to make sure we can render Screen.  Only set to true when
@@ -366,17 +321,21 @@ class Search extends Component {
     }
 
     let currentView = [];
-    if (currentViews.children) {
-      currentView = currentViews.children.filter((view) => view.category === this.state.currentView)  // array of subviews (sections) that make up whole view.
+    if (currentViews instanceof Array) {
+      if (currentViews.children) {
+        currentView = currentViews.children.filter((view) => view.category === this.state.currentView)  // array of subviews (sections) that make up whole view.
+      }
+    } else {
+      currentView.push(currentViews);
     }
-    const title = currentView[0].label;
 
+    const title = currentView[0].label;
     // console.log('currentView', currentView);
 
-    // could have multiple subviews.
-    // viewChildren is a recursive function that gets all objects to
-    // build the screen.  Places objects in array childArr.
-    // currentView.forEach(view => this.viewChildren(view.children));
+    // Supporting an INSERT row.
+    // let data = geoSearch.find?[...geoSearch.findResults]:[];
+    let data = [...geoSearch.findResults];
+    data.unshift({});
 
     return (
       <CePageContainer
@@ -388,17 +347,21 @@ class Search extends Component {
           return (
             view.children.map((group,gid)=>{  // loop on objects in views.  Usually field groups.
             switch (group.name) {
-              case 'search_results':
+              case 'geotech_results':
                 return(<MaterialTabularFG
                         key={gid}
                         fieldGroup = {group}
+                        fgStyles = {{marginTop: 10, marginBottom: 0, borderTop: '1px solid black'}}
                         parentState = {this.state}
-                        data = {this.props.search.findResults}
+                        data = {data}
                         updateState = {this.updateState}
-
-                        fgTools={this.fieldGroupToolsTabular}
+                        // fgTools={this.fieldGroupToolsTabular}
+                        allowAdd={true}
                         handleSave={this.handleSave}
                         handleDelete={this.handleDelete}
+                        saveHelp='Save the geotech'
+                        editHelp='Edit the geotech'
+                        deleteHelp='Delete the geotech'
                       />)
                 // break;
               case 'search_criteria':
@@ -407,8 +370,8 @@ class Search extends Component {
                         fieldGroup = {group}
                         state = {this.state}
                         updateState = {this.updateState}
-                        hide={this.state.showSearchByFields} // Show Find.  Hide Search By Fields
                         fgTools={this.fieldGroupTools}
+                        findAction={this.findGeotechs}
                       />)
                 // break;
               default:
@@ -418,16 +381,17 @@ class Search extends Component {
                         state = {this.state}
                         updateState = {this.updateState}
                         hide={false}
+                        findAction={this.findGeotechs}
                       />)
             }  // switch
           }))  // function-map-return
         })    // function-map  jsx below.
         }
       </CePageContainer>
-    )
+    )  // return
 
   }  // render
 }  // Component
 
 
-export default withWidth()(withStyles(styles, { withTheme: true })(Search));
+export default withWidth()(withStyles(styles, { withTheme: true })(Geotech));

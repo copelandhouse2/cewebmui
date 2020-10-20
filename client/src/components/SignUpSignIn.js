@@ -175,6 +175,7 @@ class SignUpSignIn extends Component {
 
     return (
 
+
       <form className={classes.container} noValidate autoComplete="off">
         <DialogContent>
           <TextField
@@ -297,7 +298,7 @@ class SignUpSignIn extends Component {
             onClick = {this.handleSignUp}
             variant = "contained" color="secondary"
           >
-            Login
+            Sign Up
           </Button>
         </DialogActions>
       </form>
@@ -307,7 +308,15 @@ class SignUpSignIn extends Component {
   signInForm = () => {
     return (
       <div>
-        <DialogContent>
+        <DialogContent
+          onKeyDown={
+            (e) => {
+              if (e.keyCode === 13) {
+                this.handleSignIn();
+              }
+            }
+          }
+        >
           <TextField
             id="email"
             label="Email Address"

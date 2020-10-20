@@ -39,7 +39,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Toolbar from '@material-ui/core/Toolbar';
 
 // import SettingsIcon from '@material-ui/icons/Settings';
-import TrackChangesIcon from '@material-ui/icons/TrackChanges';
+// import TrackChangesIcon from '@material-ui/icons/TrackChanges';
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -292,6 +292,7 @@ const styles = theme => ({
   tableSize: {
     // width: '100%',
     maxHeight: 530,
+    minHeight: 400,
     overflowX: 'auto',
 
   },
@@ -724,11 +725,24 @@ class extends Component {
     };
 
     this.initState = {...this.state};
+
+    this.INIT_REC = {
+      change: 'add',
+      id: null,
+      created_by: this.props.parentState.created_by,
+      last_updated_by: this.props.parentState.last_updated_by,
+    };
+
   }
 
   componentDidMount = () => {
     // console.log('CDM', this.props.fieldGroup.children);
-    this.setState({ columns: this.props.fieldGroup.children });
+    let edited = [...this.state.editedRows];
+    if (this.props.allowAdd) {
+      // this.theData.unshift({});
+      edited.unshift(this.INIT_REC);
+    }
+    this.setState({ columns: this.props.fieldGroup.children, editedRows: edited });
   }
 
   onRowSelected = row => {
@@ -806,7 +820,7 @@ class extends Component {
     // const scope = edited[row]?[...edited[row].scope]:[...this.props.data[row].scope];
     const editRow = edited[row]?edited[row]:{...this.props.data[row]};
     // const theRow = Object.assign({}, {...editRow}, {scope: scope});
-    const theRow = Object.assign({}, {...editRow});
+    const theRow = Object.assign({}, {...editRow, change: editRow.id?'edit':'add'});
 
     edited[row] = {...theRow}
     // console.log('handleEdit... edited', edited[row], Object.keys(edited));
@@ -818,7 +832,7 @@ class extends Component {
     // console.log('Save project ', this.state.editedRows[row]);
     // updating local state.
     let edited = [...this.state.editedRows];
-    edited[row] = undefined;
+    edited[row] = this.props.allowAdd && row===0?this.INIT_REC:undefined;
 
     // we pass one row.  However, it is received as an Array
     // in case we want to pass a group of rows.
@@ -832,7 +846,7 @@ class extends Component {
   }
 
   handleDelete = (row)=> {
-    // console.log('Delete project ', row);
+    // console.log('FG: Delete project field group', row);
     this.props.handleDelete(row);
   }
 
@@ -846,32 +860,36 @@ class extends Component {
   }
 
   render() {
-    const { classes, theme, fieldGroup, data, parentState, subGroupKey, subFG, fgTools } = this.props;
+    const { classes, theme, fieldGroup, data, parentState, subGroupKey
+      , subFG, fgTools, saveHelp, editHelp, deleteHelp } = this.props;
     // console.log('FG tabular state', fieldGroup, data, this.state.columns);
     // console.log('FG tabular state sub table', subGroupKey, subFG);
-    const editedRows = this.state.editedRows.filter(r=>{
-      if (r) return r;
-      return null;
-    });
-    const editActive = editedRows.length>0?true:false;
+
+    // const editedRows = this.state.editedRows.filter(r=>{
+    //   if (r) return r;
+    //   return null;
+    // });
+    // const editActive = editedRows.length>0?true:false;
+    // console.log('FG tabular edited rows', editedRows);
+
 
     // Code to set the column widths correctly based on which columns are active.
     let hdr0 = classes.hCol0, hdr1 = classes.hCol1, hdr2 = classes.hCol2, hdr3 = classes.hCol3;
     let clm0 = classes.col0, clm1 = classes.col1, clm2 = classes.col2, clm3 = classes.col3;
     if (!subGroupKey && !parentState.selectedIndexes) {
-      hdr2 = classes.hCol0, hdr3 = classes.hCol1;
-      clm2 = classes.col0, clm3 = classes.col1;
+      hdr2 = classes.hCol0; hdr3 = classes.hCol1;
+      clm2 = classes.col0; clm3 = classes.col1;
     } else if (!subGroupKey) {
-      hdr1 = classes.hCol0, hdr2 = classes.hCol1, hdr3 = classes.hCol2;
-      clm1 = classes.col0, clm2 = classes.col1, clm3 = classes.col2;
+      hdr1 = classes.hCol0; hdr2 = classes.hCol1; hdr3 = classes.hCol2;
+      clm1 = classes.col0; clm2 = classes.col1; clm3 = classes.col2;
     } else if (!parentState.selectedIndexes) {
-      hdr0 = classes.hCol0, hdr2 = classes.hCol1, hdr3 = classes.hCol2;
-      clm0 = classes.col0, clm2 = classes.col1, clm3 = classes.col2;
+      hdr0 = classes.hCol0; hdr2 = classes.hCol1; hdr3 = classes.hCol2;
+      clm0 = classes.col0; clm2 = classes.col1; clm3 = classes.col2;
     }
 
     return (
       <Grid container justify='center'>
-        <Grid item xs={12} style={ {marginTop: 0, marginBottom: 0, borderTop: '0px solid black'} }>
+        <Grid item xs={12} style={ this.props.fgStyles? this.props.fgStyles:{marginTop: 0, marginBottom: 0, borderTop: '0px solid black'} }>
           <Toolbar variant='dense' className={classes.toolbar}>
             <Typography align='left' style={{fontWeight: 500}} className={classes.titleFG}>
               {fieldGroup.label}
@@ -940,7 +958,7 @@ class extends Component {
 
                     <TableCell padding='checkbox' className={`${classes.tableActionProps} ${clm2}`}>
                       {!this.state.editedRows[ri] && //parentState.editMode[ri]
-                      <Tooltip title='Edit the project here' aria-label='Edit the project here'>
+                      <Tooltip title={editHelp?editHelp:'Edit the project here'} aria-label='Edit the project here'>
                       <IconButton aria-label='Expand'
                         onClick={()=>this.handleEdit(ri)}
                         className={classes.actionButtons}
@@ -950,7 +968,7 @@ class extends Component {
                       </Tooltip>
                       }
                       {this.state.editedRows[ri] && //parentState.editMode[ri]
-                      <Tooltip title='Just Save the project.  Changes not sent to Trello or Box yet.  Project status will be PENDING' aria-label='Just Save the project.  Changes not sent to Trello or Box yet.  Project status will be PENDING'>
+                      <Tooltip title={saveHelp?saveHelp:'Just Save the project.  Changes not sent to Trello or Box yet.  Project status will be PENDING'} aria-label='Just Save the project.  Changes not sent to Trello or Box yet.  Project status will be PENDING'>
                         <IconButton aria-label='Expand'
                           onClick={()=>this.handleSave(ri)}
                           className={classes.actionButtons}
@@ -962,7 +980,7 @@ class extends Component {
                     </TableCell>
                     <TableCell padding='checkbox' className={`${classes.tableActionProps} ${clm3}`}>
                     {!this.state.editedRows[ri] && //parentState.editMode[ri]
-                      <Tooltip title='Delete the project' aria-label='Delete the project'>
+                      <Tooltip title={deleteHelp?deleteHelp:'Delete the project'} aria-label='Delete the project'>
                         <IconButton aria-label='Expand'
                           onClick={()=>this.handleDelete(ri)}
                           className={classes.actionButtons}
@@ -971,7 +989,7 @@ class extends Component {
                         </IconButton>
                       </Tooltip>
                       }
-                      {this.state.editedRows[ri] && //parentState.editMode[ri]
+                      {this.state.editedRows[ri] && !(this.props.allowAdd && ri === 0) && //parentState.editMode[ri]
                       <Tooltip title='Cancel changes' aria-label='Cancel changes'>
                         <IconButton aria-label='Expand'
                           onClick={()=>this.handleCancel(ri)}
@@ -1446,10 +1464,10 @@ class extends Component {
 
 export const DefaultFG = withStyles(styles, { withTheme: true })(
 (props) => {
-  const { classes, fieldGroup, state, updateState, hide, fgTools, fieldTools } = props;
+  const { classes, fieldGroup, state, updateState, hide, fgTools, fieldTools, findAction } = props;
   // const { classes, theme, fieldGroup, state, updateState, hide, fgTools, fieldTools } = props;
   // const { classes, theme, fieldGroup, toggleScopeDialog, removeScope, dialogState, scopeID, updateState } = props;
-  // console.log('DefaultFG', hide);
+  // console.log('DefaultFG', findAction);
 
   if (hide) return null;  // hide the field group.
 
@@ -1473,6 +1491,9 @@ export const DefaultFG = withStyles(styles, { withTheme: true })(
               arrID = {false}
               state = {state}
               updateState = {updateState}
+              // find action.  Only used when searching an object, like
+              // projects, geotechs, subdivisions, clients, etc.
+              findAction={findAction}
               // turns off dup check, creating client,city,sub via list
               searchMode={true}
               // props that are not used.
@@ -1569,7 +1590,7 @@ class extends Component {
   }
 
   render() {
-    const { classes, fieldGroup, parentState, updateState, theme } = this.props;
+    const { fieldGroup, parentState, updateState } = this.props;
     // const { classes, theme, fieldGroup, dialogState, updateState } = this.props;
     // const { classes, theme, fieldGroup, toggleScopeDialog, removeScope, dialogState, scopeID, updateState } = props;
     // console.log('RevUpdateFG', dialogState.altLookups);
@@ -1681,9 +1702,9 @@ class extends Component {
   render() {
     const { fieldGroup, history } = this.props;
     // const { classes, theme, fieldGroup, toggleScopeDialog, removeScope, dialogState, scopeID, updateState } = props;
-    console.log('RevHistoryFG render', this.state, history);
+    // console.log('RevHistoryFG render', this.state, history);
     // let i=500;
-    return null;
+    // return null;
     return (
       <Grid container>
         {/*<Grid item xs={12} style={ {marginTop: 20, marginBottom: 20, borderTop: '1px solid black'} }>

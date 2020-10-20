@@ -9,13 +9,25 @@ export default {
   },
   dups: [],
   clients: [],
+  clientSearch: {
+    find: null,
+    findResults: [],
+  },
   cities: [],
+  citySearch: {
+    find: null,
+    findResults: [],
+  },
   subdivisions: [],
+  subSearch: {
+    find: null,
+    findResults: [],
+  },
   users: [],  // People that have approved record in users table.
   requestors: [], // users and contacts with requestor flag = 'Y'.  User can enter "on behalf of".
   designers: [],  //
   contacts: [],  // all people in contacts table.
-  jobnumberseqs: [],
+  // jobnumberseqs: [],
   stateLookup: [],
   countryLookup: [],
   roleLookup: [],
@@ -39,6 +51,10 @@ export default {
   revReasonLookup: [],
   revRespLookup: [],
   geos: [],
+  geoSearch: {
+    find: null,
+    findResults: [],
+  },
   geoMasterData: [],
   session: {
     authInProgress: true,

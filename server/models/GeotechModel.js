@@ -9,18 +9,46 @@ const sqlPromise = (SQLstmt, values) => {
   });
 };
 
+const SQL_GEO_SELECT = `SELECT id, code, code geo_code, name, name geotech
+, address address1, city, state state_prov, zipcode, firm_num, main_contact
+, main_contact_phone, main_contact_email, secondary_contact
+, secondary_contact_phone, secondary_contact_email, created_by, last_updated_by
+FROM geotechs
+WHERE 1=1`;
+
 const GeotechModel = {
 
   getGeos: () => {
-    const SQLstmt = 'SELECT id, code, name from geotechs';
+    const SQLstmt = SQL_GEO_SELECT + ' order by name';
     const values = [];
     return sqlPromise(SQLstmt, values);
   },
 
-  addGeo: (geo) => {
-    const { geo_id, code, name, address, city, state, zipcode, firm_num
+  findGeos: (params) => {
+    const { findString } = params;
+    let values = [];
+    let findClause = ''
+
+    // console.log('findGeos', findString);
+    if (findString) {
+      // console.log('findGeos inside if', findString);
+      findClause = ` and CONCAT_WS( '~', code, name, firm_num
+      , main_contact, main_contact_phone, main_contact_email)
+       like ?`;
+      values.push('%'+findString+'%');
+    }
+
+    let SQLstmt = SQL_GEO_SELECT
+    + findClause
+    + ' order by name';
+
+    return sqlPromise(SQLstmt, values);
+  },
+
+  saveGeo: (geo) => {
+    const { id, geo_code, geotech, address1, city, state_prov, zipcode, firm_num
     , main_contact, main_contact_phone, main_contact_email, secondary_contact
-    , secondary_contact_phone, secondary_contact_email }
+    , secondary_contact_phone, secondary_contact_email, created_by, last_updated_by }
     = geo;
 
     const SQLstmt = `INSERT INTO geotechs (id, code, name, address, city, state, zipcode, firm_num
@@ -30,22 +58,27 @@ const GeotechModel = {
     ON DUPLICATE KEY UPDATE code = ?, name = ?, address = ?, city = ?, state = ?
     , zipcode = ?, firm_num = ?, main_contact = ?, main_contact_phone = ?
     , main_contact_email = ?, secondary_contact = ?, secondary_contact_phone = ?
-    , secondary_contact_email = ?, created_by = ?, last_updated_by = ?`;
+    , secondary_contact_email = ?, last_updated_by = ?`;
 
-    const values = [geo_id, code, name, address, city, state, zipcode, firm_num
+    const values = [id, geo_code, geotech, address1, city, state_prov, zipcode, firm_num
     , main_contact, main_contact_phone, main_contact_email, secondary_contact
     , secondary_contact_phone, secondary_contact_email, created_by
     , last_updated_by
 
-    , code, name, address, city, state, zipcode, firm_num
+    , geo_code, geotech, address1, city, state_prov, zipcode, firm_num
     , main_contact, main_contact_phone, main_contact_email, secondary_contact
-    , secondary_contact_phone, secondary_contact_email, created_by
-    , last_updated_by
+    , secondary_contact_phone, secondary_contact_email, last_updated_by
     ];
 
     // console.log('Model addGeos: SQL', SQLstmt);
     // console.log('Model addGeos: Values', values);
 
+    return sqlPromise(SQLstmt, values);
+  },
+
+  deleteGeo: (id) => {
+    const SQLstmt = "DELETE from geotechs where id = ?";
+    const values = [id];
     return sqlPromise(SQLstmt, values);
   },
 

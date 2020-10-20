@@ -363,7 +363,7 @@ class singleView extends Component {
       this.state.scope.forEach((item, id) => {
         if (!item.delete) {  // if added scope and saved to database, then later wish to delete it.
           let child = masterScopeList.find(s => s.name === item.name );
-
+          // console.log('viewScope', masterScopeList, item, child);
           if (child.entity_type === 'FIELD_GROUP'&& child.hidden !== 'Y') {
               this.childArr.push(
                 <FieldGroup

@@ -13,7 +13,7 @@ import Grid from '@material-ui/core/Grid';
 
 // to setup draggable dialog.  Unfortunately, blocking Textfield edit.
 import Paper from '@material-ui/core/Paper';
-import Draggable from 'react-draggable';
+// import Draggable from 'react-draggable';
 
 // import designRev from '../img/designrev-black.svg';
 // import designRevWhite from '../img/designrev-white.svg';
@@ -31,6 +31,9 @@ const styles = theme => ({
   dialog: {
     // height: 500,  // dialog is set to full screen in Dialog object.  This reduces size.
     margin: 'auto'
+  },
+  container: {
+    display: 'flex',
   },
   title: {
     backgroundColor: theme.palette.secondary.main,
@@ -124,25 +127,29 @@ const CeDialog = (props) => {
           {props.actions}
         </Toolbar>
       </AppBar>
-      <DialogContent className={classes.container}>
+      <DialogContent >
         <Grid container direction='column' justify='center' alignItems='center' >
           {props.children}
         </Grid>
       </DialogContent>
-      <DialogActions>
+      <DialogActions className={classes.container}>
         <Button
           onClick = {() => handleClose(props.handleClose)}
           variant = 'contained' color='secondary'
         >
-          Close
+          Cancel
         </Button>
         {props.handleSubmit &&
           <Button
             onClick = {() => handleSubmit(props.handleSubmit)}
             variant = 'contained' color='secondary'
+            className={classes.grow}
           >
             Submit
           </Button>
+        }
+        {!props.handleSubmit &&
+          <div className={classes.grow} />
         }
       </DialogActions>
       <AlertDialogContainer />

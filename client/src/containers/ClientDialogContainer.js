@@ -1,6 +1,6 @@
 import { connect } from "react-redux";
 import ClientDialog from "../components/ClientDialog";
-import { createClient, showHideClientDialog } from "../actions";
+import { createClient, saveClients, showHideClientDialog } from "../actions";
 
 function mapStateToProps(state) {
   return {
@@ -14,6 +14,9 @@ function mapDispatchToProps(dispatch) {
   return {
     createClient: (client)=> {
       dispatch(createClient(client));
+    },
+    saveClients: (clients)=> {
+      dispatch(saveClients(clients));
     },
     showHideClientDialog: () => {
       dispatch(showHideClientDialog());

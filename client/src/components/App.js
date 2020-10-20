@@ -24,6 +24,10 @@ import WelcomeContainer from "../containers/WelcomeContainer";
 import UnderConstruction from "../components/UnderConstruction";
 import ProjectCustomContainer from "../containers/ProjectCustomContainer";
 import SearchContainer from '../containers/SearchContainer';
+import ClientContainer from '../containers/ClientContainer';
+import GeotechContainer from '../containers/GeotechContainer';
+import SubdivisionContainer from '../containers/SubdivisionContainer';
+import CityContainer from '../containers/CityContainer';
 // import ProjectTabularContainer from "../containers/ProjectTabularContainer";
 
 import blueGrey from '@material-ui/core/colors/blueGrey';
@@ -157,7 +161,6 @@ class App extends Component {
     this.props.loadRelationships();
 
     this.props.loadScope();
-
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -227,6 +230,17 @@ class App extends Component {
   }
 
   renderApp(classes) {
+    // Test for user reload of page.  Now placed in renderApp
+    // if (window.performance) {
+    //   console.info("window.performance works fine on this browser");
+    // }
+    if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
+      // console.info( "User reloaded page" );
+      window.history.pushState('','',`/`);
+    }
+    // else {
+    //   console.info( "This page is not reloaded");
+    // }
     return (
       <BrowserRouter>
         <Fragment>
@@ -248,6 +262,10 @@ class App extends Component {
               <Route path="/volumeproject" component={ProjectCustomContainer} />
               <Route path="/customproject" component={ProjectCustomContainer} />
               <Route path="/search" component={SearchContainer} />
+              <Route path="/client" component={ClientContainer} />
+              <Route path="/city" component={CityContainer} />
+              <Route path="/subdivision" component={SubdivisionContainer} />
+              <Route path="/geotech" component={GeotechContainer} />
               <Route path="/underconstruction" component={UnderConstruction} />
               <Route path="/dashboard" render={() =>
                 <Grid container justify='center' alignItems='center'>
@@ -271,45 +289,6 @@ class App extends Component {
     );
   }
 
-  // renderApp(classes) {
-  //   return (
-  //     <BrowserRouter>
-  //
-  //       <div className={classes.root}>
-  //         {!this.state.welcome && <HeaderContainer toggleDrawer = {this.toggleDrawer} navOpen = {this.state.open}/>}
-  //         <Grid container className={this.state.welcome? classes.appBodyWide : classes.appBody}>
-  //           <Drawer
-  //             open={this.state.open}
-  //             variant='persistent'
-  //             // anchor='left'
-  //           >
-  //             <div className={classes.toolbar2} />
-  //             <Navbar toggleWelcomeScreen={this.toggleWelcomeScreen} />
-  //           </Drawer>
-  //           <Grid item xs={12}>
-  //             {!this.state.welcome && <div className={classes.toolbar2} />}
-  //             <Switch>
-  //               <Route exact path="/" render={() =>
-  //                 <WelcomeContainer toggleWelcomeScreen={this.toggleWelcomeScreen} />
-  //               } />
-  //               <Route path="/projectmgmt" component={ProjectMgmtContainer} />
-  //               <Route path="/dashboard" render={() =>
-  //                 <Grid container justify='center' alignItems='center'>
-  //                   <Grid item>
-  //                     <h1>The Dashboard</h1>
-  //                   </Grid>
-  //                 </Grid>
-  //               } />
-  //               <Redirect to="/" />
-  //             </Switch>
-  //           </Grid>
-  //         </Grid>
-  //         {!this.state.welcome && <Footer />}
-  //       </div>
-  //     </BrowserRouter>
-  //   );
-  // }
-
   // testFooter(classes) {
   //   return (
   //     <Fragment>
@@ -327,7 +306,6 @@ class App extends Component {
   // }
 
   render() {
-
     const { classes, session } = this.props;
     const settings = session.userSettings;
 
@@ -339,17 +317,17 @@ class App extends Component {
 
     // if (session.authInProgress) return null;
     if (this.state.authInProgress) {
-      console.log('still authenticating');
+      // console.log('still authenticating');
       return null;
     }
 
     // Test to make sure we can render Screen.  Only set to true when
     // avffControls and avffRelationships are populated.
     if (!this.state.renderScreen) {
-      console.log('loading views and fields...');
+      // console.log('loading views and fields...');
       return null;
     }
-    
+
     let theme = createMuiTheme({
       typography: {
         useNextVariants: true,

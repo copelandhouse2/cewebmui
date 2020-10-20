@@ -67,6 +67,10 @@ const styles = theme => ({
   },
   colInputProps: {
     borderRadius: 4,
+  },
+  lock: {
+    height: 24,
+    width: 24,
   }
 
 });
@@ -131,6 +135,8 @@ const handleChange = (name, arrID, state, updateState) => event => {
     event.target.type === 'number' && event.target.value === ''? updateState({ [name]: null, }) :
     event.target.type === 'date' && event.target.value === ''? updateState({ [name]: null, }) :
     name === 'geo_pi'? updateState({ [name]: event.target.value.toUpperCase(), }) :
+    name === 'geo_code'? updateState({ [name]: event.target.value.replace(/[^A-Z0-9]/gi,'').toUpperCase(), }) :
+    name === 'revision'? updateState({ [name]: event.target.value.replace(/[^A-Z]/gi,'').toUpperCase(), }) :
     // name === 'block'?
     //   this.setState({ [name]: event.target.value, }, () => {
     //     if (this.state.subdivision && this.state.lot && this.state.block) {
@@ -211,18 +217,25 @@ const handleListChange = (selected, field, arrID, state, updateState, altList = 
 }
 
 const handleTabEnter = (name, currentValue, key, props) => {
-  const { loadFind, loadMessage, updateState } = props;
+  const { loadFind, loadMessage, updateState, findAction, state } = props;
   // console.log('handleTabEnter', name);
   switch (name) {
     case 'find':
-      if (currentValue === '') {
+      if (state.object === 'PROJECT' && currentValue === '') {
         loadMessage(
           { ok:false,
             status: `Empty Value`,
             statusText: 'Please include filter value for search'
           }, 'ERROR');
       } else {
-        findProjects(currentValue, loadFind, updateState);
+        if (findAction) {
+          // console.log('findAction exists');
+          findAction();
+        }
+        else {
+          // console.log('findAction does not exist');
+          findProjects(currentValue, loadFind, updateState);
+        }
       }
       break;
     case 'geo_lab':
@@ -230,6 +243,7 @@ const handleTabEnter = (name, currentValue, key, props) => {
       if (key === 13) getGeoValues(props); // TAB is handled via blur event.
       break;
     default:
+      if (findAction) findAction();
   }
 }
 
@@ -241,7 +255,7 @@ const findProjects = (search, loadFind, updateState) => {
 
 }
 
-const findFieldHelp = () => {
+const findProjectHelp = () => {
   return (
     <div>
     <Typography variant='h6' gutterBottom={true}>
@@ -269,6 +283,19 @@ const findFieldHelp = () => {
     and Scope Level: Scope, Scope Rev Desc, Plan Type, Garage Type
     , Garage Swing, FDN Type, Floor Type, Roof Type
     </Typography>
+
+    <Typography variant='h6' gutterBottom={true}>
+    Limit
+    </Typography>
+    <Typography variant='body1' gutterBottom={true}>
+    The default limit of rows returned is 200.  You can override this value
+    by using the "limit" keyword
+    </Typography>
+    <Typography variant='subtitle2' gutterBottom={true}>
+    limit:500 - Return up to 500 rows.<br />
+    limit:no - No limit.  Return everything.
+    </Typography>
+
     <Typography variant='h6' gutterBottom={true}>
     Keywords Support
     </Typography>
@@ -357,13 +384,114 @@ const findFieldHelp = () => {
   )
 }
 
-const findDescription = (loadMessage) => {
+const findClientHelp = () => {
+  return (
+    <div>
+    <Typography variant='h6' gutterBottom={true}>
+    Functionality
+    </Typography>
+    <Typography variant='body1' gutterBottom={true}>
+    Client Find field is an intelligent search field.
+    The search element will filter across the following fields...
+    </Typography>
+    <Typography variant='subtitle2' gutterBottom={true}>
+    Name, Full Name, Address1, City, State, Zip
+    </Typography>
+    </div>
+  )
+}
+const findCityHelp = () => {
+  return (
+    <div>
+    <Typography variant='h6' gutterBottom={true}>
+    Functionality
+    </Typography>
+    <Typography variant='body1' gutterBottom={true}>
+    City Find field is an intelligent search field.
+    The search element will filter across the following fields...
+    </Typography>
+    <Typography variant='subtitle2' gutterBottom={true}>
+    ID, City, State, Country
+    </Typography>
+    </div>
+  )
+}
+const findSubHelp = () => {
+  return (
+    <div>
+    <Typography variant='h6' gutterBottom={true}>
+    Functionality
+    </Typography>
+    <Typography variant='body1' gutterBottom={true}>
+    Subdivision Find field is an intelligent search field.
+    The search element will filter across the following fields...
+    </Typography>
+    <Typography variant='subtitle2' gutterBottom={true}>
+    ID, Subdivision, City
+    </Typography>
+    </div>
+  )
+}
+const findGeotechHelp = () => {
+  return (
+    <div>
+    <Typography variant='h6' gutterBottom={true}>
+    Functionality
+    </Typography>
+    <Typography variant='body1' gutterBottom={true}>
+    Geotech Find field is an intelligent search field.
+    The search element will filter across the following fields...
+    </Typography>
+    <Typography variant='subtitle2' gutterBottom={true}>
+    Lab Code, Lab, Firm Num, Main Contact, Main Email
+    </Typography>
+    </div>
+  )
+}
+const findDescription = (findObject, loadMessage) => {
 
-  loadMessage(
-    { ok:false,
-      status: `Find Field Instructions`,
-      statusText: findFieldHelp()
-    }, 'INFO');
+  // console.log('findDescription', findObject);
+  switch (findObject) {
+    case 'PROJECT':
+      loadMessage(
+        { ok:false,
+          status: `Find Field Instructions`,
+          statusText: findProjectHelp()
+        }, 'INFO');
+      break;
+    case 'CLIENT':
+      loadMessage(
+        { ok:false,
+          status: `Find Field Instructions`,
+          statusText: findClientHelp()
+        }, 'INFO');
+      break;
+    case 'CITY':
+      loadMessage(
+        { ok:false,
+          status: `Find Field Instructions`,
+          statusText: findCityHelp()
+        }, 'INFO');
+      break;
+    case 'SUBDIVISION':
+      loadMessage(
+        { ok:false,
+          status: `Find Field Instructions`,
+          statusText: findSubHelp()
+        }, 'INFO');
+      break;
+    case 'GEOTECH':
+      loadMessage(
+        { ok:false,
+          status: `Find Field Instructions`,
+          statusText: findGeotechHelp()
+        }, 'INFO');
+      break;
+
+    default:
+
+  }
+
 }
 
 const getGeoValues = (props) => {
@@ -387,8 +515,12 @@ const getGeoValues = (props) => {
   }
 };
 
-const toggleJob = (updateState) => {
-  updateState({ jobNumUnlock: !this.state.jobNumUnlock });
+const toggleJob = (updateState, state) => {
+  updateState({ jobNumUnlock: !state.jobNumUnlock });
+}
+
+const toggleID = (updateState, state) => {
+  updateState({ idUnlock: !state.idUnlock });
 }
 
 // saving value before changing it.
@@ -401,7 +533,7 @@ const handleFocus = (name, state, updateState) => {
 // field.name, state, searchForDups, updateState, searchMode
 const handleBlur = (name, props) => {
 
-  const {state, searchForDups, updateState, dupCheck} = props;
+  const {state, searchForDups, updateState, dupCheck } = props;
   // console.log('ceField handleBlur', name, state, dupCheck);
 
   switch (name) {
@@ -424,7 +556,6 @@ const handleBlur = (name, props) => {
       getGeoValues(props);
       break;
     default:
-      break;
   };
 }
 
@@ -728,7 +859,7 @@ const textField2 = (props) => {
   // const { loadFind, searchForDups, loadMessage } = props;  // passed thru container
   const { classes, theme, field, state, arrID, updateState, searchMode } = props;  // passed thru call.
   const { loadMessage } = props;  // passed thru container
-  // console.log('textField2', field, arrID);
+  // console.log('textField2', state);
   let currentValue = '';
   if (arrID||arrID===0) {
     // console.log('scope: ', field.name, arrID, state.scope[arrID]);
@@ -740,7 +871,9 @@ const textField2 = (props) => {
     currentValue = state[field.name]||'';
   }
 
-  let fieldDisabled = field.name === 'job_number' && state.jobNumUnlock? 'N':field.disabled;
+  let fieldDisabled = field.name === 'job_number' && state.jobNumUnlock ? 'N'
+    : field.name === 'id' && state.idUnlock ? 'N'
+    : field.disabled;
   // field.name === 'job_number'?console.log('currentValue: job', field):null;
   // field.name === 'job_number'?console.log('value for disabled', fieldDisabled):null;
   return (
@@ -815,7 +948,7 @@ const textField2 = (props) => {
                 classes={{
                   root: classes.adornment2
                 }}
-                onClick={() => findDescription(loadMessage)}
+                onClick={() => findDescription(state.object, loadMessage)}
               >
                 <HelpIcon />
               </IconButton>
@@ -826,8 +959,17 @@ const textField2 = (props) => {
               aria-label='job-unlock'
               color='secondary'
               title='Unlock job number for editing'
-              onClick={() => toggleJob(updateState)}>
+              onClick={() => toggleJob(updateState, state)}>
               {state.jobNumUnlock? <LockOpen /> : <Lock />}
+            </IconButton>
+            :
+            field.name === 'id' ?
+            <IconButton
+              aria-label='id-unlock'
+              color='secondary'
+              title='Unlock id for editing'
+              onClick={() => toggleID(updateState, state)}>
+              {state.idUnlock? <LockOpen /> : <Lock />}
             </IconButton>
             :null
         }}
@@ -857,9 +999,14 @@ const colField = (props) => {
     currentValue = state[field.name]||'';
   }
 
-  let fieldDisabled = field.name === 'job_number' && state.jobNumUnlock? 'N':field.disabled;
-  // field.name === 'job_number'?console.log('currentValue: job', field):null;
-  // field.name === 'job_number'?console.log('value for disabled', fieldDisabled):null;
+  let fieldDisabled = field.name === 'job_number' && state.jobNumUnlock ? 'N'
+    : field.name === 'id' && state.idUnlock ? 'N'
+    : field.disabled;
+
+  // field.name === 'id'?console.log('currentValue: id', field, state):null;
+  // field.name === 'id'?console.log('value for disabled', fieldDisabled):null;
+
+
   return (
     <TextField
       // id={field.name}
@@ -907,8 +1054,17 @@ const colField = (props) => {
             aria-label='job-unlock'
             color='secondary'
             title='Unlock job number for editing'
-            onClick={() => toggleJob(updateState)}>
+            onClick={() => toggleJob(updateState, state)}>
             {state.jobNumUnlock? <LockOpen /> : <Lock />}
+          </IconButton>
+          :
+          field.name === 'id' ?
+          <IconButton className={classes.lock}
+            aria-label='unlock'
+            color='secondary'
+            title='Unlock id for editing'
+            onClick={() => toggleID(updateState, state)}>
+            {state.idUnlock? <LockOpen /> : <Lock />}
           </IconButton>
           :null
       }}

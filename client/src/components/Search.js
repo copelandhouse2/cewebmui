@@ -100,6 +100,7 @@ class Search extends Component {
     super(props);
 
     this.state = {
+      object: 'PROJECT',
       renderScreen: false,
       currentMenuID: this.props.currentViews.id,
       currentView: this.props.VIEW||'DEFAULT',

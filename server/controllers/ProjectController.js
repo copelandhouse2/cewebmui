@@ -366,6 +366,7 @@ export const commit = (request, response) => {
       } = newRecord;
       // } = request.body[i];
 
+      // console.log('Revision info', revision, revision_desc);
 
       let scope = '', description = '', additional_options = '', comments = '';
       newRecord.scope.forEach(s=> {

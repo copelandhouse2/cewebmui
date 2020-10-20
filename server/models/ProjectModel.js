@@ -107,6 +107,9 @@ const ProjectModel = {
     let pendingClause = '', enteredByClause = '', jobNumberClause = '', addressClause = '', requestedByClause = ''
     , clientClause = '', cityClause = '', subdivisionClause = '', statusClause = '', dateRangeClause = '';
 
+    // the default limit clause
+    let limitClause = ' LIMIT 0, 10';
+
     // Based on search parameter, set the where clauses.
     if (enteredBy !== '' && enteredBy !== null) {
       enteredByClause = ' and p.user_id = ?';
@@ -165,6 +168,8 @@ const ProjectModel = {
             values.push(Number(dateRange));
           break;
         };
+        // remove limit clause when date range provided.
+        limitClause = '';
       };
     };
 
@@ -181,7 +186,7 @@ const ProjectModel = {
     + statusClause
     + dateRangeClause
     + ' order by p.job_number'
-    + ' LIMIT 0, 200';
+    + limitClause;
 
     // console.log('ProjectModel: SQL', SQLstmt, values);
     if (callback) {

@@ -1,22 +1,37 @@
 import { connect } from "react-redux";
 import Client from "../components/Client";
-import { createClient, deleteClient } from "../actions";
+import { loadViewsByName, saveClients, deleteClient, findClients
+, loadMessage } from "../actions";
 
 function mapStateToProps(state) {
   return {
     session: state.session,
-    clients: state.clients
+    message: state.message,
+    currentViews: state.currentViews,
+    currentProject: state.currentProject,
+    clients: state.clients,
+    clientSearch: state.clientSearch,
   };
 }
 
 function mapDispatchToProps(dispatch) {
   return {
-    createClient: (client)=> {
-      dispatch(createClient(client));
+    loadViewsByName: function (name) {
+      dispatch(loadViewsByName(name));
     },
-    deleteClient: (id)=> {
+    saveClients: (clients) => {
+      dispatch(saveClients(clients));
+    },
+    deleteClient: function (id) {
       dispatch(deleteClient(id));
-    }
+    },
+    findClients: function (findString) {
+      dispatch(findClients(findString));
+    },
+    loadMessage: function (message, type) {
+      dispatch(loadMessage(message, type));
+    },
+
   };
 }
 
