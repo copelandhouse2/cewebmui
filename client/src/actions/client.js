@@ -48,23 +48,23 @@ function clientsFound(findString, clients) {
   };
 }
 
-// Action to create the Client.  OLD
-// export function createClient(c) {
-//   return function (dispatch) {
-//     fetch("/clients", {
-//       method: "POST",
-//       headers: {"Content-Type": "application/json"},
-//       body: JSON.stringify(c)
-//     }).then((response) => {
-//       return response.json();  // need to do this extra .then to convert json response into object to read.
-//     }).then((response) => {
-//       // console.log('createClient response', response);
-//       dispatch(loadClients())
-//       // console.log('after dispatch load clients', response);
-//       // return response;
-//     });
-//   };
-// }
+// Action to create the Client.  Used by ClientDialog
+export function createClient(c) {
+  return function (dispatch) {
+    fetch("/clientadd", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(c)
+    }).then((response) => {
+      return response.json();  // need to do this extra .then to convert json response into object to read.
+    }).then((response) => {
+      // console.log('createClient response', response);
+      dispatch(loadClients())
+      // console.log('after dispatch load clients', response);
+      // return response;
+    });
+  };
+}
 
 // Action to add or update the Client
 export function saveClients(c) {
@@ -88,10 +88,15 @@ export function saveClients(c) {
 
 // Action to delete the Client
 export function deleteClient(id) {
-  return function (dispatch) {
+  return function (dispatch, getState) {
+    const { clientSearch } = getState();
     fetch(`/clients/${id}`, {
       method: "DELETE"
-    }).then(() => dispatch(loadClients()));
+    }).then(() => {
+      dispatch(loadClients());
+      dispatch(findClients(clientSearch.find));
+
+    })
   };
 }
 

@@ -7,6 +7,9 @@ import { withWidth } from "@material-ui/core";
 
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
+import Typography from '@material-ui/core/Typography';
+import Tooltip from '@material-ui/core/Tooltip';
+
 // import AddIcon from '@material-ui/icons/Add';
 // import Checkbox from '@material-ui/core/Checkbox';
 
@@ -117,16 +120,19 @@ class Search extends Component {
     this.initState = {...this.state};
 
     this.scopeField = {}
+
   }
 
   componentDidMount = () => {
-    // console.log('CDM Search');
+    // console.log('CDM Search: ',this.props.currentViews.name);
     // if (this.state.currentMenuID) {
     //   console.log('CDM: currentProject populated', this.props.currentProject, this.state);
     //   this.props.loadViews(this.state.currentMenuID);
     //   // this.props.loadFind('clear');
     // }
-    if (this.props.currentViews.name !== 'update') this.props.loadViewsByName('update');
+    // if (this.props.currentViews.name !== 'update') this.props.loadViewsByName('update');
+    if (this.props.currentViews.name !== 'search') this.props.loadViewsByName('search');
+
     this.scopeField = this.props.avffControls.find(control=>control.entity_type === 'FIELD' && control.name === 'scope');
     this.scopeField.display_width = 3;
 
@@ -136,14 +142,18 @@ class Search extends Component {
   static getDerivedStateFromProps(nextProps, prevState) {
     // console.log('gDSFP');
     const { currentViews } = nextProps;
-    // console.log('gDSFP: nextProps', currentViews, VIEW);
+    // console.log('gDSFP: nextProps', currentViews);
 
     // If the views object is populated, activate the screen render toggle.
     // currentViews is populated: from the menu, selecting a project.
-    if (currentViews.name === 'update' && currentViews.constructor === Object && Object.keys(currentViews).length !== 0) {
-      return {renderScreen: true };
+    // if (currentViews.name === 'search' && currentViews.constructor === Object && Object.keys(currentViews).length !== 0) {
+    //   return {renderScreen: true };
+    // }
+    if (!prevState.renderScreen && currentViews.length > 0) {
+      if (currentViews.findIndex(view => view.category === 'DEFAULT') > -1) {
+        return {renderScreen: true };
+      }
     }
-
     return null;
   }
 
@@ -176,12 +186,12 @@ class Search extends Component {
   // actions that show on bottom of page
   bottomActionBar = () => {
 
-    const { classes } = this.props;
+    const { classes, search } = this.props;
 
     return (
     <Grid container justify="flex-end" style={{marginTop: 10, marginBottom: 10}} spacing={16}>
 
-      <Grid item className={classes.grow}>
+      <Grid item>
         <Link to={`/`} className={classes.linkStyle}>
           <Button title='Return to menu'
             variant="contained"
@@ -191,6 +201,13 @@ class Search extends Component {
             Cancel
           </Button>
         </Link>
+      </Grid>
+      <Grid item className={classes.grow}>
+      <Tooltip placement="top-start" title={`Default limit 200.  Override by a) Find field 'limit:[value]' or b) Last Updated drop down`} aria-label='default limit 200'>
+        <Typography>
+          {search.findResults.length} results displayed.
+        </Typography>
+      </Tooltip>
       </Grid>
       <Grid item>
         <Button title='Select record'
@@ -231,7 +248,7 @@ class Search extends Component {
   }
 
   fieldGroupToolsTabular = () => {
-    // const { classes, theme, width } = this.props;
+    const { search } = this.props;
     return (
       <Field2Container
         field = {this.scopeField}
@@ -362,8 +379,8 @@ class Search extends Component {
     // const { classes, currentViews, width, currentProject, search } = this.props;
     // console.log('Search Render:',
     //   'state:', this.state,
-    //   // 'currentProject:', currentProject,
-    //   // 'currentViews:', currentViews,
+    //   'currentProject:', currentProject,
+    //   'currentViews:', currentViews,
     //   'find:', search.find,
     //   'findResults:', search.findResults,
     //   'recents', search.recentsResults,
@@ -397,10 +414,17 @@ class Search extends Component {
     }
 
     let currentView = [];
-    if (currentViews.children) {
-      currentView = currentViews.children.filter((view) => view.category === this.state.currentView)  // array of subviews (sections) that make up whole view.
+    // if (currentViews.children) {
+    //   currentView = currentViews.children.filter((view) => view.category === this.state.currentView)  // array of subviews (sections) that make up whole view.
+    // }
+    if (currentViews.length > 0) {
+        currentView = currentViews.filter((view) => view.category === this.state.currentView)  // array of subviews (sections) that make up whole view.
+    } else {
+      return null;
     }
+
     const title = currentView[0].label;
+
 
     // console.log('currentView', currentView);
 

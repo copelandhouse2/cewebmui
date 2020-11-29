@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Link } from "react-router-dom"
+import { Redirect, Link } from "react-router-dom"
 // import { withNavigationFocus } from 'react-navigation';
 // import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
@@ -119,10 +119,14 @@ class Subdivision extends Component {
 
     // If the views object is populated, activate the screen render toggle.
     // currentViews is populated: from the menu, selecting a project.
-    if (!prevState.renderScreen && currentViews.name === 'subdivision_maint' && currentViews.constructor === Object && Object.keys(currentViews).length !== 0) {
-      return {renderScreen: true };
+    // if (!prevState.renderScreen && currentViews.name === 'subdivision_maint' && currentViews.constructor === Object && Object.keys(currentViews).length !== 0) {
+    //   return {renderScreen: true };
+    // }
+    if (!prevState.renderScreen && currentViews.length > 0) {
+      if (currentViews.findIndex(view => view.category === 'DEFAULT') > -1) {
+        return {renderScreen: true };
+      }
     }
-
     return null;
   }
 
@@ -310,7 +314,12 @@ class Subdivision extends Component {
     // 'props Geos', this.props.geos,
     // 'props subSearch', this.props.subSearch,
     // );
-
+    
+    // if someone clicks recents and wants to navigate to project screen.
+    if (this.props.currentProject.url && this.props.currentProject.address1) {
+      // console.log('the url',this.props.currentProject.url);
+      return <Redirect to={this.props.currentProject.url} />
+    }
     // Test to make sure we can render Screen.  Only set to true when
     // currentProject and currentViews are populated.
     // If currentProject is empty, go back to Main menu.
@@ -320,12 +329,17 @@ class Subdivision extends Component {
     }
 
     let currentView = [];
-    if (currentViews instanceof Array) {
-      if (currentViews.children) {
-        currentView = currentViews.children.filter((view) => view.category === this.state.currentView)  // array of subviews (sections) that make up whole view.
-      }
+    // if (currentViews instanceof Array) {
+    //   if (currentViews.children) {
+    //     currentView = currentViews.children.filter((view) => view.category === this.state.currentView)  // array of subviews (sections) that make up whole view.
+    //   }
+    // } else {
+    //   currentView.push(currentViews);
+    // }
+    if (currentViews.length > 0) {
+        currentView = currentViews.filter((view) => view.category === this.state.currentView)  // array of subviews (sections) that make up whole view.
     } else {
-      currentView.push(currentViews);
+      return null;
     }
 
     const title = currentView[0].label;

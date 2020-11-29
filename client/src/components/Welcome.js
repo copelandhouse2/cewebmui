@@ -20,12 +20,16 @@ const btnSize = {
   xl: 200,
 };
 
+const TIMEOUT = 1000;
+
 const textStrength = 'main';
 const styles = theme => ({
   container: {
     minHeight: '100%',
     // backgroundColor: theme.palette.secondary.main,
     display: 'grid',
+    // width: '90%',
+    // margin: 'auto'
   },
   title: {
     fontFamily: 'Walter Turncoat',
@@ -66,7 +70,7 @@ const styles = theme => ({
       '& $imageSrc': {
         opacity: 1,
         transitionProperty: 'opacity',
-        transitionDuration: '1s',
+        transitionDuration: '.5s',
         transitionTimingFunction: 'ease-in-out',
       },
     },
@@ -96,7 +100,7 @@ const styles = theme => ({
       '& $imageSrc': {
         opacity: 1,
         transitionProperty: 'opacity',
-        transitionDuration: '1s',
+        transitionDuration: '.5s',
         transitionTimingFunction: 'ease-in-out',
       },
     },
@@ -149,7 +153,7 @@ const styles = theme => ({
     // bottom: 0,
     opacity: '0.5',
     transitionProperty: 'opacity',
-    transitionDuration: '1s',
+    transitionDuration: '.5s',
     transitionTimingFunction: 'ease-in-out',
     height: '75%',
     // width: '80%',
@@ -248,28 +252,13 @@ class Welcome extends Component {
     } else if (name ==='setup'||name==='inspection') {
       this.setState( { categoryID: id, url: url, previous: newPrevious } )
       this.props.loadCurrentMenu(id);
-    } else if (name==='volnew'||name === 'cusnew') {
-      this.setState( { previous: newPrevious } )
-      this.props.loadCurrentMenu(id);
-    } else if (name==='update'||name === 'volupdate'||name === 'cusupdate'||name ==='volume'||name==='custom') {
-      // console.log('Update', newPrevious);
-
-      // At this point, we are leaving the menu and moving out to project pages.
+    }
+    else {
       this.props.loadCurrentMenu(id);
       this.props.loadViews(id);
       this.props.assignNewProjectScope({ menuFlow: newPrevious, categoryID: id, url: url, initialScope: [], scope: [] });
-      this.setState( { url: url, redirect: true } );
-    } else {
-      let curScope = [...this.state.scope];
+      this.setState( { previous: newPrevious, url: url, redirect: true } );
 
-      // test for existence.
-      let index = curScope.findIndex(scope => scope.name === name);
-      // console.log('handleClick curScope BEFORE: ', index, button.name, curScope);
-
-      // either remove value or add it.
-      index > -1 ? curScope.splice(index, 1) : curScope.push(selected);
-      // console.log('handleClick curScope AFTER: ', index, button.name, curScope);
-      this.setState({ scope: curScope });
     };
 
   };
@@ -316,7 +305,7 @@ class Welcome extends Component {
 
     // const { classes, currentMenu, currentProject } = this.props;
     const { classes, currentMenu } = this.props;
-    // console.log('the state', this.state);
+    // console.log('Welcome: the state', this.state);
     // console.log('controls', currentMenu);
     // console.log('currentProject', currentProject);
 
@@ -344,14 +333,6 @@ class Welcome extends Component {
           </Grid>
         }
 
-        { (name === 'volume'||name==='custom') &&
-          <Grid item xs={12}>
-            <Typography className={classes.title}>
-              New Project or Edit an Existing one?
-            </Typography>
-          </Grid>
-        }
-
         { (name === 'setup') &&
           <Grid item xs={12}>
             <Typography className={classes.title}>
@@ -360,15 +341,15 @@ class Welcome extends Component {
           </Grid>
         }
 
-        { (name === 'volnew' || name==='cusnew') &&
+        { (name === 'inspection') &&
           <Grid item xs={12}>
             <Typography className={classes.title}>
-              Select Scope Item(s) for Project...
+              Inspection Activities
             </Typography>
           </Grid>
         }
 
-        { (name==='top'||name === 'volume'||name==='custom') &&
+        { (name==='top') &&
           <Grid item xs={12}>
             <Grid
               container
@@ -378,10 +359,10 @@ class Welcome extends Component {
               // spacing={16}
             >
             {currentMenu.children && currentMenu.children.map(button => (
+              button.name!=='setup'&&
               <Grid item key={button.name} xs={12} sm={6} md={4} lg={3} className={classes.buttonGroup}>
-                {button.name!=='update'&&button.name!=='volupdate'&&button.name!=='cusupdate'&&
                 <Fragment>
-                <Fade in={true} timeout={5000}>
+                <Fade in={true} timeout={TIMEOUT}>
                   <Fab
                     className={classes.fab}
                     onClick={ this.handleClick(button) }
@@ -396,7 +377,7 @@ class Welcome extends Component {
                     </div>
                   </Fab>
                 </Fade>
-                <Fade in={true} timeout={5000}>
+                <Fade in={true} timeout={TIMEOUT}>
                   <Typography
                     variant='h2'
                     color='inherit'
@@ -406,51 +387,24 @@ class Welcome extends Component {
                   </Typography>
                 </Fade>
                 </Fragment>
-                }
-                {(button.name==='update'||button.name==='volupdate'||button.name==='cusupdate')&&
-                <Fragment>
-                <Fade in={true} timeout={5000}>
-                  <Fab
-                    className={classes.fab}
-                    onClick={ this.handleClick(button) }
-                  >
-                    <div
-                      className={classes.fabInner}
-                      style={{
-                        backgroundColor: button.background_color,
-                      }}
-                    >
-                    <img src={this.useSvg(button.image)} alt={button.label} className={classes.imageSrc} />
-                    </div>
-                  </Fab>
-                </Fade>
-                <Fade in={true} timeout={5000}>
-                  <Typography
-                    variant='h2'
-                    color='inherit'
-                    className={classes.buttonTitle}
-                  >
-                    {button.label}
-                  </Typography>
-                </Fade>
-                </Fragment>
-                }
               </Grid>
             ))}
             </Grid>
           </Grid>
         }
 
-        { (name==='setup'||name==='volnew'||name==='cusnew'||name==='inspection') &&
+        { (name==='setup'||name==='inspection') &&
           <Grid item xs={12}>
             <Grid
               container
-              justify='flex-start'
+              // justify='flex-start'
+              justify='space-between'
+
               alignItems='flex-start'
             >
               {currentMenu.children && currentMenu.children.map(button => (
-                <Grid item key={button.name} xs={4} md={3} lg={2} className={classes.buttonGroup}>
-                  <Fade in={true} timeout={5000}>
+                <Grid item key={button.name} xs={6} md={4} lg={3} className={classes.buttonGroup}>
+                  <Fade in={true} timeout={TIMEOUT}>
                     <Fab
                       className={classes.childFab}
                       onClick={ this.handleClick(button) }
@@ -474,7 +428,7 @@ class Welcome extends Component {
                     </Fab>
                   </Fade>
 
-                  <Fade in={true} timeout={5000}>
+                  <Fade in={true} timeout={TIMEOUT}>
                     <Typography
                       variant='caption'
                       color='secondary'
@@ -490,6 +444,7 @@ class Welcome extends Component {
         }
         { (name!=='top') &&
           <Grid item xs={12} className={classes.actionRow}>
+
             <Grid container justify='space-around'>
               <Grid item>
                 <Button title='Go Back'
@@ -501,23 +456,8 @@ class Welcome extends Component {
                   Go Back
                 </Button>
               </Grid>
-              { (name==='setup'||name==='volnew'||name==='cusnew'||name==='inspection') &&
-                <Grid item>
-                    <Button title='Next'
-                      variant="contained"
-                      color="secondary"
-                      disabled={this.state.scope.length<=0}
-                      onClick={this.handleButtonNext}
-                    >
-                  { // <Link to={this.state.url}>
-                    //   Next
-                    // </Link>
-                  }
-                      Next
-                    </Button>
-                </Grid>
-              }
             </Grid>
+
           </Grid>
         }
       </Grid>

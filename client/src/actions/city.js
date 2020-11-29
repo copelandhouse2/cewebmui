@@ -61,10 +61,10 @@ function citiesFound(findString, clients) {
   };
 }
 
-// Action to create the City
+// Action to create the City.  Used by City Dialog
 export function createCity(c) {
   return function (dispatch) {
-    fetch("/cities", {
+    fetch("/cityadd", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(c)

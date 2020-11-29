@@ -58,7 +58,7 @@ export const show = (request, response) => {
   });
 }
 
-// OLD FUNCTION: function to add a client.
+// function to add a client.
 export const create = (request, response) => {
 
   ClientModel.addClient(request.body, function(err, result) {

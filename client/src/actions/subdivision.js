@@ -51,7 +51,7 @@ function subdivisionsFound(findString, subdivisions) {
 // Action to create the Subdivision
 export function createSubdivision(c) {
   return function (dispatch) {
-    fetch("/subdivisions", {
+    fetch("/subdivisionadd", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(c)

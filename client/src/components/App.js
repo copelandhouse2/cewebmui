@@ -1,4 +1,4 @@
-// v2.1.2
+// v2.1.3
 import React, { Component, Fragment } from "react";
 
 // import "../css/App.css";
@@ -29,7 +29,7 @@ import ClientContainer from '../containers/ClientContainer';
 import GeotechContainer from '../containers/GeotechContainer';
 import SubdivisionContainer from '../containers/SubdivisionContainer';
 import CityContainer from '../containers/CityContainer';
-// import ProjectTabularContainer from "../containers/ProjectTabularContainer";
+import InspectionContainer from "../containers/InspectionContainer";
 
 import blueGrey from '@material-ui/core/colors/blueGrey';
 
@@ -262,6 +262,7 @@ class App extends Component {
               {/*when you get here, the currentMenu is loaded.*/}
               <Route path="/volumeproject" component={ProjectCustomContainer} />
               <Route path="/customproject" component={ProjectCustomContainer} />
+              <Route path="/inspection" component={InspectionContainer} />
               <Route path="/search" component={SearchContainer} />
               <Route path="/client" component={ClientContainer} />
               <Route path="/city" component={CityContainer} />

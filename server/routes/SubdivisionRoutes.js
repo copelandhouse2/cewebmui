@@ -13,10 +13,8 @@ router.get("/subdivisionsearch/:findString", find);
 router.get("/subdivisions/:id", show);
 
 //posting new entries to the database
+router.post("/subdivisionadd", create);
 router.post("/subdivisions", save);
-
-//posting new entries to the database
-// router.post("/subdivisions", create);
 
 //deleting entries from the database
 router.delete("/subdivisions/:id", remove);

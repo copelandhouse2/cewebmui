@@ -13,10 +13,8 @@ router.get("/citysearch/:findString", find);
 router.get("/cities/:id", show);
 
 //posting new entries to the database
+router.post("/cityadd", create);
 router.post("/cities", save);
-
-//posting new entries to the database
-// router.post("/cities", create);
 
 //putting update entries to the database
 // router.put("/cities/:id", update);

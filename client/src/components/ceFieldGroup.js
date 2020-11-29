@@ -1262,9 +1262,19 @@ class extends Component {
       <Grid container justify='center'>
         <Grid item xs={12} style={ {marginTop: 10, marginBottom: 10, borderTop: '1px solid black'} }>
           <Toolbar variant='dense' className={classes.toolbar}>
+
+            {data.length>0?
+              <Tooltip placement="top-start" title={`Default limit 200.  Override by a) Find field 'limit:[value]' or b) Last Updated drop down`} aria-label='default limit 200'>
+                <Typography align='left' style={{fontWeight: 500}} className={classes.titleFG}>
+                  {`${fieldGroup.label} (${data.length} results)`}
+                </Typography>
+              </Tooltip>
+            :
             <Typography align='left' style={{fontWeight: 500}} className={classes.titleFG}>
               {fieldGroup.label}
             </Typography>
+            }
+
             <div className={classes.grow} />
             {fgTools?fgTools():null}
           </Toolbar>
@@ -1464,7 +1474,8 @@ class extends Component {
 
 export const DefaultFG = withStyles(styles, { withTheme: true })(
 (props) => {
-  const { classes, fieldGroup, state, updateState, hide, fgTools, fieldTools, findAction } = props;
+  const { classes, fieldGroup, state, updateState, hide
+    , fgTools, fieldTools, findAction, noBorder, noLabel } = props;
   // const { classes, theme, fieldGroup, state, updateState, hide, fgTools, fieldTools } = props;
   // const { classes, theme, fieldGroup, toggleScopeDialog, removeScope, dialogState, scopeID, updateState } = props;
   // console.log('DefaultFG', findAction);
@@ -1473,11 +1484,13 @@ export const DefaultFG = withStyles(styles, { withTheme: true })(
 
   return (
     <Grid container>
-      <Grid item xs={12} style={ {marginTop: 10, marginBottom: 0, borderTop: '1px solid black'} }>
+      <Grid item xs={12} style={ noBorder?{marginTop:0}:{marginTop: 10, marginBottom: 0, borderTop: '1px solid black'} }>
         <Toolbar variant='dense' className={classes.toolbar}>
+          {!noLabel &&
           <Typography align='left' style={{fontWeight: 500}} className={classes.titleFG}>
             {fieldGroup.label}
           </Typography>
+          }
           <div className={classes.grow} />
           {fgTools?fgTools():null}
         </Toolbar>

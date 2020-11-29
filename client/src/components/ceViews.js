@@ -290,7 +290,7 @@ class singleView extends Component {
 
     // props currentProject was recently populated with a project to edit.
     if (!prevState.clear && currentProject.address1) {
-      // console.log('gDSFP: updating state');
+      // console.log('gDSFP: updating state', prevState);
       // let init = {categoryID: currentProject.categoryID, url: currentProject.url}
 
       updateProject({});
@@ -736,7 +736,10 @@ class singleView extends Component {
     // 'currentView:', this.currentView
     // );
 
-    if (this.state.redirectUrl) return <Redirect to={this.state.redirectUrl} />
+    if (this.state.redirectUrl) {
+      console.log('redirect to ', this.state.redirectUrl)
+      return <Redirect to={this.state.redirectUrl} />
+    }
 
     // console.log('ceViews Render', 'state:', this.state);
     // let currentView = [];

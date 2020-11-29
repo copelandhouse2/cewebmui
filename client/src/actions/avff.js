@@ -238,11 +238,15 @@ export function loadViewsByName(name) {
   // console.log('In loadViews');
   return function (dispatch, getState) {
     const { avffControls, avffRelationships } = getState();
-    const rootData = avffControls.find(control => control.name === name);
+    let rootTree = [];
+    // const rootData = avffControls.find(control => control.name === name);
+    const rootData = avffControls.filter(control => control.name === name && control.entity_type === 'VIEW');
     // console.log('loadViews: rootData', rootData);
-    const children = getChildren(avffControls, avffRelationships, rootData);
-    // console.log('loadViews: children', children);
-    const rootTree = { ...rootData, children: [...children] }
+    for (let i = 0; i < rootData.length; i++) {
+      const children = getChildren(avffControls, avffRelationships, rootData[i]);
+      // console.log('loadViews: children', children);
+      rootTree.push({ ...rootData[i], children: [...children] });
+    }
     // console.log('rootTree', rootTree);
     // console.log('loadViews: main view', rootTree);
     dispatch(viewsLoaded(rootTree));

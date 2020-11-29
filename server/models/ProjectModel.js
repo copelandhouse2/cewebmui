@@ -108,7 +108,7 @@ const ProjectModel = {
     , clientClause = '', cityClause = '', subdivisionClause = '', statusClause = '', dateRangeClause = '';
 
     // the default limit clause
-    let limitClause = ' LIMIT 0, 10';
+    let limitClause = ' LIMIT 0, 200';
 
     // Based on search parameter, set the where clauses.
     if (enteredBy !== '' && enteredBy !== null) {

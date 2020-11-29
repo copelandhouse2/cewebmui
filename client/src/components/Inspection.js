@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Redirect, Link } from "react-router-dom"
+import { Link } from "react-router-dom"
 // import { withNavigationFocus } from 'react-navigation';
 // import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
@@ -16,14 +16,6 @@ import { DefaultFG, MaterialTabularFG } from './ceFieldGroup';
 import CePageContainer from '../containers/cePageContainer';
 
 // import IconButton from '@material-ui/core/IconButton';
-// import SettingsIcon from '@material-ui/icons/Settings';
-
-// import FormControlLabel from '@material-ui/core/FormControlLabel';
-// import Switch from '@material-ui/core/Switch';
-
-// import fullView from '../img/fullView.svg';
-// import listView from '../img/listView.svg';
-// import columnView from '../img/columnView2.svg';
 
 const styles = theme => ({
   root: {
@@ -84,12 +76,12 @@ const styles = theme => ({
   }
 });
 
-class City extends Component {
+class Inspection extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      object: 'CITY',
+      object: 'INSPECTION',
       renderScreen: false,
       currentMenuID: this.props.currentViews.id,
       currentView: this.props.VIEW||'DEFAULT',
@@ -106,27 +98,26 @@ class City extends Component {
   }
 
   componentDidMount = () => {
-    // console.log('CDM Search');
+    console.log('Inspection CDM Search');
 
-    if (this.props.currentViews.name !== 'city_maint') this.props.loadViewsByName('city_maint');
+    if (this.props.currentViews.name !== 'inspection') this.props.loadViewsByName('inspection');
 
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    // console.log('gDSFP');
+    console.log('Inspection gDSFP');
     const { currentViews } = nextProps;
-    // console.log('gDSFP: nextProps', currentViews);
+    console.log('Inspection gDSFP: nextProps', currentViews);
 
     // If the views object is populated, activate the screen render toggle.
     // currentViews is populated: from the menu, selecting a project.
-    // if (!prevState.renderScreen && currentViews.name === 'city_maint' && currentViews.constructor === Object && Object.keys(currentViews).length !== 0) {
-    //   return {renderScreen: true };
-    // }
+    // if (!prevState.renderScreen && currentViews.name === 'inspection' && currentViews.constructor === Object && Object.keys(currentViews).length !== 0) {
     if (!prevState.renderScreen && currentViews.length > 0) {
       if (currentViews.findIndex(view => view.category === 'DEFAULT') > -1) {
         return {renderScreen: true };
       }
     }
+
     return null;
   }
 
@@ -135,25 +126,14 @@ class City extends Component {
     // const { classes, theme, width } = this.props;
     return null;
     // return (
-    //   <Grid item>
-    //     <Button
-    //       variant="contained"
-    //       color="secondary"
-    //       size="small"
-    //       // disabled={true}
-    //       title='Single View'
-    //       // className={classes.button}
-    //       // endIcon={<fullView />}
-    //       onClick={ () => {
-    //         console.log('HERE');
-    //         if (this.props.handleViewButton) this.props.handleViewButton('DEFAULT');
-    //       }}
-    //     >
-    //       <img src={fullView} alt={'Single Entry'} className={classes.imageSrc} />
-    //     </Button>
-    //   </Grid>
+    //   <Button
+    //     variant="contained"
+    //     color="secondary"
+    //     size="small"
+    //   >
+    //     Button
+    //   </Button>
     // );
-
   }
 
   // actions that show on bottom of page
@@ -181,7 +161,6 @@ class City extends Component {
   // actions that show in field group title bar
   fieldGroupTools = () => {
     return null;
-
     // return (
     //   <Tooltip title={`Manage fields`} aria-label='Settings'>
     //     <IconButton aria-label='Field Group Settings' onClick={()=>{}}>
@@ -206,7 +185,6 @@ class City extends Component {
 
   fieldGroupToolsTabular = () => {
     // const { classes, theme, width } = this.props;
-
     return null;
     // return (
     //   <Field2Container
@@ -228,19 +206,19 @@ class City extends Component {
 
   // actions that show next to / below fields in field group
   fieldTools = () => {
-
-    return (
-      <Grid item>
-      <Button title='Find records'
-        variant="contained"
-        size='small'
-        color="secondary"
-        onClick={this.findClients}
-      >
-        Search
-      </Button>
-      </Grid>
-    )
+    return null;
+    // return (
+    //   <Grid item>
+    //   <Button title='Find records'
+    //     variant="contained"
+    //     size='small'
+    //     color="secondary"
+    //     onClick={this.findClients}
+    //   >
+    //     Search
+    //   </Button>
+    //   </Grid>
+    // )
   }
 
   updateState = (updatedValues) => {
@@ -261,25 +239,25 @@ class City extends Component {
   // }
 
   // Only called by Search button.
-  findCities = () => {
-    // console.log('find cities');
-    this.props.findCities(this.state.find);
+  findSubdivisions = () => {
+    // console.log('find geotechs');
+    this.props.findInspections(this.state.find);
   }
 
   handleSave = (updatedRows) => {
     // let updated = updatedRows.filter(r=>{if (r) return r});
-    // console.log('City handle Save', updatedRows);
+    // console.log('Subdivision handle Save', updatedRows);
 
     // Testing to make sure all the edited projects still have
     // an address, client, and city.
     let dataOk = true;
     for (let i=0; i<updatedRows.length; i++) {
-      const { city_name } = updatedRows[i];
-      if (!city_name ) {
+      const { subdivision_name } = updatedRows[i];
+      if (!subdivision_name ) {
         this.props.loadMessage(
           { ok:false,
             status: 'Missing Data',
-            statusText: "Missing city name.  Please fill in"
+            statusText: "Missing subdivision name.  Please fill in"
           }, "ERROR");
         dataOk = false;
         break;
@@ -293,35 +271,28 @@ class City extends Component {
       //   // console.log('all is ok right now.  State:', updatedRows[i]);
       //   this.props.saveGeotechs(updatedRows[i]);
       // }
-      this.props.saveCities(updatedRows);
+      this.props.saveSubdivisions(updatedRows);
     }  // if dataOk
 
   }  // end of function
 
   handleDelete = (row)=> {
-    // console.log('Delete client ', row, row-1);
+    // console.log('Delete sub ', row, row-1, this.props.subSearch.findResults[row-1]);
 
     // This module supports an INSERT row as first row.  Must take into consideration
     // that row passed will be based on the array id with insert row as first row
     // Therefore need to subtract 1 to get right value for props geos array.
-    this.props.deleteCity(this.props.citySearch.findResults[row-1].id);
+    this.props.deleteSubdivision(this.props.subSearch.findResults[row-1].id);
   }
 
   render() {
-    const { currentViews, citySearch } = this.props;
+    const { currentViews, subSearch } = this.props;
     // const { classes, currentViews, width, currentProject, search } = this.props;
-    // console.log('Client Render:',
-    // 'state:', this.state,
-    // 'currentViews:', currentViews,
-    // 'props Geos', this.props.geos,
-    // 'props geoSearch', this.props.geoSearch,
-    // );
-
-    // if someone clicks recents and wants to navigate to project screen.
-    if (this.props.currentProject.url && this.props.currentProject.address1) {
-      // console.log('the url',this.props.currentProject.url);
-      return <Redirect to={this.props.currentProject.url} />
-    }
+    console.log('Inspection Render:',
+    'state:', this.state,
+    'currentViews:', currentViews,
+    'props subSearch', subSearch,
+    );
 
     // Test to make sure we can render Screen.  Only set to true when
     // currentProject and currentViews are populated.
@@ -339,18 +310,19 @@ class City extends Component {
     // } else {
     //   currentView.push(currentViews);
     // }
+
     if (currentViews.length > 0) {
         currentView = currentViews.filter((view) => view.category === this.state.currentView)  // array of subviews (sections) that make up whole view.
     } else {
       return null;
     }
+
     const title = currentView[0].label;
     // console.log('currentView', currentView);
 
     // Supporting an INSERT row.
     // let data = clientSearch.find?[...clientSearch.findResults]:[...clients];
-    // let data = citySearch.find?[...citySearch.findResults]:[...cities];
-    let data = [...citySearch.findResults];
+    let data = subSearch.find?[...subSearch.findResults]:[];
 
     data.unshift({});
 
@@ -364,7 +336,7 @@ class City extends Component {
           return (
             view.children.map((group,gid)=>{  // loop on objects in views.  Usually field groups.
             switch (group.name) {
-              case 'city_results':
+              case 'inspection_results':
                 return(<MaterialTabularFG
                         key={gid}
                         fieldGroup = {group}
@@ -376,19 +348,21 @@ class City extends Component {
                         allowAdd={true}
                         handleSave={this.handleSave}
                         handleDelete={this.handleDelete}
-                        saveHelp='Save the city'
-                        editHelp='Edit the city'
-                        deleteHelp='Delete the city'
+                        saveHelp='Save the subdivision'
+                        editHelp='Edit the subdivision'
+                        deleteHelp='Delete the subdivision'
                       />)
                 // break;
-              case 'search_criteria':
+              case 'inspection_search':
                 return(<DefaultFG
                         key={gid}
                         fieldGroup = {group}
                         state = {this.state}
                         updateState = {this.updateState}
                         fgTools={this.fieldGroupTools}
-                        findAction={this.findCities}
+                        findAction={this.findSubdivisions}
+                        noBorder={true}
+                        noLabel={true}
                       />)
                 // break;
               default:
@@ -398,7 +372,9 @@ class City extends Component {
                         state = {this.state}
                         updateState = {this.updateState}
                         hide={false}
-                        findAction={this.findCities}
+                        findAction={this.findSubdivisions}
+                        noBorder={true}
+                        noLabel={true}
                       />)
             }  // switch
           }))  // function-map-return
@@ -411,4 +387,4 @@ class City extends Component {
 }  // Component
 
 
-export default withWidth()(withStyles(styles, { withTheme: true })(City));
+export default withWidth()(withStyles(styles, { withTheme: true })(Inspection));

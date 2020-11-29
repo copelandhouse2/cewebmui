@@ -1,6 +1,6 @@
 import express from "express";
 // import { list, show, create, update, delete } from "../controllers/AddressController";
-import { list, find, show, save, update, remove } from "../controllers/ClientController";
+import { list, find, show, create, save, update, remove } from "../controllers/ClientController";
 const router = express.Router();
 
 //Getting the data... the entire list
@@ -13,6 +13,7 @@ router.get("/clientsearch/:findString", find);
 router.get("/clients/:id", show);
 
 //posting new and updated entries to the database
+router.post("/clientadd", create);
 router.post("/clients", save);
 
 //putting update entries to the database

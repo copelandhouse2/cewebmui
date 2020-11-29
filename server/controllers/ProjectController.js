@@ -481,7 +481,8 @@ export const commit = (request, response) => {
         const desc = description? `\n\n**SCOPE DESCRIPTION:** ${description}` : '';
         const opt = additional_options? `\n\n**ADDL OPTIONS:** ${additional_options}` : '';
         const com = comments? `\n\n**COMMENTS:** ${comments}` : '';
-        const end = `\n\n*Do not erase line below.  Used by webtools.  All information above line is auto-generated.  Anything below line is for your use and will be protected from overwrite.*\n__________`;
+        // const end = `\n\n*Do not erase line below.  Used by webtools.  All information above line is auto-generated.  Anything below line is for your use and will be protected from overwrite.*\n__________`;
+        const end = `\n\n*Do not erase line below.  Used by webtools.  Anything below line is protected from overwrite.*\n__________`;
         // const cardDesc = trello_list === 'CUSTOM QUEUE'? `${rev}${soil}${opt}${com}${end}${enteredDesc}`: `**${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**\n\n${rev}${soil}${opt}${com}${end}${enteredDesc}`;
         const cardDesc = `**${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**\n\n${rev}${soil}${desc}${opt}${com}${end}${enteredDesc}`;
 

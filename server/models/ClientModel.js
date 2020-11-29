@@ -103,7 +103,7 @@ const ClientModel = {
 
   },
 
-  deleteClient: function(id, callback = null){
+  delete: function(id, callback = null){
     const SQLstmt = 'DELETE from clients where id = ?';
     const values = [id];
 

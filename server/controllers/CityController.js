@@ -60,6 +60,7 @@ export const find = async (request, response) => {
 // function to add a city.
 export const create = (request, response) => {
 
+  // CityModel.addCity(request.body, function(err, result) {
   CityModel.addCity(request.body, function(err, result) {
     if (err) {
       // console.log("there was an error");
@@ -82,7 +83,17 @@ export const save = async (request, response) => {
   var errors = [];
 
   let cityPromises = [];
-  request.body.forEach((city, i) => {
+  console.log('save: data type', request.body.constructor);
+  let data = [];
+  if (request.body.constructor === Object) {
+    console.log('request.body is an object');
+    data.push(request.body);
+  } else {
+    console.log('request.body is an array');
+    data.concat(request.body);
+  }
+
+  data.forEach((city, i) => {
     // console.log('City: Adding / Adjusting: ', city);
 
     // rev.change is either unset or value = add, update, delete
