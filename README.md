@@ -1,7 +1,16 @@
 # CE Webtools
 Copeland Engineering Web Tools.
 
-## v2.1.4
+## v2.1.5 7/15/2021
+* Project entry screen: subdivision selection now populates city
+* Bug fix: Fixed the "white screen" bug.  Happens when user opens as volume project, select custom project, then clear.
+* Bug fix: Project copy now clears revision information on the newly created project.
+* Bug fix: Project copy/edit now updates entered by, requestor, last updated by, created by to reflect the current user.  Prior to the fix the copy/edit project did not update these fields and kept the old user info.
+* Bug fix: Recent projects list now queries on last updated by.
+* New Inspection List screen
+* New Inspection Entry / Update screen.
+
+## v2.1.4 11/29/2020
 * Bug fix: Now can navigate to project from maintenance screens(Clients, Cities, Subs, Geotechs) via Recents screen.  Originally, just showed blank page.
 * Added results count on Project search screen.
 * Bug fix: Could not add new client, sub, or city via the Add {client, sub, city} dialog boxes.

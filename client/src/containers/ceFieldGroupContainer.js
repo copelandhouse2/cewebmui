@@ -1,12 +1,11 @@
 import { connect } from "react-redux";
-import { FieldGroup } from "../components/ceFieldGroup";
+import { FieldGroup, DialogInspectionAddFG } from "../components/ceFieldGroup";
 // import {  } from "../actions";
 
 function mapStateToProps(state) {
   return {
-    session: state.session,
-    currentViews: state.currentViews,
-    currentProject: state.currentProject,
+
+    inspections: state.inspections,
     // dups: state.dups,
   };
 }
@@ -19,3 +18,5 @@ function mapDispatchToProps(dispatch) {
 }
 
 export const FieldGroupContainer = connect(mapStateToProps, mapDispatchToProps)(FieldGroup);
+
+export const DialogInspectionAddFGContainer = connect(mapStateToProps, mapDispatchToProps)(DialogInspectionAddFG);

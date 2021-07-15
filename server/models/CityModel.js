@@ -15,7 +15,8 @@ const SQL_CITY_SELECT = `SELECT c.id, c.id code, c.city, c.city name
   FROM cities c
   LEFT JOIN lookups l1 on c.state_prov = l1.code
   LEFT JOIN lookups l2 on c.country = l2.code
-  WHERE 1=1`;
+  WHERE 1=1
+  AND l2.type = 'COUNTRY'`;
 
 const CityModel = {
   getCities: function(callback = null) {

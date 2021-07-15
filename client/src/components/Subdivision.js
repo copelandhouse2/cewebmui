@@ -130,8 +130,8 @@ class Subdivision extends Component {
     return null;
   }
 
-  // actions that show on top of page
-  topActionBar = () => {
+  // actions that show on top of page.  Left side next to Find (when active)
+  topActionBarLeft = () => {
     // const { classes, theme, width } = this.props;
     return null;
     // return (
@@ -154,6 +154,11 @@ class Subdivision extends Component {
     //   </Grid>
     // );
 
+  }
+
+  // actions that show on top of page.  Right side next to Recents
+  topActionBarRight = () => {
+    return null;
   }
 
   // actions that show on bottom of page
@@ -314,7 +319,7 @@ class Subdivision extends Component {
     // 'props Geos', this.props.geos,
     // 'props subSearch', this.props.subSearch,
     // );
-    
+
     // if someone clicks recents and wants to navigate to project screen.
     if (this.props.currentProject.url && this.props.currentProject.address1) {
       // console.log('the url',this.props.currentProject.url);
@@ -354,7 +359,8 @@ class Subdivision extends Component {
     return (
       <CePageContainer
         title={title}
-        topActionBar={this.topActionBar}
+        topActionBarLeft={this.topActionBarLeft}
+        topActionBarRight={this.topActionBarRight}
         bottomActionBar={this.bottomActionBar}
       >
         {currentView.map((view,vid)=>{  // loop on views

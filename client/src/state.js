@@ -25,7 +25,8 @@ export default {
   },
   users: [],  // People that have approved record in users table.
   requestors: [], // users and contacts with requestor flag = 'Y'.  User can enter "on behalf of".
-  designers: [],  //
+  designers: [],
+  inspectors: [],  // contacts with the role INSEPCTION
   contacts: [],  // all people in contacts table.
   // jobnumberseqs: [],
   stateLookup: [],
@@ -50,6 +51,8 @@ export default {
   pitaLookup: [],
   revReasonLookup: [],
   revRespLookup: [],
+  inspTypeLookup: [],
+  inspReasonLookup: [],
   geos: [],
   geoSearch: {
     find: null,
@@ -80,7 +83,10 @@ export default {
     type: "",
     status: null,
     title: "",
-    content: ""
+    content: "",
+    ynDialog: false,
+    yesFunc: false,
+    noFunc: false,
   },
   showClientDialog: false,
   showContactDialog: false,
@@ -98,5 +104,22 @@ export default {
   ],
   projectHistory: [],
   projectRevisions: [],
-
+  inspections: {
+    date_range: 1,
+    find: null,
+    filter: [],
+    choice_type: null,
+    choice_id: null,
+    results: [],
+    pastProjectSpecific: [],  // used for Inspection Dialog to show past inspections
+  },
+  preferences:{
+    system:{},
+    user:{}
+  },
+  organizations: [],
+  orgSearch: {
+    find: null,
+    findResults: [],
+  },
 };

@@ -155,6 +155,11 @@ class App extends Component {
     this.props.getLookup('REV_REASON');
     this.props.getLookup('REV_RESP');
 
+    this.props.getLookup('INSP_TYPE');
+    this.props.getLookup('INSP_REASON');
+
+    // this.props.getAllLookups();
+
     this.props.loadGeotechs();
     // 1 = MLALABS
     this.props.loadGeoMasterData(1);
@@ -162,6 +167,9 @@ class App extends Component {
     this.props.loadRelationships();
 
     this.props.loadScope();
+    this.props.loadOrganizations();
+
+    // this.props.ynDialog();
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -180,11 +188,34 @@ class App extends Component {
     return updatedValues;
   }
 
-  updateAccentColor = (color) => {
-    let settings = {...this.props.session.userSettings};
+  // updateAccentColor = (color) => {
+  //   let settings = {...this.props.session.userSettings};
+  //
+  //   settings = Object.assign({id: null, created_by: this.props.session.id}, settings,
+  //     {accent_color: color, last_updated_by: this.props.session.id});
+  //   // settings[created_by] = typeof settings.created_by === 'undefined'? this.props.session.id:settings.created_by;
+  //
+  //   // this.setState({ settings: settings }, () => {
+  //   //   console.log('in setState callback');
+  //   //   this.props.updateSettings(this.state.settings);
+  //   // });
+  //   // let session = {...this.props.session};
+  //   // session.settings.accentColor = color;
+  //   // console.log('updateColor', session);
+  //   // this.props.updateSettings(session);
+  //   // console.log('in updateAccentColor', this.props.session, settings);
+  //   this.props.updateSettings(this.props.session, settings);
+  //
+  // }
 
-    settings = Object.assign({id: null, created_by: this.props.session.id}, settings,
-      {accent_color: color, last_updated_by: this.props.session.id});
+  updateAccentColor = (color) => {
+    // let prefs = {...this.props.preferences.user};
+
+    // prefs = Object.assign(prefs,
+      // {accentColor: color});
+    const prefs = {id: this.props.preferences.user.id
+      , updatedKey: 'accentColor'
+      , value: color};
     // settings[created_by] = typeof settings.created_by === 'undefined'? this.props.session.id:settings.created_by;
 
     // this.setState({ settings: settings }, () => {
@@ -196,7 +227,7 @@ class App extends Component {
     // console.log('updateColor', session);
     // this.props.updateSettings(session);
     // console.log('in updateAccentColor', this.props.session, settings);
-    this.props.updateSettings(this.props.session, settings);
+    this.props.updatePreferences(prefs);
 
   }
 
@@ -308,13 +339,17 @@ class App extends Component {
   // }
 
   render() {
-    const { classes, session } = this.props;
+    const { classes, session, preferences } = this.props;
     const settings = session.userSettings;
 
     // console.log('Render Apps.js',
-    //   'designers:', this.props.designers,
-    //   'revReasonLookup:', this.props.revReasonLookup,
-    //   'revRespLookup:', this.props.revRespLookup,
+      // 'cities', this.props.cities,
+      // 'designers:', this.props.designers,
+      // 'inspectors:', this.props.inspectors,
+      // 'revReasonLookup:', this.props.revReasonLookup,
+      // 'revRespLookup:', this.props.revRespLookup,
+      // 'preferences', this.props.preferences,
+      // 'organizations', this.props.organizations,
     // );
 
     // if (session.authInProgress) return null;
@@ -329,6 +364,10 @@ class App extends Component {
       // console.log('loading views and fields...');
       return null;
     }
+
+    const accent = preferences.user.hasOwnProperty('accentColor')?preferences.user.accentColor:
+      preferences.system.hasOwnProperty('accentColor')?preferences.system.accentColor:
+      '#42a5f5';
 
     let theme = createMuiTheme({
       typography: {
@@ -347,8 +386,8 @@ class App extends Component {
           // contrastText: '#fff'
         },
         secondary: {
-          // main: this.state.accentColor,
-          main: !settings?'#42a5f5':settings.accent_color,
+          main: accent,
+          // main: !settings?'#42a5f5':settings.accent_color,
           // main: this.state.accent_color,
           // main: '#42a5f5',
           // main: blue[400],

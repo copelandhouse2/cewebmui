@@ -26,6 +26,8 @@ const ContactModel = {
   // This function handles BOTH ADD and UPDATE.
   // Basically an UPSERT feature.
   addContact: function(contact, callback){
+    console.log("In addContact", contact)
+
     const SQLstmt = 'insert into contacts'
       + ' (id, user_id, client_id, first_name, last_name, full_name, email, mobile, other, requestor, role, active, comments'
       + ', created_by, last_updated_by)'

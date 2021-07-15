@@ -226,13 +226,13 @@ class CityDialog extends Component {
               // this.props.closeDialog('',subdivision_id, this.state.subdivision);
               this.props.closeDialog('',values);
             }}
-            variant = 'contained' color='secondary'
+            variant = 'text' color='secondary'
           >
             Close
           </Button>
           <Button
             onClick = {this.handleSubmit}
-            variant = 'contained' color='secondary'
+            variant = 'text' color='secondary'
           >
             Save
           </Button>

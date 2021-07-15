@@ -226,7 +226,7 @@ class singleView extends Component {
       openDupsDialog: false,
       openRevDialog: false,
       dialogValue: '',  // used by the sub, city, client creation dupsDialogs
-      categoryID: this.props.currentProject.categoryID,
+      // categoryID: this.props.currentProject.categoryID,
       contact_id: this.props.session.contact_id,  // contact_id
       requestor: this.props.session.full_name,       // contact full name
       user_id: this.props.session.id,      // user_id.  Originally owner_id
@@ -237,9 +237,9 @@ class singleView extends Component {
       // due_date: this.due,
       // scope: this.props.currentViews.category === 'VOLUME'?[{control_id: 28, name: 'volfoundation'}]:[],
       saveValue: '',  // stores previous values of address/lot/block to test for change
-      classification: this.props.currentViews.category,
-      geo_lab: this.props.currentViews.category === 'VOLUME'?'MLALABS':null,
-      dwelling_type: this.props.currentViews.category === 'VOLUME'?'PT 1 UNIT':null,
+      // classification: this.props.currentViews.category,
+      // geo_lab: this.props.currentViews.category === 'VOLUME'?'MLALABS':null,
+      // dwelling_type: this.props.currentViews.category === 'VOLUME'?'PT 1 UNIT':null,
       redirectUrl: null,
      };
 
@@ -410,6 +410,7 @@ class singleView extends Component {
   }
 
   handleChange = (name, arrID) => event => {
+    // console.log('in handleChange:', name, arrID);
     // name === 'jobNumUnlock'?console.log('event target', event.target):null;
     if (arrID||arrID===0) {
       let updatedScope = [...this.state.scope];
@@ -444,7 +445,7 @@ class singleView extends Component {
   };
 
   handleListChange = (selected, field, arrID) => {
-    // console.log('in handleListChange:', field.name, selected);
+    console.log('in handleListChange:', field.name, selected, arrID);
 
     if (arrID||arrID===0) {
       switch (field.name) {
@@ -479,13 +480,15 @@ class singleView extends Component {
       }
     } else {
       switch (field.name) {
-        // case 'subdivision':
-        //   this.setState({ [field.name]: selected.code }, () => {
-        //     if (this.state.subdivision && this.state.lot && this.state.block) {
-        //       this.searchForExisting('LOT')
-        //     }}
-        //   );  // fill in value.
-        //   break;
+        case 'subdivision':
+          selected?  // if selected
+            this.setState({ subdivision_id: selected.code, subdivision: selected.name
+              , city_id: selected.city_id, city: selected.city })
+          :
+            this.setState({ subdivision_id: null, subdivision: null
+              , city_id: null, city: null })  // clear out
+
+          break;
         default:
           selected?  // if selected
             field.name_id?  // then if field has an id
@@ -533,6 +536,8 @@ class singleView extends Component {
   };
 
   clearState = (clearAction = false) => {
+
+    const { currentViews } = this.props;
     // console.log('clearState');
     // does not clear out keys that are absent in initial state.
     // only merges.
@@ -558,8 +563,12 @@ class singleView extends Component {
       const stateReset = keys.reduce((acc, v) => ({ ...acc, [v]: undefined }), {})
       let scope = [];
       if (this.props.currentViews.category === 'VOLUME') scope.push({control_id: 28, name: 'volfoundation'});
-      // console.log('reset, init, scope', stateReset, this.initState, scope);
-      this.setState({ ...stateReset, ...this.initState, scope: scope, clear:true });
+      // console.log('reset, init, scope', stateReset, this.initState, scope, currentViews);
+      this.setState({ ...stateReset, ...this.initState
+        , categoryID: currentViews.id, classification: currentViews.category
+        , geo_lab: currentViews.category === 'VOLUME'?'MLALABS':null
+        , dwelling_type: currentViews.category === 'VOLUME'?'PT 1 UNIT':null
+        , scope: scope, clear:true });
     }
 
   }
@@ -612,12 +621,12 @@ class singleView extends Component {
         }, "ERROR");
     } else {
       if (andCommit) {
-        this.setState({status: 'ACTIVE'}, ()=> {
+        this.setState({status: 'ACTIVE', last_updated_by: this.props.session.id}, ()=> {
           this.props.commitAddresses(this.props.session.id, [this.state], true, true)
           this.clearState();
         });
       } else {
-        this.setState({status: 'PENDING'}, ()=> {
+        this.setState({status: 'PENDING',last_updated_by: this.props.session.id}, ()=> {
           this.props.createAddress(this.state, true);
           this.clearState();
         });

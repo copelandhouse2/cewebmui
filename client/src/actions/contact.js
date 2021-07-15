@@ -8,10 +8,14 @@ export function loadContacts() {
     }).then((contacts) => {
       dispatch(contactsLoaded(contacts));
       const requestors = contacts.filter(c => c.requestor === 'Y');
-      const designers = contacts.filter(c => c.designer === 'Y');
+      // users with DESIGNER, ARCH, ENG roles...  need to change.
+      const designers = contacts.filter(c => c.role === 'DESIGN'||c.role==='ENG'||c.role==='ARCH');
+      // users with INSPECTION role
+      const inspectors = contacts.filter(c => c.role === 'INSPECTOR');
       // console.log('the requestors', requestors);
       dispatch(requestorsLoaded(requestors));
       dispatch(designersLoaded(designers));
+      dispatch(inspectorsLoaded(inspectors));
 
     });
   };
@@ -32,6 +36,12 @@ function designersLoaded(designers) {
   return {
     type: "DESIGNERS_LOADED",
     value: designers
+  };
+}
+function inspectorsLoaded(inspectors) {
+  return {
+    type: "INSPECTORS_LOADED",
+    value: inspectors
   };
 }
 // Action to create the Contact

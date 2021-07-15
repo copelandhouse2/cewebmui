@@ -5,9 +5,11 @@ export * from './client';
 export * from './city';
 export * from './subdivision';
 export * from './geotech';
+export * from './organization';
 export * from './contact';
 export * from './lookup';
 export * from './project';
+export * from './inspection';
 
 /* SESSION ACTION */
 // Loading the list of addresses
@@ -27,6 +29,7 @@ export function loadSession(username) {
       dispatch(sessionLoaded(session));
       // console.log('sessionLoaded done', session);
       dispatch(getUserSettings(session));
+      dispatch(getPreferences(session));
       // console.log('getUserSettings done', session);
       // dispatch(loadPending(session.id));
       dispatch(loadRecents(search.recents));
@@ -62,6 +65,46 @@ function getUserSettingsDone(session, settings) {
   };
 }
 
+// Adding the calls to fetch 1 entity.
+function getPreferences(session) {
+  // console.log('getUserSettings', session);
+  return function (dispatch) {
+    fetch(`/users/preferences/${session.id}`)
+    .then( (response) => {
+      return response.json();
+    }).then((prefs) => {
+      // const cleanedPrefs = JSON.parse(prefs);
+      // console.log('getPreferences.then',prefs);
+      dispatch(getPreferencesDone(session, prefs));
+    });
+  };
+}
+function getPreferencesDone(session, prefs) {
+
+  // the attributes are in json format... like a string.
+  // need to "parse" it into a javascript object.
+  // console.log('getPrefsDone', prefs);
+  const systemPrefs = prefs.find(pref => pref.user_id === null);
+  const userPrefs = prefs.find(pref => pref.user_id === session.id);
+
+  const systemPrefAttr = Object.assign({}, JSON.parse(systemPrefs.attributes), {id:systemPrefs.id});
+  let userPrefAttr = {};
+  if (userPrefs) {
+    Object.assign(userPrefAttr, JSON.parse(userPrefs.attributes), {id: userPrefs.id});
+    // userPrefAttr = JSON.parse(userPrefs.attributes);
+  }
+
+
+  // console.log('getPrefsDone', systemPrefAttr, userPrefAttr);
+  return {
+    type: "PREFERENCES_LOADED",
+    value: {
+      system: {...systemPrefAttr},
+      user: {...userPrefAttr}
+    }
+  };
+}
+
 export function updateSettings(session, settings) {
   return function (dispatch) {
     // console.log('in commitAddress function', userID, create);
@@ -79,6 +122,42 @@ export function updateSettings(session, settings) {
       };
       // loadType === 'PENDING' ? dispatch(loadPending(userID)) : dispatch(loadProjects());
       dispatch(getUserSettings(session));
+    }).catch(err => {
+      dispatch(loadMessage(
+        { ok:false,
+          status: `${err.errno}:${err.code}`,
+          statusText: err.sqlMessage
+        }, "ERROR"));
+    });
+  };
+  // return function (dispatch) {
+  //   // dispatch({
+  //   //   type: "SETTINGS_UPDATED",
+  //   //   value: settings
+  //   // });
+  //   dispatch(settingsUpdated(settings));
+  // }
+}
+
+export function updatePreferences(prefs) {
+  return function (dispatch, getState) {
+    console.log('in updatePreferences function', prefs);
+    const {session} = getState();
+
+    fetch(`/users/preferences/${session.id}`, {
+      method: "PUT",
+      headers: {"Content-Type": "application/json"}
+      , body: JSON.stringify(prefs)
+    }).then((response) => {
+      return response.json();  // need to do this extra .then to convert json response into object to read.
+    }).then((response) => {
+      // console.log('actions.updateSettings', response)
+      if (response.errno) {
+        // console.log('2nd .then create Address', response);
+        throw response;
+      };
+      // loadType === 'PENDING' ? dispatch(loadPending(userID)) : dispatch(loadProjects());
+      dispatch(getPreferences(session));
     }).catch(err => {
       dispatch(loadMessage(
         { ok:false,
@@ -337,7 +416,27 @@ export function ackMessage() {
       type: "",
       status: null,
       title: "",
-      content: ""
+      content: "",
+      ynDialog: false,
+      yesFunc: false,
+      noFunc: false
+    }
+  };
+}
+
+export function ynDialog(action) {
+  // console.log("In ackMessage");
+  return {
+    type: "MESSAGE_LOADED",
+    value: {
+      ok: action.ok,
+      type: "INFO",
+      status: null,
+      title: action.title,
+      content: action.content,
+      ynDialog: true,
+      yesFunc: action.yesFunc,
+      noFunc: action.noFunc
     }
   };
 }

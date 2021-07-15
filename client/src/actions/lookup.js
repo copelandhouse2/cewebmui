@@ -143,4 +143,16 @@ function lookupLoaded(lookupList, type) {
       value: lookupList
     };
   }
+  if (type === 'INSP_TYPE') {
+    return {
+      type: "INSPTYPE_LOADED",
+      value: lookupList
+    };
+  }
+  if (type === 'INSP_REASON') {
+    return {
+      type: "INSPREASON_LOADED",
+      value: lookupList
+    };
+  }
 }

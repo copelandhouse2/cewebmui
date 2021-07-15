@@ -10,18 +10,23 @@ const sqlPromise = (SQLstmt, values) => {
   });
 };
 
-const SQL_USER_SELECT = `select u.id, u.id code, u.username, u.auth_key, u.approved
+const SQL_USER_SELECT = `SELECT u.id, u.id code, u.username, u.auth_key, u.approved
 , c.id contact_id, c.client_id, c.first_name, c.last_name, c.full_name
 , c.full_name name, c.email, c.mobile, c.other, c.requestor, c.role, c.active
 , c.comments
-from users u, contacts c
-where u.id = c.user_id`;
+FROM users u, contacts c
+WHERE u.id = c.user_id`;
 
 // Old select statement
 // const SQL_USER_SELECT = `select u.id, u.username, u.auth_key, u.client_id, u.contact_id
 //   , u.role, u.approved from users u`;
 
 const SQL_SETTINGS_SELECT = `SELECT id, user_id, accent_color from users_settings`;
+
+const SQL_PREFERENCES_SELECT = `SELECT id, user_id, attributes
+  FROM preferences
+  WHERE isnull(user_id) or user_id = ?
+  `;
 
 const UserModel = {
   getUsers: function(callback) {
@@ -44,7 +49,7 @@ const UserModel = {
   // This function handles BOTH ADD and UPDATE.
   // Basically an UPSERT feature.
   addUser: function(user, hashedPassword, callback){
-    // console.log("In addUser", user)
+    console.log("In addUser", user)
     const SQLstmt = 'insert into users'
       + ' (id, username, auth_key, client_id, contact_id, role, approved, created_by, last_updated_by)'
       + ' values (?, ?, ?, ?, ?, ?, ?, ?, ?)'
@@ -89,7 +94,7 @@ const UserModel = {
 
   updateSettings: function(userID, settings, callback = null) {
 
-    console.log('updateSettings', userID, settings);
+    // console.log('updateSettings', userID, settings);
 
     const { id, accent_color, created_by, last_updated_by} = settings;
 
@@ -109,7 +114,47 @@ const UserModel = {
       // console.log('UserModel updateSettings', SQLstmt, values);
       return sqlPromise(SQLstmt, values);
     }
+  },
+
+  getPreferences: function(userID, callback = null) {
+
+    let SQLstmt = SQL_PREFERENCES_SELECT;
+
+    if (callback) {
+      // console.log('Model addProject: in the callback version');
+      return sql().query(SQLstmt, [userID], callback);
+    } else {
+      // console.log('Model addProject: in the promise version');
+      return sqlPromise(SQLstmt, [userID]);
+    }
+  },
+
+  updatePreferences: function(user_id, preferences, callback = null) {
+
+    console.log('updatePreferences', user_id, preferences);
+
+    const {id, updatedKey, value} = preferences;
+
+    const attr = JSON.stringify({[updatedKey]: value});
+    console.log('updatePreferences', attr);
+
+    const SQLstmt = `insert into preferences
+      (id, user_id, attributes, created_by, last_updated_by)
+      values (?, ?, ?, ?, ?)
+      on duplicate key update attributes = JSON_MERGE_PATCH(attributes, ?), last_updated_by = ?`;
+
+    const values = [id, user_id, attr, user_id, user_id
+      , attr, user_id ];
+
+    if (callback) {
+      // console.log('Model addProject: in the callback version');
+      return sql().query(SQLstmt, values, callback);
+    } else {
+      // console.log('UserModel updateSettings', SQLstmt, values);
+      return sqlPromise(SQLstmt, values);
+    }
   }
+
 };
 
 export default UserModel;

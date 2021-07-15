@@ -12,6 +12,14 @@ function designers(state = [], action) {
   return state;
 }
 
+function inspectors(state = [], action) {
+  // console.log('contact reducer',action);
+  if (action.type === "INSPECTORS_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
 function contacts(state = [], action) {
   if (action.type === "CONTACTS_LOADED") {
     return action.value;
@@ -26,6 +34,6 @@ function showContactDialog(state = false, action) {
   return state;
 }
 
-const contactReducer = { requestors, designers, contacts, showContactDialog };
+const contactReducer = { requestors, designers, inspectors, contacts, showContactDialog };
 
 export default contactReducer

@@ -129,8 +129,8 @@ class Geotech extends Component {
     return null;
   }
 
-  // actions that show on top of page
-  topActionBar = () => {
+  // actions that show on top of page.  Left side next to Find (when active)
+  topActionBarLeft = () => {
     // const { classes, theme, width } = this.props;
     return null;
     // return (
@@ -153,6 +153,11 @@ class Geotech extends Component {
     //   </Grid>
     // );
 
+  }
+
+  // actions that show on top of page.  Right side next to Recents
+  topActionBarRight = () => {
+    return null;
   }
 
   // actions that show on bottom of page
@@ -354,7 +359,8 @@ class Geotech extends Component {
     return (
       <CePageContainer
         title={title}
-        topActionBar={this.topActionBar}
+        topActionBarLeft={this.topActionBarLeft}
+        topActionBarRight={this.topActionBarRight}
         bottomActionBar={this.bottomActionBar}
       >
         {currentView.map((view,vid)=>{  // loop on views

@@ -218,7 +218,13 @@ const ProjectModel = {
     let limitClause = ' LIMIT 0, 200';
 
     if (enteredBy) {
-      enteredByClause = ' and p.user_id = ?';
+      // entered by is the "user_id" column on projects.  It maps to users.ID column
+      // last_updated_by, created_by also map to users.ID
+      // user_id and created_by are essentially the same field.  Should maybe fix that.
+      // Making this change so recents shows the user who last touched the project
+      // enteredByClause = ' and p.user_id = ?';
+      enteredByClause = ' and p.last_updated_by = ?';
+
       values.push(Number(enteredBy));
     };
 
@@ -377,10 +383,12 @@ const ProjectModel = {
   },
 
   getScopeItems: function(projectID, callback = null) {
-    let SQLstmt = `SELECT ps.*, ps.scope name, ps.id scope_id`
-      + ' from projects_scope ps'
-      + ' where ps.project_id = ?'
-      + ' order by ps.id';
+    let SQLstmt = `SELECT ps.*, ps.scope name, ps.id code, ps.id scope_id, ac.label`
+      + ' FROM projects_scope ps'
+      + ' INNER JOIN avff_controls ac on ps.scope = ac.name'
+      + ' WHERE ac.entity_type = "ACTION"'
+      + ' AND ps.project_id = ?'
+      + ' ORDER BY ps.id';
 
     if (callback) {
       // console.log('getScopeItems: in the callback version');

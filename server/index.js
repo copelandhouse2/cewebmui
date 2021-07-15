@@ -18,7 +18,9 @@ import LookupRoutes from "./routes/LookupRoutes";
 import ContactRoutes from "./routes/ContactRoutes";
 import UserRoutes from "./routes/UserRoutes";
 import GeotechRoutes from "./routes/GeotechRoutes";
+import OrganizationRoutes from "./routes/OrganizationRoutes";
 import AvffRoutes from "./routes/AvffRoutes";
+import InspectionRoutes from "./routes/InspectionRoutes";
 
 import bodyParser from "body-parser";
 import path from "path";
@@ -87,7 +89,9 @@ app.use(JobNumberSeqRoutes);
 app.use(LookupRoutes);
 app.use(UserRoutes);
 app.use(GeotechRoutes);
+app.use(OrganizationRoutes);
 app.use(AvffRoutes);
+app.use(InspectionRoutes);
 
 const port = env.REACT_APP_MODE === 'PROD'?
   env.REACT_APP_PORT || 3001 : env.REACT_APP_PORT_TEST || 5001;

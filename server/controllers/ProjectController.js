@@ -37,7 +37,7 @@ const timeout = (ms) => {
 //     return returnData;
 // };
 
-const getScope = async proj => {
+export const getScope = async proj => {
     let promises = [];
     promises.push(ProjectModel.getScopeItems(proj.id));
     promises.push(ProjectModel.getRevisions(proj.id));

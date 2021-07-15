@@ -1,7 +1,6 @@
 import React from 'react';
 // import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -14,6 +13,9 @@ import Grid from '@material-ui/core/Grid';
 // to setup draggable dialog.  Unfortunately, blocking Textfield edit.
 import Paper from '@material-ui/core/Paper';
 // import Draggable from 'react-draggable';
+import Button from '@material-ui/core/Button';
+import IconButton from '@material-ui/core/IconButton';
+import Tooltip from '@material-ui/core/Tooltip';
 
 // import designRev from '../img/designrev-black.svg';
 // import designRevWhite from '../img/designrev-white.svg';
@@ -21,6 +23,9 @@ import Typography from '@material-ui/core/Typography';
 
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
+
+import { Exit } from '../img/exit.js';
+import Close from '@material-ui/icons/Close';
 
 const styles = theme => ({
   root: {
@@ -70,9 +75,6 @@ const styles = theme => ({
   grow: {
     flexGrow: 1,
   },
-  dHeight: {
-    minHeight:500
-  }
 });
 
 const PaperComponent = (props) => {
@@ -89,6 +91,11 @@ const handleSubmit = (handleSubmit) => {
   handleSubmit()
 }
 
+// calls the passed handleSubmit
+const handleDelete = (handleDelete) => {
+  // console.log('ceDialog: In the handleDelete');
+  handleDelete();
+}
 // calls the passed handleClose
 const handleClose = (handleClose) => {
   // console.log('In the handleClose');
@@ -103,7 +110,7 @@ const handleClose = (handleClose) => {
 
 const CeDialog = (props) => {
   // console.log('CeDialog Render');
-  const { classes, dialogWidth, dialogHeight } = props;
+  const { classes, dialogWidth, dialogHeight, theme } = props;
   // console.log('classes', classes);
   return (
     <Dialog fullWidth={true} maxWidth={dialogWidth}
@@ -112,7 +119,7 @@ const CeDialog = (props) => {
       PaperComponent={PaperComponent}
       aria-labelledby="dialog"
       PaperProps={{
-        style: { minHeight: dialogHeight },
+        style: { maxHeight: dialogHeight },
       }}
     >
       <AppBar position='static' color='secondary'>
@@ -125,6 +132,11 @@ const CeDialog = (props) => {
           </DialogTitle>
           <div className={classes.grow} />
           {props.actions}
+          <Tooltip title='Close Dialog'>
+            <IconButton aria-label='Close' onClick = {() => handleClose(props.handleClose)}>
+              <Close style={{width:32, height:32, color:theme.palette.secondary.contrastText}} />
+            </IconButton>
+          </Tooltip>
         </Toolbar>
       </AppBar>
       <DialogContent >
@@ -137,20 +149,31 @@ const CeDialog = (props) => {
           onClick = {() => handleClose(props.handleClose)}
           variant = 'contained' color='secondary'
         >
-          Cancel
+          <Exit size={24} />
+          Exit
         </Button>
+
+        {props.handleDelete &&
+          <Button
+            onClick = {() => handleDelete(props.handleDelete)}
+            variant = 'contained' color='secondary'
+          >
+            Delete
+          </Button>
+        }
+        <div className={classes.grow} />
+        {/*{!props.handleSubmit &&
+          <div className={classes.grow} />
+        } */}
         {props.handleSubmit &&
           <Button
             onClick = {() => handleSubmit(props.handleSubmit)}
             variant = 'contained' color='secondary'
-            className={classes.grow}
           >
             Submit
           </Button>
         }
-        {!props.handleSubmit &&
-          <div className={classes.grow} />
-        }
+
       </DialogActions>
       <AlertDialogContainer />
     </Dialog>

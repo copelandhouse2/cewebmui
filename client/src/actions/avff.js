@@ -194,7 +194,12 @@ export function getChildren(controls, relationships, theParent) {
       let c_control = controls.find(control => control.id === c_rship[i].control_id);
       // only include children that are views, field groups, fields.
       if (!['MENU', 'ACTION'].includes(c_control.entity_type)) {
-        children.push({ ...c_control, ...c_rship[i], children: getChildren(controls, relationships, c_control)})
+        children.push({ ...c_control, ...c_rship[i]
+          // if the relationship record has an alt_? field.  Need to override.
+          , data_type: c_rship[i].alt_data_type?c_rship[i].alt_data_type:c_control.data_type
+          , label: c_rship[i].alt_label?c_rship[i].alt_label:c_control.label
+
+          , children: getChildren(controls, relationships, c_control)})
       }
     }
 

@@ -33,17 +33,27 @@ function Footer(props) {
           </Typography>
         </Grid>
         <Grid item>
-          <IconButton color="inherit">
+          <IconButton color="inherit" href="https://www.copeland-eng.com" target="_blank">
+            <i style={ {fontSize:"1.2em"} } className="far fa-window-maximize"></i>
+          </IconButton>
+        </Grid>
+        <Grid item>
+          <IconButton color="inherit" href="https://www.facebook.com/copelandeng" target="_blank">
             <i style={ {fontSize:"1.2em"} } className="fab fa-facebook-f"></i>
           </IconButton>
         </Grid>
         <Grid item>
-          <IconButton color="inherit">
+          <IconButton color="inherit" href="https://www.linkedin.com/company/copeland-eng" target="_blank">
+            <i style={ {fontSize:"1.2em"} } className="fab fa-linkedin"></i>
+          </IconButton>
+        </Grid>
+        <Grid item>
+          <IconButton color="inherit" href="https://www.trello.com/ceprojects/boards" target="_blank">
             <i style={ {fontSize:"1.2em"} } className="fab fa-trello"></i>
           </IconButton>
         </Grid>
         <Grid item>
-          <IconButton color="inherit">
+          <IconButton color="inherit" href="https://www.box.com" target="_blank">
             <i style={ {fontSize:"1.2em"} } className="fas fa-box"></i>
           </IconButton>
         </Grid>
