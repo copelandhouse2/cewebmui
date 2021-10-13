@@ -1,7 +1,7 @@
 import { sql } from "../mysqldb";
 
 const SQL_CONTACT_SELECT = `select c.id, c.id code, c.user_id, c.client_id, c.first_name, c.last_name, c.full_name, c.full_name name
-, c.email, c.mobile, c.other, c.requestor, c.designer, c.role, c.active, c.comments, concat('(',c.id,') ',c.full_name) label
+, c.initials, c.email, c.mobile, c.other, c.requestor, c.designer, c.role, c.active, c.comments, concat('(',c.id,') ',c.full_name) label
 , u.username, u.approved
 from contacts c
 left join users u on c.user_id = u.id`;
@@ -29,17 +29,17 @@ const ContactModel = {
     console.log("In addContact", contact)
 
     const SQLstmt = 'insert into contacts'
-      + ' (id, user_id, client_id, first_name, last_name, full_name, email, mobile, other, requestor, role, active, comments'
+      + ' (id, user_id, client_id, first_name, last_name, full_name, initials, email, mobile, other, requestor, role, active, comments'
       + ', created_by, last_updated_by)'
-      + ' values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      + ' values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
       + ' on duplicate key update user_id = ?, client_id = ?, first_name = ?, last_name = ?, full_name = ?'
-      + ', email = ?, mobile = ?, other = ?, requestor = ?, role = ?, active = ?, comments = ?, last_updated_by = ?';
+      + ', initials = ?, email = ?, mobile = ?, other = ?, requestor = ?, role = ?, active = ?, comments = ?, last_updated_by = ?';
 
     const values = [contact.id, contact.user_id, contact.client_id, contact.first_name, contact.last_name
-      , contact.first_name+' '+contact.last_name, contact.email, contact.mobile, contact.other, contact.requestor, contact.role
+      , contact.first_name+' '+contact.last_name, contact.initials, contact.email, contact.mobile, contact.other, contact.requestor, contact.role
       , contact.active, contact.comments, contact.created_by, contact.last_updated_by
       , contact.user_id, contact.client_id, contact.first_name, contact.last_name, contact.first_name+' '+contact.last_name
-      , contact.email, contact.mobile, contact.other, contact.requestor, contact.role, contact.active, contact.comments
+      , contact.initials, contact.email, contact.mobile, contact.other, contact.requestor, contact.role, contact.active, contact.comments
       , contact.last_updated_by];
     return sql().query(SQLstmt, values, callback);
   },

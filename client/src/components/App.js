@@ -30,6 +30,7 @@ import GeotechContainer from '../containers/GeotechContainer';
 import SubdivisionContainer from '../containers/SubdivisionContainer';
 import CityContainer from '../containers/CityContainer';
 import InspectionContainer from "../containers/InspectionContainer";
+// import TrelloTokenDialogContainer from "../containers/TrelloTokenDialogContainer";
 
 import blueGrey from '@material-ui/core/colors/blueGrey';
 
@@ -110,14 +111,15 @@ class App extends Component {
       authenticated: localStorage.getItem('token') || false,
       open: false,  // navBar
       welcome: true,
-      authInProgress: false
+      authInProgress: false,
+      trello_token: localStorage.getItem('trello_token') || false
       // settings: !this.props.session.settings?{accent_color: '#42a5f5'}:this.props.session.settings,
       // accent_color: this.props.session.settings.accent_color
     };
   }
 
   componentDidMount() {
-    // console.log('CDM App.js')
+    // console.log('CDM App.js',this.state);
     const theToken = localStorage.getItem('token');
     if (theToken !== null) {
       this.setState({ authInProgress: true}, () =>
@@ -125,8 +127,11 @@ class App extends Component {
         // console.log('CDM... authenticating ', theToken)
         this.props.authenticate();
       })
-
     };
+
+    if (this.state.trello_token) this.props.authenticateTrello(this.state.trello_token);
+
+    // console.log('CDM App.js: After authenticating')
 
     this.props.loadClients();
     this.props.loadCities();
@@ -169,19 +174,22 @@ class App extends Component {
     this.props.loadScope();
     this.props.loadOrganizations();
 
+    // console.log('CDM App.js: Loaded all the lookups')
+
     // this.props.ynDialog();
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const { session, avffControls, avffRelationships } = nextProps;
-    // console.log('in getDerivedStateFromProps', session, avffControls, avffRelationships);
+    const { session, avffControls, avffRelationships, preferences } = nextProps;
+    // console.log('in getDerivedStateFromProps', session);
 
     let updatedValues = {};
     if (!session.authInProgress) {
       Object.assign(updatedValues, {authInProgress: false});
     }
 
-    if (!prevState.renderScreen && avffControls.length > 0 && avffRelationships.length > 0) {
+    if (!prevState.renderScreen && avffControls.length > 0 && avffRelationships.length > 0
+    ) {
       Object.assign(updatedValues, {renderScreen: true});
     }
 
@@ -250,7 +258,7 @@ class App extends Component {
   };
 
 
-  renderSignUpSignIn() {
+  renderSignUpSignIn = () => {
     return (
       // <div>
       //   <Navbar />
@@ -261,18 +269,30 @@ class App extends Component {
     );
   }
 
+  // getTrelloToken() {
+  //   return ( <TrelloTokenDialogContainer /> );
+  // }
+
+  trelloAuthSuccess = () => {
+    const trello_token = localStorage.getItem('trello_token');
+    // console.log('Successful authentication', trello_token);
+    this.setState({ trello_token: trello_token }, ()=> {
+      this.props.authenticateTrello(trello_token);
+    });
+
+  };
+
+  trelloAuthFailure = () => {
+    console.log('Failed authentication');
+  };
+
   renderApp(classes) {
     // Test for user reload of page.  Now placed in renderApp
-    // if (window.performance) {
-    //   console.info("window.performance works fine on this browser");
-    // }
     if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
-      // console.info( "User reloaded page" );
+      console.info( "User reloaded page" );
       window.history.pushState('','',`/`);
     }
-    // else {
-    //   console.info( "This page is not reloaded");
-    // }
+
     return (
       <BrowserRouter>
         <Fragment>
@@ -341,8 +361,10 @@ class App extends Component {
   render() {
     const { classes, session, preferences } = this.props;
     const settings = session.userSettings;
+    // localStorage.removeItem('trello_token');
 
     // console.log('Render Apps.js',
+      // 'state:', this.state,
       // 'cities', this.props.cities,
       // 'designers:', this.props.designers,
       // 'inspectors:', this.props.inspectors,
@@ -350,25 +372,26 @@ class App extends Component {
       // 'revRespLookup:', this.props.revRespLookup,
       // 'preferences', this.props.preferences,
       // 'organizations', this.props.organizations,
+      // 'session:', session
     // );
 
     // if (session.authInProgress) return null;
     if (this.state.authInProgress) {
-      // console.log('still authenticating');
+      console.info('still authenticating');
       return null;
     }
 
     // Test to make sure we can render Screen.  Only set to true when
     // avffControls and avffRelationships are populated.
     if (!this.state.renderScreen) {
-      // console.log('loading views and fields...');
+      console.info('loading views and fields...');
       return null;
     }
 
     const accent = preferences.user.hasOwnProperty('accentColor')?preferences.user.accentColor:
       preferences.system.hasOwnProperty('accentColor')?preferences.system.accentColor:
       '#42a5f5';
-
+    // console.log('accent', accent, preferences);
     let theme = createMuiTheme({
       typography: {
         useNextVariants: true,
@@ -436,7 +459,6 @@ class App extends Component {
       },
     });
 
-
     let whatToRender = '';
     // let whatToRender2 = '';
     // localStorage.removeItem('token');
@@ -449,10 +471,27 @@ class App extends Component {
 
     // if (!session.authInProgress && session.authenticated) {
     if (session.authenticated) {
-      whatToRender = this.renderApp(classes);
+      // console.log('session authenticated and settings loaded.  Render something');
+      if (this.state.trello_token) {
+        whatToRender = this.renderApp(classes);
+      } else {
+        // whatToRender = this.renderApp(classes);
+        // whatToRender = this.getTrelloToken()
+        window.Trello.authorize({
+          type: 'popup',
+          name: 'CE Webtools',
+          scope: {
+            read: 'true',
+            write: 'true' },
+          expiration: 'never',
+          success: this.trelloAuthSuccess,
+          error: this.trelloAuthFailure
+      });
+      };
     }
 
     else {
+      console.log('display signup signin');
       whatToRender = this.renderSignUpSignIn();
     }
 

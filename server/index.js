@@ -21,6 +21,7 @@ import GeotechRoutes from "./routes/GeotechRoutes";
 import OrganizationRoutes from "./routes/OrganizationRoutes";
 import AvffRoutes from "./routes/AvffRoutes";
 import InspectionRoutes from "./routes/InspectionRoutes";
+import TrelloRoutes from "./routes/TrelloRoutes";
 
 import bodyParser from "body-parser";
 import path from "path";
@@ -41,21 +42,21 @@ connect(env.REACT_APP_MODE, function(err) {
   }
 });
 
-tconnect(env.REACT_APP_MODE, function(err) {
-  if(!err) {
-    console.log("Trello is connected ... \n\n");
-  } else {
-    console.log("Error connecting database ... \n\n");
-  }
-});
-
-TrelloSeed.boards( (err, resp) => {
-  if(!err) {
-    console.log("Got Board info. \n\n", resp);
-  } else {
-    console.log("Error getting board info. \n\n", err.message);
-  }
-});
+// tconnect(env.REACT_APP_MODE, function(err) {
+//   if(!err) {
+//     console.log("Trello is connected ... \n\n");
+//   } else {
+//     console.log("Error connecting database ... \n\n");
+//   }
+// });
+//
+// TrelloSeed.boards( (err, resp) => {
+//   if(!err) {
+//     console.log("Got Board info. \n\n", resp);
+//   } else {
+//     console.log("Error getting board info. \n\n", err.message);
+//   }
+// });
 
 // Calling seed data
 MysqlSeed.queryGeos();
@@ -92,6 +93,7 @@ app.use(GeotechRoutes);
 app.use(OrganizationRoutes);
 app.use(AvffRoutes);
 app.use(InspectionRoutes);
+app.use(TrelloRoutes);
 
 const port = env.REACT_APP_MODE === 'PROD'?
   env.REACT_APP_PORT || 3001 : env.REACT_APP_PORT_TEST || 5001;

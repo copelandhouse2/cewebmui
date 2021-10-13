@@ -481,6 +481,7 @@ class singleView extends Component {
     } else {
       switch (field.name) {
         case 'subdivision':
+          console.log('subdivison selected', selected);
           selected?  // if selected
             this.setState({ subdivision_id: selected.code, subdivision: selected.name
               , city_id: selected.city_id, city: selected.city })

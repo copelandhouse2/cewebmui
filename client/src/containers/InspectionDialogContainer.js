@@ -2,7 +2,7 @@ import { connect } from "react-redux";
 import InspectionDialog from "../components/InspectionDialog";
 import { loadMessage, loadLocalView, filterChoices
   , filterProjects, saveInspections, deleteInspection, ynDialog
-  , loadPrevProjectInspections} from "../actions";
+  , loadPrevProjectInspections, getTrelloCard} from "../actions";
 
 function mapStateToProps(state) {
   return {
@@ -12,6 +12,7 @@ function mapStateToProps(state) {
     localView: state.localView,
     preferences: state.preferences,
     inspections: state.inspections,
+    trelloInfo: state.trelloInfo,
   };
 }
 
@@ -41,6 +42,9 @@ function mapDispatchToProps(dispatch) {
     loadPrevProjectInspections: (insp_id, cur_insp_id) => {
       dispatch(loadPrevProjectInspections(insp_id, cur_insp_id));
     },
+    // getTrelloCard: (card_id) => {
+    //   dispatch(getTrelloCard(card_id));
+    // },
   };
 }
 

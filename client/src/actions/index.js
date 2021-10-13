@@ -10,6 +10,7 @@ export * from './contact';
 export * from './lookup';
 export * from './project';
 export * from './inspection';
+export * from './trello';
 
 /* SESSION ACTION */
 // Loading the list of addresses
@@ -33,7 +34,6 @@ export function loadSession(username) {
       // console.log('getUserSettings done', session);
       // dispatch(loadPending(session.id));
       dispatch(loadRecents(search.recents));
-
     });
   };
 }

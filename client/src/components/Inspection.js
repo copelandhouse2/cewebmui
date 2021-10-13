@@ -125,7 +125,7 @@ class Inspection extends Component {
       findTitle: this.props.session.full_name,
       findID:this.props.session.contact_id,
       sort:{field:'inspection_date',data_type:'date',direction:'D'},
-      dateRange: '1',
+      dateRange: '7',
       // inspector: this.props.session.full_name,
       // inspector_id:this.props.session.contact_id,
       // project_id: null,
@@ -459,6 +459,7 @@ class Inspection extends Component {
 
   setFields = (group) => {
     const { preferences } = this.props;
+    // console.log('set fields', group, preferences);
 
     let fields = {};
     if (preferences.user.hasOwnProperty('fields')) {

@@ -249,7 +249,7 @@ class City extends Component {
   }
 
   updateState = (updatedValues) => {
-    // console.log('updateState', updatedValues);
+    console.log('updateState', updatedValues);
     this.setState(updatedValues);
   }
 
@@ -273,7 +273,7 @@ class City extends Component {
 
   handleSave = (updatedRows) => {
     // let updated = updatedRows.filter(r=>{if (r) return r});
-    // console.log('City handle Save', updatedRows);
+    console.log('City handle Save', updatedRows);
 
     // Testing to make sure all the edited projects still have
     // an address, client, and city.

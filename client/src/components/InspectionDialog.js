@@ -5,12 +5,16 @@ import { withWidth } from "@material-ui/core";
 import CeDialog from './ceDialog';
 
 import { DefaultFG, DialogDefaultFG, DialogInspectionAddFG } from './ceFieldGroup';
-import { DialogInspectionAddFGContainer } from '../containers/ceFieldGroupContainer';
+import { DialogInspectionAddFGContainer, TrelloFG } from '../containers/ceFieldGroupContainer';
 
+import { getTrelloCard } from '../actions'
 // import designRev from '../img/designrev-black.svg';
 // import designRevWhite from '../img/designrev-white.svg';
 import { InspectorImg } from '../img/inspector';
 import { HouseSearch } from '../img/houseSearch';
+
+const INSP_BOARD = '57f40236ffdeb772878b1488';
+const INSP_LIST = '58b726e1975c14fae6cd2a6d';
 
 const styles = theme => ({
   image: {
@@ -82,6 +86,7 @@ class InspectionDialog extends Component {
       ret_wall_on_slab: this.insp?this.insp.ret_wall_on_slab:null,
       inspection_contact: this.insp?this.insp.inspection_contact:null,
       cable_company_id: this.insp?this.insp.cable_company_id:null,
+      cable_company: this.insp?this.insp.cable_company:null,
       target_stress_date: this.insp?this.insp.target_stress_date:week,
       comments: this.insp?this.insp.comments:null,
       contact_id: this.insp?this.insp.contact_id:this.props.session.contact_id,
@@ -89,6 +94,20 @@ class InspectionDialog extends Component {
       deleteTrue: false,
       reasons: this.insp.hasOwnProperty('reasons')?this.insp.reasons:[],
       org_type: 'CABLE',
+      updateTrello: true,
+      trello_board: null,
+      trello_board_id: null,
+      trello_list: null,
+      trello_list_id: null,
+      trello_list_lookup:[],
+      trello_card_id: this.insp?this.insp.trello_card_id:null,
+      trello_checkitem: null,
+      trello_checkitem_id: this.insp?this.insp.trello_checkitem_id:null,
+      trello_info: null,
+      project_trello_card_id: this.insp?this.insp.project_trello_card_id:null,
+      project_trello_info: null,
+      projectTrelloCardStatus: null,
+      trelloCreateCard: 'N',
     };
 
     this.initState = {...this.state};
@@ -99,14 +118,64 @@ class InspectionDialog extends Component {
 
   componentDidMount = () => {
     // console.log('revision CDM: local state', this.state, 'parent state:', this.props.parentState);
-
+    let board_name = null;
+    let board_id = null;
+    let list_name = null;
+    let list_id = null;
+    let checkitem = null;
+    let listLookup = []
     this.props.loadLocalView(this.VIEW);
-    // console.log('InspDialog CDM',
-    //   'insp:', this.insp,
-    //   'props.inspections:', this.props.inspections,
-    // );
-    // insp?this.props.loadPrevProjectInspections(insp.project_id, insp.id):null;
-    // this.props.loadProjectRevisions(this.props.parentState.id);
+    if (this.state.trello_card_id) {
+      getTrelloCard(this.state.trello_card_id)
+      .then((card)=>{
+        if (card.hasOwnProperty('statusCode') && card.statusCode !== 200) {throw card};
+        board_name = card.board.name;
+        board_id = card.board.id;
+        list_name = card.list.name;
+        list_id = card.list.id;
+        listLookup = this.props.trelloInfo.find(b=>b.id===board_id).lists.filter(l=>!l.closed).map(l=>{ return {name:l.name,code:l.id} });
+        const card_id = card.id;  // the id in the database may be the short link.  Getting the actual id.
+        let item = null;
+        if (this.state.trello_checkitem_id) {
+          // console.info('find checklist item');
+          const found = card.checklists.some(ch=>{
+            item = ch.checkItems.find(chi=>chi.id === this.state.trello_checkitem_id)
+            // console.info('checking items',item);
+            return item?true:false;
+          })
+        }
+        // console.info('here is the item', item);
+        checkitem = item?item.name:null;
+        this.setState( {trello_board: board_name, trello_board_id: board_id
+          , trello_list: list_name, trello_list_id: list_id, trello_list_lookup: listLookup
+          , trello_checkitem: checkitem, trello_info:card, trello_card_id: card_id} )
+        })
+      .catch(err=> console.log('Error getting trello card info', err))
+    } else {
+      const board = this.props.trelloInfo.find(b=>b.id===INSP_BOARD);
+      board_name = board.name;
+      list_name = board.lists.find(l=>l.id===INSP_LIST).name;
+      listLookup = this.props.trelloInfo.find(b=>b.id===INSP_BOARD).lists.filter(l=>!l.closed).map(l=>{ return {name:l.name,code:l.id} });
+      this.setState( {trello_board: board_name, trello_board_id: INSP_BOARD
+        , trello_list: list_name, trello_list_id: INSP_LIST, trello_list_lookup: listLookup} );
+    }
+    if (this.state.project_trello_card_id) {
+      getTrelloCard(this.state.project_trello_card_id)
+      .then((card)=>{
+        if (card.hasOwnProperty('statusCode') && card.statusCode !== 200) {throw card};
+        this.setState( {project_trello_info:card, projectTrelloCardStatus:card.closed?'Archived':'Active', trelloCreateCard:card.closed?'N':'Y'} )
+        })
+      .catch(err=>{
+        this.setState( {projectTrelloCardStatus:'Could not find'} )
+        // console.log('Error getting trello card info', err);
+      })
+    }
+    // project trello card missing / not created
+    else if (this.state.project_id) {
+      this.setState( {projectTrelloCardStatus:'Missing / Not Created'} )
+      // console.log('Project trello card missing');
+    }
+
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
@@ -165,18 +234,55 @@ class InspectionDialog extends Component {
     // console.log('handleChangeCustomized: here I am!', this.state, value);
     switch(field.name) {
       case 'address1':
-        value?
-          this.setState( {project_id: value.project_id, address1: value.name
-            , revision: value.revision, scope_list: value.scope, scope_id: null, scope: null, scope_name: null
-            , inspection_type: null, inspection_reason: null, deep_beam: null
-            , barrier_beam: null, reinspection: null, rain_reinspection: null, upper_slab: null
-            , lower_slab: null, ret_wall_on_slab: null} )
-            :
+        if (value) {
+          // console.log('Address was entered', value);
+          if (value.project_trello_card_id) {
+            // console.log('getting ready to fetch');
+            getTrelloCard(value.project_trello_card_id)
+            .then(card=>{
+                if (card.hasOwnProperty('statusCode') && card.statusCode !== 200) {throw card};
+                // console.log('trello info', card);
+                this.setState( {project_id: value.project_id, address1: value.name
+                  , revision: value.revision, scope_list: value.scope, scope_id: null, scope: null, scope_name: null
+                  , inspection_type: null, inspection_reason: null, deep_beam: null
+                  , barrier_beam: null, reinspection: null, rain_reinspection: null, upper_slab: null
+                  , lower_slab: null, ret_wall_on_slab: null, project_trello_card_id: value.project_trello_card_id
+                  , project_trello_info: card, projectTrelloCardStatus:card.closed?'Archived':'Active', trelloCreateCard:card.closed?'N':'Y'} );
+                // console.log('this line is after setState')
+              })  // then
+            .catch(err=>{
+              this.setState( {project_id: value.project_id, address1: value.name
+                , revision: value.revision, scope_list: value.scope, scope_id: null, scope: null, scope_name: null
+                , inspection_type: null, inspection_reason: null, deep_beam: null
+                , barrier_beam: null, reinspection: null, rain_reinspection: null, upper_slab: null
+                , lower_slab: null, ret_wall_on_slab: null
+                , project_trello_card_id: value.project_trello_card_id, project_trello_info: null
+                , projectTrelloCardStatus:'Unable to find', trelloCreateCard:'N'} )
+
+              // console.log('Error getting trello card info', err);
+            });
+          }  // if statement
+          // project trello card was blank
+          else {
+            this.setState( {project_id: value.project_id, address1: value.name
+              , revision: value.revision, scope_list: value.scope, scope_id: null, scope: null, scope_name: null
+              , inspection_type: null, inspection_reason: null, deep_beam: null
+              , barrier_beam: null, reinspection: null, rain_reinspection: null, upper_slab: null
+              , lower_slab: null, ret_wall_on_slab: null
+              , project_trello_card_id: value.project_trello_card_id, project_trello_info: null
+              , projectTrelloCardStatus:'Missing / Not Created', trelloCreateCard:'N'} )
+
+            // console.log('project trello info blank');
+          }
+        } else {
           this.setState( {project_id: null, address1: null
             , revision: null, scope_list: [], scope_id: null, scope: null, scope_name: null
             , inspection_type: null, inspection_reason: null, deep_beam: null
             , barrier_beam: null, reinspection: null, rain_reinspection: null, upper_slab: null
-            , lower_slab: null, ret_wall_on_slab: null} );
+            , lower_slab: null, ret_wall_on_slab: null
+            , project_trello_card_id: null, project_trello_info: null
+            , projectTrelloCardStatus:null, trelloCreateCard:'N'} );
+        }
         break;
       case 'scope':
         value?
@@ -200,6 +306,16 @@ class InspectionDialog extends Component {
           , barrier_beam: null, reinspection: null, rain_reinspection: null, upper_slab: null
           , lower_slab: null, ret_wall_on_slab: null} )
         break;
+      case 'trello_board':
+        if (value) {
+          const listLookup = value.lists.filter(l=>!l.closed).map(l=>{ return {name:l.name,code:l.id} });
+          this.setState( {trello_board: value.name, trello_board_id: value.code
+            , trello_list: null, trello_list_id: null, trello_list_lookup: listLookup} );
+        } else {
+          this.setState( {trello_board: null, trello_board_id: null
+            , trello_list: null, trello_list_id: null, trello_list_lookup: []} );
+        }
+        break;
       default:
         break;
     }
@@ -213,6 +329,7 @@ class InspectionDialog extends Component {
   handleSave = () => {
     // console.log('handleSave', this.state);
     this.props.saveInspections(this.state);
+    this.handleClose();
   }  // handleSave
 
   // handleClose... handles closing the dialog box.  Uses props.updateParentState
@@ -238,8 +355,8 @@ class InspectionDialog extends Component {
   }
 
   deleteReason = (order) => {
-    // console.log('deleteReason', order);
     let reasons = [...this.state.reasons];
+    // console.log('deleteReason', order, reasons);
     const id = this.state.reasons.findIndex(r=>r.order === order);
     if (reasons[id].id) {
       reasons[id].order = null;
@@ -267,7 +384,10 @@ class InspectionDialog extends Component {
         title: 'Delete Inspection?',
         content: `Are you sure you want to remove inspection at ${this.state.address1}
          scheduled on ${this.state.inspection_date}`,
-        yesFunc: ()=>this.props.deleteInspection(this.state.id),
+        yesFunc: ()=>{
+          this.props.deleteInspection(this.state.id);
+          this.handleClose();
+        },
         noFunc: false
 
       }
@@ -289,6 +409,13 @@ class InspectionDialog extends Component {
     }
 
     // console.log('new fields', fields, group);
+
+    // OK, no preferences set.  Just return the field group fields.
+    if (!fields) {
+      return group.children;
+    }
+
+    // field preferences set!
     let newFields = []
     newFields = fields.value.map(field => {
 
@@ -302,6 +429,8 @@ class InspectionDialog extends Component {
     })
     // console.log('new fields 2', newFields);
     return newFields;
+
+
   }
 
   render() {
@@ -328,8 +457,8 @@ class InspectionDialog extends Component {
         // handleSubmit={this.handleSave}
         // handleDelete={this.handleDelete}
         actions={this.actions()}
-        dialogWidth={'md'}
-        dialogHeight={'800px'}
+        dialogWidth={'lg'}
+        dialogHeight={'95%'}
       >
 
         {this.props.localView.children.map((group, id)=>{

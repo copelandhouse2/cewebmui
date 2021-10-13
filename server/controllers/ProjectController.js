@@ -1,13 +1,7 @@
-// import addresses from '../addresses.js';
-// import AddressModel from '../models/AddressModel';
 import ProjectModel from '../models/ProjectModel';
 import JobNumberSeqModel from '../models/JobNumberSeqModel';
 import { sql } from '../mysqldb';
-import { trello, tBoards } from '../trello';
-import TrelloModel from '../models/TrelloModel';
-
-// import { tBoards } from "./TrelloInitController"  // not working.  Bizarre
-// import { TRELLO_PARAMS } from '../../envVars';
+import { trello, tBoards, TrelloModel } from '../models/TrelloModel';
 
 // code to test for daylight savings time or not.
 // Date.prototype.stdTimezoneOffset = () => {
@@ -115,7 +109,7 @@ export const listSearch = async (request, response) => {
         projects = await ProjectModel.getProjectsByArr(idListObj, orderField);
         // console.log('listSearch: projects', projects);
       } else {
-        console.log('listSearch no projects to pull');
+        // console.log('listSearch no projects to pull');
       }
     } else {
       projects = await ProjectModel.getProjects(request.params);

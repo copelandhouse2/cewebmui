@@ -83,48 +83,53 @@ const SQL_FILTER_SELECT = `(SELECT id code, full_name name, 'INSPECTOR' entity
 //   )`;
 
 const SQL_FILTER_PROJECT_SELECT = `(
-  SELECT id, id code, id project_id, concat(address1,' (',job_number,IFNULL(revision,''),')') name, 'ADDRESS' entity
+  SELECT id, id code, id project_id, concat(address1,' (',job_number,IFNULL(revision,''),')') name
+  , subdivision, city, trello_card_id project_trello_card_id, 'ADDRESS' entity
   FROM projects
   WHERE 1=1
   AND job_number like ?
   )
   UNION
-  (SELECT id, id code, id project_id, concat(address1,' (',job_number,IFNULL(revision,''),')') name, 'ADDRESS' entity
+  (SELECT id, id code, id project_id, concat(address1,' (',job_number,IFNULL(revision,''),')') name
+  , subdivision, city, trello_card_id project_trello_card_id, 'ADDRESS' entity
   FROM projects
   WHERE 1=1
   AND address1 like ?
   )`;
 
-const SQL_PROJECT_SELECT = `SELECT id, id code, id project_id, job_number, concat(address1,' (',job_number,IFNULL(revision,''),')') name, 'ADDRESS' entity
+const SQL_PROJECT_SELECT = `SELECT id, id code, id project_id, job_number, concat(address1,' (',job_number,IFNULL(revision,''),')') name
+  , subdivision, city, trello_card_id project_trello_card_id, 'ADDRESS' entity
   FROM projects
   WHERE 1=1
   AND id = ?`;
 
 const SQL_INSPECTION_SELECT = `SELECT pi.id, pi.project_id, pi.project_id code
   , concat(p.address1,' (',p.job_number,IFNULL(p.revision,''),')') name, pi.project_revision
-  , pi.scope_id, pi.contact_id, insp_date, date_format(pi.insp_date, '%Y-%m-%d') inspection_date
+  , pi.scope_id, pi.contact_id, pi.insp_date, date_format(pi.insp_date, '%Y-%m-%d') inspection_date
   , pi.type, pi.type inspection_type
   , pi.status, pi.status inspection_status
   , pi.billable, pi.billable inspection_billable, pi.vpo
   , pi.vpo inspection_vpo, pi.deep_beam, pi.barrier_beam, pi.reinspection, pi.rain_reinspection
   , pi.upper_slab, pi.lower_slab, pi.ret_wall_on_slab, pi.insp_contact inspection_contact
   , pi.cable_company_id, date_format(pi.target_stress_date, '%Y-%m-%d') target_stress_date
+  , pi.trello_card_id, pi.trello_checkitem_id
   , pi.created_by, pi.last_updated_by, pi.creation_date, pi.last_updated_date
   , p.job_number, concat(p.job_number,IFNULL(p.revision,'')) job_rev, p.address1, c.full_name inspector, ps.scope scope_name, ac.label scope
-  , p.client_id, cl.name client, p.subdivision, p.city, p.lot, p.block
+  , p.client_id, cl.name client, p.subdivision, p.city, p.lot, p.block, p.trello_card_id project_trello_card_id, o.name cable_company
   FROM inspections pi
   JOIN contacts c on pi.contact_id = c.id
   JOIN projects p on pi.project_id = p.id
   JOIN clients cl on p.client_id = cl.id
   JOIN projects_scope ps on pi.scope_id = ps.id
   JOIN avff_controls ac on ps.scope = ac.name
+  LEFT JOIN organizations o on pi.cable_company_id = o.id
   WHERE 1=1
   AND ac.entity_type = 'ACTION'`;
 
 const InspectionModel = {
   getInspections: (params) => {
     const { choiceType, choice, dateRange } = params;
-    console.log('in get inspections', params);
+    // console.log('in get inspections', params);
 
     let values = [];
     let findClause = ` and pi.id = -1`  // don't return anything
@@ -171,6 +176,7 @@ const InspectionModel = {
 
     if (dateRange !== '' && dateRange !== null) {
       const year = new Date().getFullYear();
+      // console.log('date range', dateRange);
       switch (dateRange) {
         case 'CURYEAR':
           dateRangeClause = ' and pi.insp_date BETWEEN "?-01-01" AND "?-12-31"';
@@ -212,7 +218,7 @@ const InspectionModel = {
 
   getPrevProjectInspections: (params) => {
     const { proj_id, cur_insp_id } = params;
-    console.log('in get inspections', params);
+    // console.log('in get inspections', params);
 
     let findClause = ` and pi.project_id = ? AND pi.id != ?`  // don't return anything
 
@@ -242,7 +248,7 @@ const InspectionModel = {
     }
   },
 
-  getProjectyByID: function(id, callback = null){
+  getProjectByID: function(id, callback = null){
 
     let SQLstmt = SQL_PROJECT_SELECT;
 
@@ -299,7 +305,7 @@ const InspectionModel = {
   // This function handles BOTH ADD and UPDATE.
   // Basically an UPSERT feature.
   save: function(inspection, callback = null){
-    console.log('save inspection function', inspection);
+    // console.log('save inspection function', inspection);
 
     const { id, project_id, revision, scope_id, contact_id, inspection_date
     , inspection_type, inspection_status, inspection_billable
@@ -363,7 +369,7 @@ const InspectionModel = {
   // This function handles BOTH ADD and UPDATE.
   // Basically an UPSERT feature.
   saveReason: function(aReason, callback = null){
-    console.log('save reason function', aReason);
+    // console.log('save reason function', aReason);
 
     const { id, inspection_id, reason, comments, created_by, last_updated_by } = aReason;
 
@@ -412,6 +418,23 @@ const InspectionModel = {
       // console.log('delete Sub promise', SQLstmt, values);
       return sqlPromise(SQLstmt, values);
     }
+  },
+
+  updateTrelloInfo: function(info, callback = null){
+
+    const SQLstmt = `UPDATE inspections set trello_card_id = ?
+    , trello_checkitem_id = ?
+    where id = ?`;
+    const values = [info.card_id, info.checkitem_id, info.id];
+
+    if (callback) {
+      // console.log('getClients: in the callback version');
+      return sql().query(SQLstmt, values, callback);
+    } else {
+      // console.log('delete Sub promise', SQLstmt, values);
+      return sqlPromise(SQLstmt, values);
+    }
+
   },
 
 };

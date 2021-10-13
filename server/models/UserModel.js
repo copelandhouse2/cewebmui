@@ -12,7 +12,7 @@ const sqlPromise = (SQLstmt, values) => {
 
 const SQL_USER_SELECT = `SELECT u.id, u.id code, u.username, u.auth_key, u.approved
 , c.id contact_id, c.client_id, c.first_name, c.last_name, c.full_name
-, c.full_name name, c.email, c.mobile, c.other, c.requestor, c.role, c.active
+, c.full_name name, c.initials, c.email, c.mobile, c.other, c.requestor, c.role, c.active
 , c.comments
 FROM users u, contacts c
 WHERE u.id = c.user_id`;
@@ -20,6 +20,15 @@ WHERE u.id = c.user_id`;
 // Old select statement
 // const SQL_USER_SELECT = `select u.id, u.username, u.auth_key, u.client_id, u.contact_id
 //   , u.role, u.approved from users u`;
+
+// const SQLstmt = 'select u.id, u.username, u.auth_key, u.approved
+//   +', true authenticated, co.id contact_id, co.first_name, co.full_name'
+//   +', co.role, cl.id client_id, cl.name'
+//   + ' from users u'
+//   + ' left join contacts co on co.user_id = u.id'
+//   + ' left join clients cl on co.client_id = cl.id'
+//   + ' where u.username = ?';
+
 
 const SQL_SETTINGS_SELECT = `SELECT id, user_id, accent_color from users_settings`;
 

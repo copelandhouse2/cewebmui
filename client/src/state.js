@@ -122,4 +122,5 @@ export default {
     find: null,
     findResults: [],
   },
+  trelloInfo: [],
 };

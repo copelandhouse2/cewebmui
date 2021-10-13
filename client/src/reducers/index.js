@@ -10,6 +10,7 @@ import lookupReducer from './lookup';
 import projectReducer from './project';
 import subdivisionReducer from './subdivision';
 import inspectionReducer from './inspection';
+import trelloReducer from './trello';
 
 function session(state = {}, action) {
   if (action.type === "SESSION_LOADED") {
@@ -57,6 +58,8 @@ const rootReducer = combineReducers({
   , ...subdivisionReducer
   , ...inspectionReducer
   , ...organizationReducer
+  , ...trelloReducer
+
 
 });
 export default rootReducer;

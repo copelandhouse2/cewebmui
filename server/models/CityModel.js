@@ -85,7 +85,7 @@ const CityModel = {
   },
 
   save: function(theCity, callback = null){
-    console.log('save city function', theCity);
+    // console.log('save city function', theCity);
 
     const { id, city_name, state_prov, country, created_by, last_updated_by } = theCity;
 

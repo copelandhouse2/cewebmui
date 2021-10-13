@@ -83,15 +83,16 @@ export const save = async (request, response) => {
   var errors = [];
 
   let cityPromises = [];
-  console.log('save: data type', request.body.constructor);
+  // console.log('save: data type', request.body, request.body.constructor);
   let data = [];
   if (request.body.constructor === Object) {
-    console.log('request.body is an object');
+    // console.log('request.body is an object');
     data.push(request.body);
   } else {
-    console.log('request.body is an array');
-    data.concat(request.body);
+    // console.log('request.body is an array');
+    data = [...request.body];
   }
+  // console.log('save controller', data);
 
   data.forEach((city, i) => {
     // console.log('City: Adding / Adjusting: ', city);
@@ -102,7 +103,7 @@ export const save = async (request, response) => {
       // console.log('delete scope', item.id);
       cityPromises.push(CityModel.delete(city.id));
     } else if (city.change) {  // wish to delete the scope record.
-      // console.log('add/update city', city.id);
+      console.log('add/update city', city);
       cityPromises.push(CityModel.save(city));
     }
 

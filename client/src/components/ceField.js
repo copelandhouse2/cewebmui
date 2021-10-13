@@ -620,7 +620,6 @@ const textField = (props) => {
       currentValue = state.scope[arrID][field.name]||'';
     // currentValue = state.scope[arrID][field.name]||''
   } else {
-    // console.log('project: ', field.name, arrID);
     currentValue = state[field.name]||'';
   }
 
@@ -711,13 +710,13 @@ const textField = (props) => {
 const listField = (props) => {
   const { theme, field, state, arrID, updateState, altLookups } = props;  // passed thru call
   // const { loadFind, loadMessage } = props;  // passed thru container
-
+  // console.info('listField', props.position);
   // field.name === 'find'? console.log('listField', field, altLookups): null;
   // field.name === 'entered_by'? console.log('listField', field, props[field.lookup_list]): null;
   // field.name === 'requestor'? console.log('listField', field, props[field.lookup_list]): null;
   let currentValue;
 
-  // field.name === 'inspector'?console.log('field',props):null;
+  // field.name === 'inspector'?console.info('field',field.lookup_list):null;
   // field.name === 'inspection_type'?console.log('lookups',altLookups):null;
 
   // if (field.name_id) {
@@ -784,6 +783,7 @@ const listField = (props) => {
 
   let lookup = altList?[...altList.lookup_list]:[...props[field.lookup_list]];
   // field.name === 'cable_company'?console.log('WOAH NELLY',field,lookup,props.lookup_key,state):null;
+  // field.name === 'inspector'?console.info('WOAH NELLY',lookup):null;
 
   if (props.lookup_key) {
     // field.name === 'cable_company'?console.log('1',state[props.lookup_key]):null;
@@ -807,6 +807,8 @@ const listField = (props) => {
   // field.name === 'address1'?console.log('address1 3',altLookups, field):null;
 
   // field.name === 'inspection_type'?console.log('inspection_type', lookup):null;
+  // field.name === 'trello_board'?console.info('trello_board', altLookups, field):null;
+
   const theTextfield =
   <FormControl fullWidth={true} variant='outlined' style={props.position} >
     <InputLabel shrink={true} style={ {color: theme.palette.primary.dark, backgroundColor: '#fafafa', padding: '0px 4px'} }>
@@ -873,9 +875,10 @@ const creatableListField = (props) => {
 
   let currentValue = {};
   if (field.name_id) {
-    currentValue = state[field.name_id]>=0?
+    // field.name === 'city'?console.log('city', state[field.name_id], state[field.name]):null;
+    currentValue = state[field.name_id] !== null && state[field.name_id]>=0?
       props[field.lookup_list].find(option => {
-        // field.name === 'client'?console.log('option',option):null;
+        // field.name === 'city'?console.log('option',option):null;
         return option.id === state[field.name_id]
       }) :
       {code: '', label: '', name: ''};
@@ -884,6 +887,12 @@ const creatableListField = (props) => {
       props[field.lookup_list].find(option => option.name === state[field.name]) :
       {code: '', label: '', name: ''};
   }
+
+  // field.name === 'city'?console.log('currentValue: city', currentValue):null;
+
+  // field.name === 'city'?console.log('project: ', field.name, state[field.name]):null;
+  // field.name === 'city_name'?console.log('project: ', field.name, state[field.name]):null;
+  // field.name === 'city_id'?console.log('project: ', field.name, state[field.name]):null;
 
   // field.name === 'client'?console.log('creatableListField', field, state[field.name], state[field.name_id], props[field.lookup_list], currentValue):null;
 
@@ -1302,11 +1311,11 @@ export const Field = withStyles(styles, { withTheme: true })(
 
 export const Field2 = withStyles(styles, { withTheme: true })(
 (props) => {
-  const { field } = props;
+  const { field, altLookups } = props;
   // console.log('field', field);
-  if (field.lookup_list && field.creatable === 'Y' && !props.searchMode) {
+  if ((field.lookup_list||altLookups) && field.creatable === 'Y' && !props.searchMode) {
     return creatableListField(props);
-  } else if (field.lookup_list) {
+  } else if (field.lookup_list||altLookups) {
     return listField(props);
   } else {
     return textField2(props);
