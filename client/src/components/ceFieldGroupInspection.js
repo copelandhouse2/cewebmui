@@ -60,7 +60,7 @@ export const DialogInspectionAddFG = withStyles(styles, { withTheme: true })(
   // console.log('DialogInspectionAddFG 1', fieldGroup, inspections);
   // console.log('DialogInspectionAddFG 2', primaryFields, nestedFields);
   Object.assign(fAddress1,{name_id: 'project_id',project_id:null,lookup_list:true});
-  console.log('Inspection Dialog');
+  console.log('Inspection Dialog',fieldGroup.children);
   console.log('Trello FG', fgTrello);
 
   return (
@@ -368,7 +368,30 @@ export const DialogInspectionAddFG = withStyles(styles, { withTheme: true })(
           />
         </Grid>
 
-        {// trello section
+        {dialogState.updateTrello &&
+        <Grid item xs={12} style={{margin:10}}>
+          {/* container is parent tag*/}
+          <TrelloFGContainer
+            // key={id}
+            // key={child.rship_id}
+            fieldGroup = {fgTrello}
+            fgStyles = {{}}
+            hideLabel = {true}
+            // toggleScopeDialog={()=>{}}
+            // removeScope={false}
+            // props below manage state within dialog only
+            // parentState={this.state}
+            findAction={props.findAction}
+            dialogState={props.dialogState}
+            updateState={props.updateState}
+            handleChangeCustomized={props.handleChangeCustomized}
+            clearState={props.handleClear}
+            saveState={props.handleSave}
+            handleClose={props.handleClose}
+            handleSubmit={props.handleSave}
+            handleDelete={props.handleDelete}
+          />
+        </Grid>
         }
       </Grid>
 
@@ -415,29 +438,3 @@ export const DialogInspectionAddFG = withStyles(styles, { withTheme: true })(
   )
 }
 )
-
-// {dialogState.updateTrello &&
-// <Grid item xs={12} style={{margin:10}}>
-//   {/* container is parent tag*/}
-//   <TrelloFGContainer
-//     // key={id}
-//     // key={child.rship_id}
-//     fieldGroup = {fgTrello}
-//     fgStyles = {{}}
-//     hideLabel = {true}
-//     // toggleScopeDialog={()=>{}}
-//     // removeScope={false}
-//     // props below manage state within dialog only
-//     // parentState={this.state}
-//     findAction={props.findAction}
-//     dialogState={props.dialogState}
-//     updateState={props.updateState}
-//     handleChangeCustomized={props.handleChangeCustomized}
-//     clearState={props.handleClear}
-//     saveState={props.handleSave}
-//     handleClose={props.handleClose}
-//     handleSubmit={props.handleSave}
-//     handleDelete={props.handleDelete}
-//   />
-// </Grid>
-// }
