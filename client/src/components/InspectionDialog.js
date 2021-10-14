@@ -442,7 +442,7 @@ class InspectionDialog extends Component {
       return null;
     }
 
-    // console.log('Inspection Dialog Render:', 'dialog state', this.state);
+    console.log('Inspection Dialog Render:', 'dialog state', this.state);
     // console.log('Inspection Dialog Render:', 'parent state', this.props.parentState);
     // console.log('Inspection Dialog Render:', 'inspections', this.props.inspections);
 
