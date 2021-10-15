@@ -362,6 +362,8 @@ class App extends Component {
     const { classes, session, preferences } = this.props;
     const settings = session.userSettings;
     // localStorage.removeItem('trello_token');
+    console.log('the trello function',window.Trello);
+
 
     // console.log('Render Apps.js',
       // 'state:', this.state,
@@ -471,10 +473,11 @@ class App extends Component {
 
     // if (!session.authInProgress && session.authenticated) {
     if (session.authenticated) {
-      // console.log('session authenticated and settings loaded.  Render something');
+      console.log('session authenticated and settings loaded.  Render something');
       if (this.state.trello_token) {
         whatToRender = this.renderApp(classes);
       } else {
+        console.log('Getting ready to call window.Trello.authorize');
         // whatToRender = this.renderApp(classes);
         // whatToRender = this.getTrelloToken()
         window.Trello.authorize({
