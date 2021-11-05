@@ -2,7 +2,7 @@ import { connect } from "react-redux";
 import InspectionDialog from "../components/InspectionDialog";
 import { loadMessage, loadLocalView, filterChoices
   , filterProjects, saveInspections, deleteInspection, ynDialog
-  , loadPrevProjectInspections, getTrelloCard} from "../actions";
+  , loadPrevProjectInspections } from "../actions";
 
 function mapStateToProps(state) {
   return {

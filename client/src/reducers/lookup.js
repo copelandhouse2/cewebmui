@@ -152,13 +152,6 @@ function revRespLookup(state = [], action) {
   return state;
 }
 
-function revRespLookup(state = [], action) {
-  if (action.type === "REVRESP_LOADED") {
-    return action.value;
-  }
-  return state;
-}
-
 function inspTypeLookup(state = [], action) {
   if (action.type === "INSPTYPE_LOADED") {
     return action.value;

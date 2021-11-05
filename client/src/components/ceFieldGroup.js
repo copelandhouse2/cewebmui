@@ -28,11 +28,11 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Collapse from '@material-ui/core/Collapse';
 import Divider from '@material-ui/core/Divider';
 
-import FormControlLabel from '@material-ui/core/FormControlLabel';
+// import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
-import Switch from '@material-ui/core/Switch';
-import RadioGroup from '@material-ui/core/RadioGroup';
-import Radio from '@material-ui/core/Radio';
+// import Switch from '@material-ui/core/Switch';
+// import RadioGroup from '@material-ui/core/RadioGroup';
+// import Radio from '@material-ui/core/Radio';
 
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
@@ -57,13 +57,13 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 // import RootRef from "@material-ui/core/RootRef";
 
 import Fade from '@material-ui/core/Fade';
-import Zoom from '@material-ui/core/Zoom';
+// import Zoom from '@material-ui/core/Zoom';
 
 import Delete from '@material-ui/icons/Delete';
 import Edit from '@material-ui/icons/Edit';
 import Save from '@material-ui/icons/Save';
 import Cancel from '@material-ui/icons/Cancel';
-import { Exit } from '../img/exit.js';
+// import { Exit } from '../img/exit.js';
 
 
 // Custom Field Groups
@@ -1679,7 +1679,7 @@ class extends Component {
                     arrID = {false}
                     state = {parentState}
                     updateState = {updateState}
-                    altLookups={parentState.altLookups}
+                    altLookups={parentState.altLookups.find(f=>f.name === field.name)?parentState.altLookups:null}
                     // props that are not used.
                     loadFind={()=>{}}
                     searchForDups={()=>{}}
@@ -1854,7 +1854,7 @@ class extends Component {
   }
 
   render() {
-    const { classes, theme, title, titleStyles, fieldGroup
+    const { classes, title, titleStyles, fieldGroup
       , primaryFields, nestedFields, fgStyles, fgTools } = this.props;
     const { parentState, data, sort, handleAddEdit } = this.props;
     // const { classes, theme, fieldGroup, toggleScopeDialog, removeScope, dialogState, scopeID, updateState } = props;
@@ -2064,6 +2064,7 @@ export const SimpleListView = withStyles(styles, { withTheme: true })(
               </ListItem>
               </Paper>
             )}
+            return null;
           })}
         </List>
       </Grid>
@@ -2099,7 +2100,7 @@ class extends Component {
   // }
 
   labelHeader = (field,fieldSupportsSort=true) => {
-    const { theme, parentState } = this.props;
+    const { theme } = this.props;
 
     return (
       // using data type to
@@ -2153,7 +2154,6 @@ class extends Component {
             return ((aStr > bStr) ? -1 : ((aStr < bStr) ? 1 : 0));
           }
         )
-        break;
       case 'number':
         // console.log('sort number');
         return (
@@ -2167,7 +2167,6 @@ class extends Component {
             return (bNum-aNum);
           }
         )
-        break;
       case 'date':
         // console.log('sort date');
         return (
@@ -2180,7 +2179,6 @@ class extends Component {
             return (bDate-aDate);
           }
         )
-        break;
       default:
       // console.log('sort default');
         return (
@@ -2193,12 +2191,11 @@ class extends Component {
             return ((aStr > bStr) ? -1 : ((aStr < bStr) ? 1 : 0));
           }
         )
-        break;
     }
   }
 
   render() {
-    const { classes, label, fields, sort, deleteRow } = this.props;
+    const { classes, label, fields, deleteRow } = this.props;
     let data = [...this.props.data];
     data.sort(this.sortIt());
 
@@ -2352,7 +2349,6 @@ class extends Component {
             return ((aStr > bStr) ? -1 : ((aStr < bStr) ? 1 : 0));
           }
         )
-        break;
       case 'number':
         // console.log('sort number');
         return (
@@ -2366,7 +2362,6 @@ class extends Component {
             return (bNum-aNum);
           }
         )
-        break;
       case 'date':
         // console.log('sort date');
         return (
@@ -2379,7 +2374,6 @@ class extends Component {
             return (bDate-aDate);
           }
         )
-        break;
       default:
       // console.log('sort default');
         return (
@@ -2392,12 +2386,11 @@ class extends Component {
             return ((aStr > bStr) ? -1 : ((aStr < bStr) ? 1 : 0));
           }
         )
-        break;
     }
   }
 
   render() {
-    const { classes, label, fields, sort, deleteRow } = this.props;
+    const { classes, label, fields, deleteRow } = this.props;
     let data = [...this.props.data];
     data.sort(this.sortIt());
 

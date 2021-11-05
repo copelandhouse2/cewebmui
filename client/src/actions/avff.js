@@ -68,7 +68,7 @@ function relationshipsLoaded(relationships) {
 }
 
 export function loadTopMenu() {
-  // console.log('loadSession', username);
+  // console.log('loadTopMenu', username);
   return function (dispatch) {
     fetch(`/controls`)
     .then( (response) => {
@@ -99,7 +99,10 @@ export function loadCurrentMenu(parent_id) {
       for (let i = 0; i < a.length; i++) {
         let b = avffControls.find(control => control.id === a[i].control_id);
         // Only take controls that are Menus / Actions.
-        ['MENU', 'ACTION'].includes(b.entity_type)? c.push({ ...b, ...a[i] }):null;
+        if (b.entity_type === 'MENU'||b.entity_type==='ACTION') {
+          c.push({ ...b, ...a[i] });
+        }
+        // ['MENU', 'ACTION'].includes(b.entity_type)? c.push({ ...b, ...a[i] }):null;
       }
 
       let parent = null;
@@ -139,7 +142,12 @@ export function updateProject(project) {
     if (project.classification) {
       const { avffControls } = getState();
       // const { avffControls, avffRelationships } = getState();
-      const menuControl = avffControls.find(c=>c.entity_type === 'MENU' && c.category === project.classification);
+
+      // const menuControl = avffControls.find(c=>c.entity_type === 'MENU' && c.category === project.classification);
+      const projectClassification = project.classification === 'SEMI CUSTOM'||project.classification === 'LAND'?
+        'CUSTOM':
+        project.classification;
+      const menuControl = avffControls.find(c=>c.entity_type === 'MENU' && c.category === projectClassification);
       // console.log('updateProject menuControl', menuControl);
 
       // ********************* 20-05-21 Mods
@@ -212,7 +220,7 @@ export function getChildren(controls, relationships, theParent) {
 // from initial menu, picking a new project, switching views (removed feature right now)
 // Loading the current Menu based on passed parent id.
 export function loadViews(rootId, localView = null, clear = false) {
-  // console.log('In loadViews');
+  // console.log('In loadViews', rootId);
   return function (dispatch, getState) {
     if (clear) {
       dispatch(viewsLoaded([]));
@@ -240,7 +248,7 @@ export function loadViews(rootId, localView = null, clear = false) {
   };
 }
 export function loadViewsByName(name) {
-  // console.log('In loadViews');
+  // console.log('In loadViews By Name', name);
   return function (dispatch, getState) {
     const { avffControls, avffRelationships } = getState();
     let rootTree = [];

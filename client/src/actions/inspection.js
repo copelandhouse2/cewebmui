@@ -68,7 +68,7 @@ export function filterChoices(findString) {
   // If string is empty, user just hit enter.  Ignore.
   if (!findString) {
     return function (dispatch, getState) {
-      const { inspections, session } = getState();
+      const { inspections } = getState();
       let updatedInsp = {...inspections};
       updatedInsp.find = null;
       updatedInsp.filter = [];
@@ -106,7 +106,7 @@ export function filterProjects(findString) {
   // If string is empty, user just hit enter.  Ignore.
   if (!findString) {
     return function (dispatch, getState) {
-      const { inspections, session } = getState();
+      const { inspections } = getState();
       let updatedInsp = {...inspections};
       updatedInsp.find = null;
       updatedInsp.filter = [];

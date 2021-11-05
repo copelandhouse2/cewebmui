@@ -4,13 +4,13 @@ import { withStyles } from '@material-ui/core/styles';
 import { withWidth } from "@material-ui/core";
 import CeDialog from './ceDialog';
 
-import { DefaultFG, DialogDefaultFG, DialogInspectionAddFG } from './ceFieldGroup';
-import { DialogInspectionAddFGContainer, TrelloFG } from '../containers/ceFieldGroupContainer';
+import { DialogDefaultFG } from './ceFieldGroup';
+import { DialogInspectionAddFGContainer } from '../containers/ceFieldGroupContainer';
 
 import { getTrelloCard } from '../actions'
 // import designRev from '../img/designrev-black.svg';
 // import designRevWhite from '../img/designrev-white.svg';
-import { InspectorImg } from '../img/inspector';
+// import { InspectorImg } from '../img/inspector';
 import { HouseSearch } from '../img/houseSearch';
 
 const INSP_BOARD = '57f40236ffdeb772878b1488';
@@ -136,14 +136,14 @@ class InspectionDialog extends Component {
         listLookup = this.props.trelloInfo.find(b=>b.id===board_id).lists.filter(l=>!l.closed).map(l=>{ return {name:l.name,code:l.id} });
         const card_id = card.id;  // the id in the database may be the short link.  Getting the actual id.
         let item = null;
-        if (this.state.trello_checkitem_id) {
-          // console.info('find checklist item');
-          const found = card.checklists.some(ch=>{
-            item = ch.checkItems.find(chi=>chi.id === this.state.trello_checkitem_id)
-            // console.info('checking items',item);
-            return item?true:false;
-          })
-        }
+        // if (this.state.trello_checkitem_id) {
+        //   // console.info('find checklist item');
+        //   const found = card.checklists.some(ch=>{
+        //     item = ch.checkItems.find(chi=>chi.id === this.state.trello_checkitem_id)
+        //     // console.info('checking items',item);
+        //     return item?true:false;
+        //   })
+        // }
         // console.info('here is the item', item);
         checkitem = item?item.name:null;
         this.setState( {trello_board: board_name, trello_board_id: board_id
@@ -442,7 +442,7 @@ class InspectionDialog extends Component {
       return null;
     }
 
-    console.log('Inspection Dialog Render:', 'dialog state', this.state);
+    // console.log('Inspection Dialog Render:', 'dialog state', this.state);
     // console.log('Inspection Dialog Render:', 'parent state', this.props.parentState);
     // console.log('Inspection Dialog Render:', 'inspections', this.props.inspections);
 

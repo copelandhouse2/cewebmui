@@ -7,7 +7,8 @@ export const list = (request, response) => {
   // Listing from MySql;
   LookupModel.getLookupByType(request.params.type, function(err, rows, fields) {
     if (!err) {
-      console.log('Data retrieved... Lookups', request.params.type);
+      // console.log('Data retrieved... Lookups', request.params.type);
+      // request.params.type === 'CLASSIFICATION'?console.log(rows):null;
       return response.json(rows);
     }
     else {

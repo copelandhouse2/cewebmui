@@ -151,6 +151,9 @@ const handleChange = (name, arrID, state, updateState) => event => {
     event.target.type === 'number' && event.target.value === ''? null :
     event.target.type === 'date' && event.target.value === ''? null :
     name === 'geo_pi'? event.target.value.toUpperCase() :
+    name === 'geo_code'? event.target.value.replace(/[^A-Z0-9]/gi,'').toUpperCase() :
+    name === 'revision'? event.target.value.replace(/[^A-Z]/gi,'').toUpperCase() :
+    name === 'trello_card_id' && event.target.value.startsWith('https://trello.com/c/')? event.target.value.slice(21) :
     event.target.value;
     // name === 'block'?
     //   this.setState({ [name]: event.target.value, }, () => {
@@ -166,6 +169,8 @@ const handleChange = (name, arrID, state, updateState) => event => {
     name === 'geo_pi'? updateState({ [name]: event.target.value.toUpperCase(), }) :
     name === 'geo_code'? updateState({ [name]: event.target.value.replace(/[^A-Z0-9]/gi,'').toUpperCase(), }) :
     name === 'revision'? updateState({ [name]: event.target.value.replace(/[^A-Z]/gi,'').toUpperCase(), }) :
+    name === 'trello_card_id' && event.target.value.startsWith('https://trello.com/c/')? updateState({ [name]: event.target.value.slice(21), }) :
+
     // name === 'block'?
     //   this.setState({ [name]: event.target.value, }, () => {
     //     if (this.state.subdivision && this.state.lot && this.state.block) {
@@ -179,8 +184,6 @@ const handleChange = (name, arrID, state, updateState) => event => {
 
 const handleListChange = (selected, field, arrID, state, updateState, altList = null) => {
   // console.log('in handleListChange:', field.name, selected, state);
-
-
   if (state.object === 'INSPECTION' && field.name === 'find') {
 
     if (selected) {
@@ -214,7 +217,7 @@ const handleListChange = (selected, field, arrID, state, updateState, altList = 
   } else {
     switch (field.name) {
       case altList?altList.name:'':
-        field.name === 'address1'?console.log('handleListChange alt 1', field, selected, altList):null;
+        // field.name === 'address1'?console.log('handleListChange alt 1', field, selected, altList):null;
         selected?  // if selected
           altList.name_id?  // then if field has an id
             updateState({ [altList.name_id]: selected.code, [field.name]: selected.name }) :  // fill in id and value.
@@ -224,7 +227,7 @@ const handleListChange = (selected, field, arrID, state, updateState, altList = 
             updateState({ [field.name]: null });  // clear out
         break;
       default:
-        field.name === 'address1'?console.log('handleListChange dft 1', field, selected, altList):null;
+        // field.name === 'address1'?console.log('handleListChange dft 1', field, selected, altList):null;
         selected?  // if selected
           field.name_id?  // then if field has an id
             updateState({ [field.name_id]: selected.code, [field.name]: selected.name }) :  // fill in id and value.
@@ -234,22 +237,17 @@ const handleListChange = (selected, field, arrID, state, updateState, altList = 
             updateState({ [field.name]: null });  // clear out
     }  // switch
   }  // else portion of inside if
-
-}  // function
-
-const handleChangeCustomized = (selected, field, props) => event => {
-
-  const { handleChangeCustomized } = props;
-
-  console.log('handleChangeCustomized');
-
-  if (selected) {
-    handleChangeCustomized(field,selected);
-  } else {
-    handleChangeCustomized(field,event);
-  }
-
 }
+
+// const handleChangeCustomized = (selected, field, props) => event => {
+//   const { handleChangeCustomized } = props;
+//   console.log('handleChangeCustomized');
+//   if (selected) {
+//     handleChangeCustomized(field,selected);
+//   } else {
+//     handleChangeCustomized(field,event);
+//   }
+// }
 
 const handleTabEnter = (name, currentValue, key, props) => {
   const { loadFind, loadMessage, updateState, findAction, asYouType, state } = props;
@@ -600,14 +598,6 @@ const searchForExisting = (test, state, updateState, searchForDups) => {
   updateState({ openDupsDialog: true });
 };
 
-// const dupSelectClose = (project, updateState) => {
-//   updateState(project);
-// }
-
-// const dupsDialogClose = (updateState) => {
-//   this.setState({ openDupsDialog: false });
-// }
-
 // Textfield templates
 const textField = (props) => {
 
@@ -624,6 +614,7 @@ const textField = (props) => {
   }
 
   let fieldDisabled = field.name === 'job_number' && state.jobNumUnlock? 'N':field.disabled;
+  // console.log('field', field);
   // field.name === 'job_number'?console.log('currentValue: job', field):null;
   // field.name === 'job_number'?console.log('value for disabled', fieldDisabled):null;
   return (
@@ -772,6 +763,7 @@ const listField = (props) => {
             null;
         } else {
           // field.name === 'date_search'?console.log('listField lookup list: ', props[field.lookup_list]):null;
+          // console.log('listField lookup list: ', field, props[field.lookup_list]);
           currentValue = state[field.name]?
             props[field.lookup_list].find(option => option.code === state[field.name]) :
             null;
@@ -1263,7 +1255,7 @@ const colListField = (props) => {
 
       <Select styles={colSelectProps(theme)}
         isClearable
-        isDisabled={field.disabled === 'Y'? true:false}
+        isDisabled={field.disabled === 'Y'?true:field.readonly==='Y'?true:false}
         options={altList?altList.lookup_list:props[field.lookup_list]}
         getOptionLabel={({name}) => name}
         getOptionValue={({code}) => code}
@@ -1312,10 +1304,11 @@ export const Field = withStyles(styles, { withTheme: true })(
 export const Field2 = withStyles(styles, { withTheme: true })(
 (props) => {
   const { field, altLookups } = props;
-  // console.log('field', field);
+  // console.log('field', field.name, field.lookup_list, altLookups);
   if ((field.lookup_list||altLookups) && field.creatable === 'Y' && !props.searchMode) {
     return creatableListField(props);
   } else if (field.lookup_list||altLookups) {
+    // console.log('list field');
     return listField(props);
   } else {
     return textField2(props);

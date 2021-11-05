@@ -12,7 +12,8 @@ export function loadProjects(search) {
       + `/:${search.client}`
       + `/:${search.city}`
       + `/:${search.subdivision}`
-      + `/:${search.status}`;
+      + `/:${search.status}`
+      ;
     fetch(`/projects/${urlString}`)
     .then( (response) => {
       return response.json();
@@ -64,7 +65,7 @@ export function loadFind(searchFilter, searchFields = null) {
     let urlString = `${searchFilter}`;  // default
     if (searchFields && !searchFilter) {
       const { job_number, address1, date_search, client_id
-        , subdivision, city, user_id, contact_id, status } = searchFields;
+        , subdivision, city, user_id, contact_id, status, last_updated_by } = searchFields;
       urlString = `:${job_number||'null'}`
         + `/:${address1||'null'}`
         + `/:${date_search||'null'}`
@@ -73,7 +74,9 @@ export function loadFind(searchFilter, searchFields = null) {
         + `/:${city||'null'}`
         + `/:${user_id||'null'}`
         + `/:${contact_id||'null'}`
-        + `/:${status||'null'}`;
+        + `/:${status||'null'}`
+        + `/:${last_updated_by||'null'}`
+        ;
     }
     // console.log('loadFind', urlString);
     fetch(`/find/v2.0/${urlString}`)

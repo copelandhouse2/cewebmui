@@ -1,7 +1,8 @@
 import { connect } from "react-redux";
 import Search from "../components/Search";
 import { loadFind, loadViews, loadViewsByName, loadCurrentMenu, updateProject,
-createAddress, commitAddresses, loadMessage, deleteProject } from "../actions";
+createAddress, commitAddresses, loadMessage, deleteProject,
+ynDialog } from "../actions";
 
 function mapStateToProps(state) {
   return {
@@ -44,6 +45,9 @@ function mapDispatchToProps(dispatch) {
     },
     loadMessage: function (message, type) {
       dispatch(loadMessage(message, type));
+    },
+    ynDialog: (action) => {
+      dispatch(ynDialog(action));
     },
   };
 }

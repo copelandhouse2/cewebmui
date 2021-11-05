@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { Redirect, Link } from "react-router-dom"
+import { Link } from "react-router-dom"
 // import { withNavigationFocus } from 'react-navigation';
 // import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
@@ -18,12 +18,12 @@ import { DefaultFG, ListTabularFG } from './ceFieldGroup';
 import CePageContainer from '../containers/cePageContainer';
 import { Field2Container } from '../containers/ceFieldContainer';
 
-import Save from '@material-ui/icons/Save';
+// import Save from '@material-ui/icons/Save';
 import { AddIcon } from '../img/addIcon.js';
-import { InspectorImg } from '../img/inspector.js';
-import { HouseSearch } from '../img/houseSearch.js';
+// import { InspectorImg } from '../img/inspector.js';
+// import { HouseSearch } from '../img/houseSearch.js';
 import { Exit } from '../img/exit.js';
-import SearchIcon from '@material-ui/icons/Search';
+// import SearchIcon from '@material-ui/icons/Search';
 
 import InspectionDialogContainer from '../containers/InspectionDialogContainer';
 
@@ -166,7 +166,7 @@ class Inspection extends Component {
 
   // actions that show on top of page.  Left side near the Find (when active)
   topActionBarLeft = () => {
-    const { classes, theme, width, inspections } = this.props;
+    const { classes, inspections } = this.props;
     // return null;
       return (
         <Fragment>
@@ -274,7 +274,7 @@ class Inspection extends Component {
   // actions that show in field group title bar
   fieldGroupTools = () => {
     // return null;
-    const { classes,inspections } = this.props;
+    const { classes } = this.props;
 
     return (
       <Grid container justify='space-between' style={{marginLeft:30}}>
@@ -483,6 +483,7 @@ class Inspection extends Component {
           , field.hasOwnProperty('column_width')?{column_width: field.column_width}:{}
         ))
       }
+      return null;
     })
     // console.log('new fields 2', newFields);
     return newFields;
@@ -519,7 +520,6 @@ class Inspection extends Component {
             return ((aStr > bStr) ? -1 : ((aStr < bStr) ? 1 : 0));
           }
         )
-        break;
       case 'number':
         // console.log('sort number');
         return (
@@ -533,7 +533,6 @@ class Inspection extends Component {
             return (bNum-aNum);
           }
         )
-        break;
       case 'date':
         // console.log('sort date');
         return (
@@ -546,7 +545,6 @@ class Inspection extends Component {
             return (bDate-aDate);
           }
         )
-        break;
       default:
       // console.log('sort default');
         return (
@@ -559,12 +557,11 @@ class Inspection extends Component {
             return ((aStr > bStr) ? -1 : ((aStr < bStr) ? 1 : 0));
           }
         )
-        break;
     }
   }
 
   render() {
-    const { currentViews, inspections, session } = this.props;
+    const { currentViews, inspections } = this.props;
     // const { classes, currentViews, width, currentProject, search } = this.props;
     // console.log('Inspection Render:',
     // 'state:', this.state,

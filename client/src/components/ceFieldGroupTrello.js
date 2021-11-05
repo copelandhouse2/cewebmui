@@ -1,18 +1,16 @@
 import { env } from '../envVars';
-import React, { Component, Fragment } from 'react';
+import React, { Fragment } from 'react';
 
 import { withStyles } from '@material-ui/core/styles';
 
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 
-import Paper from '@material-ui/core/Paper';
 import { Field2Container } from '../containers/ceFieldContainer';
 
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
-import Button from '@material-ui/core/Button';
 
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import RadioGroup from '@material-ui/core/RadioGroup';
@@ -115,7 +113,7 @@ export const DialogTrelloAuthFG = withStyles(styles, { withTheme: true })(
 
 export const TrelloFG = withStyles(styles, { withTheme: true })(
 (props) => {
-  const { classes, fieldGroup, dialogState, updateState, handleChangeCustomized, trelloInfo } = props;
+  const { fieldGroup, dialogState, updateState, handleChangeCustomized, trelloInfo } = props;
   // console.info('In TrelloFG',dialogState);
 
   const fTrelloBoard = fieldGroup.children.find(field=> field.name === 'trello_board');
@@ -138,7 +136,7 @@ export const TrelloFG = withStyles(styles, { withTheme: true })(
   const inspTrelloCardID = dialogState.trello_card_id;
   const inspTrelloCardClosed = dialogState.trello_info?dialogState.trello_info.closed?'Archived':'Active':null;
 
-  const fakeCard='98723409klskjkasdf';
+  // const fakeCard='98723409klskjkasdf';
 
   // console.info('IDs',projTrelloCardID, inspTrelloCardID);
   // ?projTrelloCardStatus:'Not created'

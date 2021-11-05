@@ -8,6 +8,7 @@ getLookupByType: function(lookupType, callback) {
     + ', attribute4, attribute5'
     + ' from lookups'
     + ' where type = ?'
+    + ' and isnull(disabled)'
     + ' order by \`order\`, name';
 
   // console.log("query", SQLstmt);
@@ -22,6 +23,7 @@ getLookupByCode: function(lookupType, lookupCode, callback) {
     + ' from lookups'
     + ' where type = ?'
     + ' and code = ?'
+    + ' and isnull(disabled)'
     + ' order by \`order\`, name';
 
   // console.log("query", SQLstmt);

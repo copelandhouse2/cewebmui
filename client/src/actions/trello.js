@@ -33,7 +33,7 @@ function trelloSeedLoaded(trelloSeed) {
   };
 }
 
-var card_fake = 123;  // for testing errors
+// var card_fake = 123;  // for testing errors
 export function getTrelloCard(card_id) {
   return (
     fetch(`/trello/card/${card_id}`)

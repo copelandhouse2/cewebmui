@@ -16,7 +16,7 @@ router.get('/recents/:ver/:enteredBy/:filter', listSearch);
 
 //Searching for projects with the v2.0+ software
 router.get('/find/:ver/:find', listSearch);
-router.get(`/find/:ver/:jobNumber/:address/:dateRange/:client/:subdivision/:city/:enteredBy/:requestedBy/:status`
+router.get(`/find/:ver/:jobNumber/:address/:dateRange/:client/:subdivision/:city/:enteredBy/:requestedBy/:status/:lastUpdatedBy`
   , listSearch);
 
 //Getting the data... just one entity

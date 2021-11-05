@@ -180,7 +180,7 @@ class App extends Component {
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const { session, avffControls, avffRelationships, preferences } = nextProps;
+    const { session, avffControls, avffRelationships } = nextProps;
     // console.log('in getDerivedStateFromProps', session);
 
     let updatedValues = {};
@@ -360,9 +360,9 @@ class App extends Component {
 
   render() {
     const { classes, session, preferences } = this.props;
-    const settings = session.userSettings;
+    // const settings = session.userSettings;
     // localStorage.removeItem('trello_token');
-    console.log('the trello function',window.Trello);
+    // console.log('the trello function',window.Trello);
 
 
     // console.log('Render Apps.js',
@@ -477,7 +477,7 @@ class App extends Component {
       if (this.state.trello_token) {
         whatToRender = this.renderApp(classes);
       } else {
-        console.log('Getting ready to call window.Trello.authorize');
+        console.log('Requesting Trello authorization');
         // whatToRender = this.renderApp(classes);
         // whatToRender = this.getTrelloToken()
         window.Trello.authorize({

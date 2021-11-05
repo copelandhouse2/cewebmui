@@ -30,7 +30,7 @@ const SQL_PROJECT_SELECT = `SELECT p.id, p.id address_id, p.job_number, p.story,
 , p.geo_pi, p.em_center, p.em_edge, p.ym_center, p.ym_edge, p.soil_notes,   p.status, p.project_status, p.scope, p.classification, date_format(p.onboard_date, '%Y-%m-%d') onboard_date, date_format(p.start_date, '%Y-%m-%d') start_date
 , date_format(p.due_date, '%Y-%m-%d') due_date, date_format(p.final_due_date, '%Y-%m-%d') final_due_date, date_format(p.transmittal_date, '%Y-%m-%d') transmittal_date, p.main_contact, p.billing_contact, p.builder_contact
   , p.trello_list_id, l.name trello_list, p.trello_card_id, p.box_folder
-, p.created_by, p.last_updated_by, date_format(p.creation_date, '%Y-%m-%d') creation_date, date_format(p.last_updated_date, '%Y-%m-%d') last_updated_date
+, p.created_by, p.last_updated_by, co3.full_name last_updated_by_name, date_format(p.creation_date, '%Y-%m-%d') creation_date, date_format(p.last_updated_date, '%Y-%m-%d') last_updated_date
 , cl.name client, co.full_name requestor, co2.full_name entered_by, c.id city_id, su.id subdivision_id`
 // + ' from projects s'
 // + ' left join clients cl on p.client_id = cl.id'  // allowing client_id to be null
@@ -45,6 +45,7 @@ const SQL_TABLES = ' from projects p'
 + ' left join clients cl on p.client_id = cl.id'  // allowing client_id to be null
 + ' left join contacts co on p.contact_id = co.id'  // allowing contact_id to be null
 + ' left join contacts co2 on p.user_id = co2.user_id'  // user id should NEVER be null
++ ' left join contacts co3 on p.last_updated_by = co3.user_id'  // user id should NEVER be null
 + ' left join cities c on p.city = c.city'  // allowing city_id to be null
 + ' left join subdivisions su on p.subdivision = su.subdivision'  // allowing subdivision to be null
 + ' left join lookups l on IFNULL(p.trello_list_id, \'\') = l.code'
@@ -99,13 +100,15 @@ const ProjectModel = {
     Object.keys(params).forEach(key => params[key] = params[key].slice(0,5) === ':null'? '' : params[key].slice(1));
 
     // Pulling out the search parameters.  Initializing values array.
-    const { pending, dateRange, enteredBy, jobNumber, address, requestedBy, client, city, subdivision, status, ver, filter } = params;
+    const { pending, dateRange, enteredBy, lastUpdatedBy, jobNumber, address
+      , requestedBy, client, city, subdivision, status, ver, filter } = params;
     let values = [];
     // console.log('ProjectModel params', pending, dateRange, enteredBy, jobNumber, address, requestedBy, client, city, subdivision, status, ver, filter);
 
     // Initiating the where clauses.
     let pendingClause = '', enteredByClause = '', jobNumberClause = '', addressClause = '', requestedByClause = ''
-    , clientClause = '', cityClause = '', subdivisionClause = '', statusClause = '', dateRangeClause = '';
+    , clientClause = '', cityClause = '', subdivisionClause = '', statusClause = '', dateRangeClause = ''
+    , lastUpdatedByClause = '';
 
     // the default limit clause
     let limitClause = ' LIMIT 0, 200';
@@ -131,6 +134,10 @@ const ProjectModel = {
       if (requestedBy !== '' && requestedBy !== null) {
         requestedByClause = ' and p.contact_id = ?';
         values.push(Number(requestedBy));
+      };
+      if (lastUpdatedBy !== '' && lastUpdatedBy !== null) {
+        lastUpdatedByClause = ' and p.last_updated_by = ?';
+        values.push(Number(lastUpdatedBy));
       };
       if (client !== '' && client !== null && client !== 'null') {
         clientClause = ' and p.client_id = ?';
@@ -176,6 +183,7 @@ const ProjectModel = {
     let SQLstmt = SQL_PROJECT_SELECT
     + SQL_TABLES
     + enteredByClause  // make sure you have where after left joins.  Not doing so returns all rows (Cartesian join?)
+    + lastUpdatedByClause
     + pendingClause
     + jobNumberClause
     + addressClause

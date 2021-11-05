@@ -11,7 +11,7 @@ import RecentsContainer from '../containers/RecentsContainer';
 import FindContainer from '../containers/FindContainer';
 import { Field2Container } from '../containers/ceFieldContainer';
 
-import { Redirect } from "react-router-dom"
+// import { Redirect } from "react-router-dom"
 
 const drawerWidth = 300;
 

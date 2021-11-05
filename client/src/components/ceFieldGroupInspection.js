@@ -1,4 +1,5 @@
-import React, { Component, Fragment } from 'react';
+import React from 'react';
+// import React, { Component, Fragment } from 'react';
 
 import { withStyles } from '@material-ui/core/styles';
 
@@ -19,7 +20,7 @@ import Save from '@material-ui/icons/Save';
 import Delete from '@material-ui/icons/Delete';
 
 import { Field2Container } from '../containers/ceFieldContainer';
-import { ListTabularFG, SimpleSortListView, TrelloFG } from './ceFieldGroup';
+import { ListTabularFG, SimpleSortListView } from './ceFieldGroup';
 import TrelloFGContainer from '../containers/TrelloFGContainer';
 
 import Switch from '@material-ui/core/Switch';
@@ -30,7 +31,7 @@ const styles = theme => ({
 
 export const DialogInspectionAddFG = withStyles(styles, { withTheme: true })(
 (props) => {
-  const { classes, fieldGroup, dialogState, updateState, inspections,
+  const { fieldGroup, dialogState, updateState, inspections,
     handleChangeCustomized } = props;
   // const { classes, theme, fieldGroup, toggleScopeDialog, removeScope, dialogState, scopeID, updateState } = props;
   const fDate = fieldGroup.children.find(field=> field.name === 'inspection_date');
@@ -60,8 +61,8 @@ export const DialogInspectionAddFG = withStyles(styles, { withTheme: true })(
   // console.log('DialogInspectionAddFG 1', fieldGroup, inspections);
   // console.log('DialogInspectionAddFG 2', primaryFields, nestedFields);
   Object.assign(fAddress1,{name_id: 'project_id',project_id:null,lookup_list:true});
-  console.log('Inspection Dialog',fieldGroup.children);
-  console.log('Trello FG', fgTrello);
+  // console.log('Inspection Dialog',fieldGroup.children);
+  // console.log('Trello FG', fgTrello);
 
   return (
     <Grid container spacing={24}>

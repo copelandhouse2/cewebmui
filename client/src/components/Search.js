@@ -253,7 +253,7 @@ class Search extends Component {
   }
 
   fieldGroupToolsTabular = () => {
-    const { search } = this.props;
+    // const { search } = this.props;
     return (
       <Field2Container
         field = {this.scopeField}
@@ -368,7 +368,19 @@ class Search extends Component {
 
   handleDelete = (row)=> {
     // console.log('Delete project ', row);
-    this.props.deleteProject(this.props.search.findResults[row].id);
+    // console.log('Inspection Dialog: handleDelete', this.state);
+    this.props.ynDialog(
+      {
+        ok: false,
+        title: 'Delete Project?',
+        content: `Are you sure you want to Project ${this.props.search.findResults[row].address1}`,
+        yesFunc: ()=>{
+          this.props.deleteProject(this.props.search.findResults[row].id);
+        },
+        noFunc: false
+      }
+    )
+    // this.props.deleteProject(this.props.search.findResults[row].id);
   }
 
   dupSelectClose = (project) => {
@@ -383,7 +395,7 @@ class Search extends Component {
     const { currentViews } = this.props;
     // const { classes, currentViews, width, currentProject, search } = this.props;
     // console.log('Search Render:',
-    //   'state:', this.state,
+      // 'state:', this.state,
     //   'currentProject:', currentProject,
     //   'currentViews:', currentViews,
     //   'find:', search.find,

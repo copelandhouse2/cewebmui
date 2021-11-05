@@ -1,6 +1,16 @@
 # CE Webtools
 Copeland Engineering Web Tools.
 
+## v2.1.6 11/12/2021
+* Trello authorization.  Now users will authorize Webtools to leverage Trello account.  Webtools will submit trello requests on behalf of the user.
+* Inspection Entry screen.  Additional tailoring.  Now submits Trello updates.  After further review with Aaron though, still needs more work.
+* Bug fix: Project Entry, in some cases, the city would take previous value entered if city was null on the subdivision.  Fixed.
+* Bug fix: City Maintenance screen update now works.  A previous release must have broken the update feature.
+* Project Entry: Classification field is now visible.  You can choose the project classification.  Also, added choices: Semi-Custom, Land Dev.  If you pick Custom, Semi Custom, Land Dev, it defaults to the Custom screen view.
+* Search by Fields now includes Last Updated By search field.
+* Search Projects Results now has these fields visible: Classification, Creation Date, Last Updated By, Last Updated Date.
+* Bug fix: Deleting a project now prompts a warning dialog.
+
 ## v2.1.5 7/15/2021
 * Project entry screen: subdivision selection now populates city
 * Bug fix: Fixed the "white screen" bug.  Happens when user opens as volume project, select custom project, then clear.

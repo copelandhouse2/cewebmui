@@ -411,7 +411,7 @@ class singleView extends Component {
 
   handleChange = (name, arrID) => event => {
     // console.log('in handleChange:', name, arrID);
-    // name === 'jobNumUnlock'?console.log('event target', event.target):null;
+    // name === 'trello_card_id'?console.log('event target', event.target.value):null;
     if (arrID||arrID===0) {
       let updatedScope = [...this.state.scope];
 
@@ -420,6 +420,7 @@ class singleView extends Component {
       event.target.type === 'number' && event.target.value === ''? null :
       event.target.type === 'date' && event.target.value === ''? null :
       name === 'geo_pi'? event.target.value.toUpperCase() :
+      name === 'trello_card_id' && event.target.value.startsWith('https://trello.com/c/')? event.target.value.slice(21) :
       event.target.value;
       // name === 'block'?
       //   this.setState({ [name]: event.target.value, }, () => {
@@ -433,19 +434,14 @@ class singleView extends Component {
       event.target.type === 'number' && event.target.value === ''? this.setState({ [name]: null, }) :
       event.target.type === 'date' && event.target.value === ''? this.setState({ [name]: null, }) :
       name === 'geo_pi'? this.setState({ [name]: event.target.value.toUpperCase(), }) :
-      // name === 'block'?
-      //   this.setState({ [name]: event.target.value, }, () => {
-      //     if (this.state.subdivision && this.state.lot && this.state.block) {
-      //       this.searchForExisting('LOT')
-      //     }}
-      //   ) :
+      name === 'trello_card_id' && event.target.value.startsWith('https://trello.com/c/')? this.setState({ [name]: event.target.value.slice(21), }) :
       this.setState({ [name]: event.target.value, });
     }
 
   };
 
   handleListChange = (selected, field, arrID) => {
-    console.log('in handleListChange:', field.name, selected, arrID);
+    // console.log('in handleListChange:', field.name, selected, arrID);
 
     if (arrID||arrID===0) {
       switch (field.name) {
@@ -481,7 +477,7 @@ class singleView extends Component {
     } else {
       switch (field.name) {
         case 'subdivision':
-          console.log('subdivison selected', selected);
+          // console.log('subdivison selected', selected);
           selected?  // if selected
             this.setState({ subdivision_id: selected.code, subdivision: selected.name
               , city_id: selected.city_id, city: selected.city })

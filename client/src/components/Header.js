@@ -15,7 +15,7 @@ import Grid from "@material-ui/core/Grid";
 import { AccountCircle } from "@material-ui/icons";
 import MenuIcon from '@material-ui/icons/Menu';
 import CloseIcon from '@material-ui/icons/Close';
-import Paper from '@material-ui/core/Paper';
+// import Paper from '@material-ui/core/Paper';
 
 const styles = theme => ({
   root: {},

@@ -182,11 +182,11 @@ export function authenticate() {
   const authToken = localStorage.getItem('token');
   // console.log('authenticate: token', authToken);
 
-  if (authToken == null) {
+  if (authToken === null) {
   // if (true) {
     console.log('token is undefined');
     // return {false}
-    null;
+    // null;
   } else {
     // console.log('authenticate: In the else');
     return function (dispatch) {

@@ -1,4 +1,5 @@
-import React, { Fragment } from 'react';
+import React from 'react';
+// import React, { Fragment } from 'react';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -29,7 +30,7 @@ class AlertDialog extends React.Component {
   }
 
   render() {
-    const {ackMessage, classes } = this.props;
+    const {ackMessage } = this.props;
     const { yesFunc, noFunc, ynDialog } = this.props.message;
     return (
       <div>
@@ -58,7 +59,8 @@ class AlertDialog extends React.Component {
               <Grid item>
               <Button
                 onClick={() => {
-                  yesFunc?yesFunc():null;
+                  if (yesFunc) yesFunc();
+                  // yesFunc?yesFunc():null;
                   ackMessage();
                 }}
                 variant = "contained"
@@ -71,7 +73,8 @@ class AlertDialog extends React.Component {
               <Grid item>
               <Button
                 onClick={() => {
-                  noFunc?noFunc():null;
+                  if (noFunc) noFunc();
+                  // noFunc?noFunc():null;
                   ackMessage();
                 }}
                 variant = "contained"
