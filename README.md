@@ -11,6 +11,9 @@ Copeland Engineering Web Tools.
 * Search Projects Results now has these fields visible: Classification, Creation Date, Last Updated By, Last Updated Date.
 * Bug fix: Deleting a project now prompts a warning dialog.
 
+# Known Bugs
+* If you set the classification to a value that differs from the scope classifications, then webtools will “whitescreen”.  I plan to fix in the next release by decoupling the scope items from the classification.  But it is somewhat complicated.  Now that the classification field is visible in the Search screen, you can actually adjust the value and fix the classification.
+
 ## v2.1.5 7/15/2021
 * Project entry screen: subdivision selection now populates city
 * Bug fix: Fixed the "white screen" bug.  Happens when user opens as volume project, select custom project, then clear.
