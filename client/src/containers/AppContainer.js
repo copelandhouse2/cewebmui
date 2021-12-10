@@ -4,7 +4,7 @@ import { loadPending, loadSession, loadCities
   , loadClients, loadSubdivisions, loadContacts, getLookup
   , authenticate, loadGeotechs, loadGeoMasterData, loadControls, loadRelationships
   , updateSettings, updatePreferences, loadUsers, loadScope, ynDialog
-  , loadOrganizations, authenticateTrello }
+  , loadOrganizations, initiateTrello }
   from "../actions";
 
 function mapStateToProps(state) {
@@ -78,8 +78,8 @@ function mapDispatchToProps(dispatch) {
     loadOrganizations: function () {
       dispatch(loadOrganizations());
     },
-    authenticateTrello: function (token) {
-      dispatch(authenticateTrello(token));
+    initiateTrello: function (token) {
+      dispatch(initiateTrello(token));
     },
   };
 }

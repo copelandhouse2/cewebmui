@@ -174,8 +174,9 @@ export function createAddress(c, v2 = false, updateSearch = false) {
 // Action to create the Address
 export function commitAddresses(userID, c, create, v2 = false, updateSearch = false) {
   return function (dispatch, getState) {
-    // console.log('in commitAddress function', userID, create, v2);
-    fetch(`/commits/${userID}/${create}/${v2}`, {
+    const { trelloToken } = getState();
+    console.log('in commitAddress function', userID, create, v2, trelloToken);
+    fetch(`/commits/${userID}/${create}/${v2}/${trelloToken}`, {
       method: "PUT",
       headers: {"Content-Type": "application/json"}
       , body: JSON.stringify(c)

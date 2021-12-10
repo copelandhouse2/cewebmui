@@ -1,7 +1,7 @@
 import ProjectModel from '../models/ProjectModel';
 import JobNumberSeqModel from '../models/JobNumberSeqModel';
 import { sql } from '../mysqldb';
-import { trello, tBoards, TrelloModel } from '../models/TrelloModel';
+import { trello, tBoards, theToken, TrelloModel } from '../models/TrelloModel';
 
 // code to test for daylight savings time or not.
 // Date.prototype.stdTimezoneOffset = () => {
@@ -292,7 +292,7 @@ export const create = async (request, response) => {
 // function to create a address
 export const commit = (request, response) => {
   // console.log('Project Controller.commit request', request.params);
-
+  console.log('commit... theToken',theToken);
   // NEED TO PUT FOR LOOP ON OUTSIDE OF PROMISES.  ORDER OF PROMISES
   // Loop on request body (contains all pending records)
   //  Trello Promise (gets card id)
@@ -431,7 +431,7 @@ export const commit = (request, response) => {
       if (trello_card_id) {
         try {
           // console.log('pulling values for the card');
-          const cardInfo = await TrelloModel.get(`/1/cards/${trello_card_id}`);
+          const cardInfo = await TrelloModel.get(request.params.trelloToken, `/1/cards/${trello_card_id}`);
           currentDesc = cardInfo.desc;
           // console.log('Pulled description', currentDesc);
           // console.log('Pulled description');
@@ -548,14 +548,14 @@ export const commit = (request, response) => {
           if (trello_card_id) { // update card.  Leave on current list.
 
             // console.log('In the update trello card');
-            const cardUpdResponse = await TrelloModel.put(`/1/cards/${trello_card_id}`, cardUpd)
+            const cardUpdResponse = await TrelloModel.put(request.params.trelloToken, `/1/cards/${trello_card_id}`, cardUpd)
             // console.log('trello: response', cardUpdResponse);
             console.log('Trello card updated');
             tCardID = trello_card_id;
             // console.log('card id(s)', trello_card_id, cardUpdResponse);
           } else if (trello_list_id) {  // create card on incoming list
             // console.log('In the insert trello card', card);
-            const cardInsResponse = await TrelloModel.post('/1/cards/', card);
+            const cardInsResponse = await TrelloModel.post(request.params.trelloToken, '/1/cards/', card);
             // console.log('trello: response', cardInsResponse);
             console.log('Trello card created');
             tCardID = cardInsResponse.id;
@@ -575,12 +575,13 @@ export const commit = (request, response) => {
             // console.log('Trello Update custom Fields');
             // const me = await TrelloModel.get(`/1/members/me`);
             // console.log('me', me);
-            const currentBoard = await TrelloModel.get(`/1/cards/${tCardID}/board`);
-            // console.log('the board', currentBoard.id);
-            const custFields = tBoards.find(board => board.id === currentBoard.id).customFields;
-            // console.log('currentBoard: ', currentBoard);
+            const currentBoard = await TrelloModel.get(request.params.trelloToken, `/1/cards/${tCardID}/board`);
+            const currentBoardInfo = await TrelloModel.get(request.params.trelloToken, `1/boards/${currentBoard.id}/?customFields=true`);
+            // console.log('the current board', currentBoardInfo);
+            // const custFields = tBoards.find(board => board.id === currentBoard.id).customFields;
+            // console.log('custFields: ', custFields);
             let value = {}, tUrl = '', idValue = '';
-            custFields.forEach(field => {
+            currentBoardInfo.customFields.forEach(field => {
               switch (field.name.toUpperCase()) {
                 case 'DESIGN DUE DATE':
                 case 'FINAL DUE DATE':
@@ -597,7 +598,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'PHASE':
@@ -610,7 +611,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'YM (C,E)':
@@ -623,7 +624,7 @@ export const commit = (request, response) => {
                   };
                   tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                   // console.log('url for custom field', tUrl);
-                  promises.push(TrelloModel.put(tUrl, value));
+                  promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   break;
                 case 'EM (C,E)':
                 case 'EM(C,E)':
@@ -635,7 +636,7 @@ export const commit = (request, response) => {
                   };
                   tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                   // console.log('url for custom field', tUrl);
-                  promises.push(TrelloModel.put(tUrl, value));
+                  promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   break;
                 case 'DESIGN P.I.':
                 case 'DESIGN PI':
@@ -646,7 +647,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'SQFT':
@@ -657,7 +658,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case '# STORYS':
@@ -670,7 +671,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'STORYS':
@@ -681,7 +682,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'ROOF TYPE':
@@ -694,7 +695,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'FLOOR TYPE':
@@ -707,7 +708,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'FOUNDATION TYPE':
@@ -721,7 +722,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'CLIENT ID':
@@ -731,7 +732,7 @@ export const commit = (request, response) => {
                   };
                   tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                   // console.log('url for custom field', tUrl);
-                  promises.push(TrelloModel.put(tUrl, value));
+                  promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   break;
                 case 'ON -BOARD DATE':
                 case 'ONBOARD DATE':
@@ -746,7 +747,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'BLOCK, LOT':
@@ -757,7 +758,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'BLOCK':
@@ -768,7 +769,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'LOT':
@@ -779,7 +780,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'ORIGINAL DUE DATE':
@@ -797,7 +798,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'JOB NUMBER':
@@ -807,7 +808,7 @@ export const commit = (request, response) => {
                   };
                   tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                   // console.log('url for custom field', tUrl);
-                  promises.push(TrelloModel.put(tUrl, value));
+                  promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   break;
                 case 'START DATE':
                   // console.log('Start Date', start_date);
@@ -823,7 +824,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'BUILDER':
@@ -834,7 +835,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'SUBDIVISION':
@@ -845,7 +846,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'BILLING':
@@ -857,7 +858,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'CONTACT':
@@ -869,7 +870,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'CLASSIFICATION':
@@ -883,7 +884,7 @@ export const commit = (request, response) => {
                       };
                       tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                       // console.log('url for custom field', tUrl);
-                      promises.push(TrelloModel.put(tUrl, value));
+                      promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                     }
                   }
                   break;
@@ -898,7 +899,7 @@ export const commit = (request, response) => {
                       };
                       tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                       // console.log('url for custom field', tUrl);
-                      promises.push(TrelloModel.put(tUrl, value));
+                      promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                     }
                   }
                   break;
@@ -910,7 +911,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'GEOTECH':
@@ -921,7 +922,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'GEO REPORT DATE':
@@ -938,7 +939,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'GEO REPORT NUM':
@@ -949,7 +950,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'SCOPE':  // now an array of scope records
@@ -960,7 +961,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 default:

@@ -138,8 +138,8 @@ export function filterProjects(findString) {
 // Action to add or update the Client
 export function saveInspections(c) {
   return function (dispatch, getState) {
-    const { inspections } = getState();
-    fetch("/inspections", {
+    const { inspections, trelloToken } = getState();
+    fetch(`/inspections/${trelloToken}`, {
       method: "POST",
       headers: {"Content-Type": "application/json"},
       body: JSON.stringify(c)

@@ -112,7 +112,7 @@ class App extends Component {
       open: false,  // navBar
       welcome: true,
       authInProgress: false,
-      trello_token: localStorage.getItem('trello_token') || false
+      trelloToken: localStorage.getItem('trello_token') || false
       // settings: !this.props.session.settings?{accent_color: '#42a5f5'}:this.props.session.settings,
       // accent_color: this.props.session.settings.accent_color
     };
@@ -129,7 +129,7 @@ class App extends Component {
       })
     };
 
-    if (this.state.trello_token) this.props.authenticateTrello(this.state.trello_token);
+    if (this.state.trelloToken) this.props.initiateTrello(this.state.trelloToken);
 
     // console.log('CDM App.js: After authenticating')
 
@@ -274,10 +274,10 @@ class App extends Component {
   // }
 
   trelloAuthSuccess = () => {
-    const trello_token = localStorage.getItem('trello_token');
+    const trelloToken = localStorage.getItem('trello_token');
     // console.log('Successful authentication', trello_token);
-    this.setState({ trello_token: trello_token }, ()=> {
-      this.props.authenticateTrello(trello_token);
+    this.setState({ trelloToken: trelloToken }, ()=> {
+      this.props.initiateTrello(trelloToken);
     });
 
   };
@@ -474,7 +474,7 @@ class App extends Component {
     // if (!session.authInProgress && session.authenticated) {
     if (session.authenticated) {
       console.log('session authenticated and settings loaded.  Render something');
-      if (this.state.trello_token) {
+      if (this.state.trelloToken) {
         whatToRender = this.renderApp(classes);
       } else {
         console.log('Requesting Trello authorization');

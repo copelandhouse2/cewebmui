@@ -16,10 +16,11 @@ router.get("/inspections/:id", show);
 router.get("/inspectionfilter/:findString", filter);
 router.get("/inspectionfilter/projects/:findString", filterProjects);
 
-//posting new entries to the database
-router.post("/inspections", save);
+// Posting new entries to the database.
+// Use trelloToken to create / update trello cards
+router.post("/inspections/:trelloToken", save);
 
-//deleting entries from the database
+// Deleting entries from the database
 router.delete("/inspections/:id", remove);
 
 export default router;

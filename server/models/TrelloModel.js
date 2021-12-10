@@ -5,20 +5,23 @@ import { env } from '../envVars';
 const key = env.REACT_APP_TRELLO_KEY;
 const token = env.REACT_APP_TRELLO_TOKEN;
 // import { promisify } from 'util';
-export let trello = null;
+export let trello = {};
 export let tBoards = null;
+
+export let theToken;
 
 export const TrelloModel = {
   authenticate: (userToken) => {
-    const theToken = userToken?userToken:token;
+    theToken = userToken?userToken:token;
     return new Trello(key, theToken);
   },
 
-  setGlobals: (key, value) => {
+  setGlobals: (key, token, value) => {
 
     switch(key) {
       case 'AUTH':
-        trello = value;
+        trello[token] = value;
+        console.log('setGlobals AUTH value', trello);
         break;
       case 'SEED':
         tBoards = value;
@@ -29,9 +32,10 @@ export const TrelloModel = {
     }
   },
 
-  get: (uri) => {
+  get: (token, uri) => {
+    // const trello = new Trello(key, token);
     return new Promise((resolve, reject) => {
-      trello.get(uri, (err, response) => {
+      trello[token].get(uri, (err, response) => {
         if (err) reject(err);
         // console.log('resolve for TrelloModel.get promise: ', response);
         resolve(response);
@@ -39,9 +43,10 @@ export const TrelloModel = {
     });
   },
 
-  post: (uri, object) => {
+  post: (token, uri, object) => {
+    // const trello = new Trello(key, token);
     return new Promise((resolve, reject) => {
-      trello.post(uri, object, (err, response) => {
+      trello[token].post(uri, object, (err, response) => {
         if (err) reject(err);
         // console.log('resolve for TrelloModel.post promise: ', response);
         resolve(response);
@@ -49,10 +54,11 @@ export const TrelloModel = {
     });
   },
 
-  put: (uri, object) => {
+  put: (token, uri, object) => {
     // console.log('Trello put: ', uri, object);
+    // const trello = new Trello(key, token);
     return new Promise((resolve, reject) => {
-      trello.put(uri, object, (err, response) => {
+      trello[token].put(uri, object, (err, response) => {
         if (err) reject(err);
         // console.log('resolve for TrelloModel.put promise: ', response);
         resolve(response);
@@ -60,7 +66,8 @@ export const TrelloModel = {
     });
   },
 
-  del: (uri) => {
+  del: (token, uri) => {
+    // const trello = new Trello(key, token);
     return new Promise((resolve, reject) => {
       trello.del(uri, (err, response) => {
         if (err) reject(err);

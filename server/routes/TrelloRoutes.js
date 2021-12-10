@@ -6,8 +6,8 @@ const router = express.Router();
 //Authenticating Trello
 router.get("/trello/authenticate/:token", authenticate);
 
-router.get("/trello/card/:cardID", getCard);
+router.get("/trello/card/:token/:cardID", getCard);
 
-router.get("/trello/seed", getTrelloSeed);
+router.get("/trello/seed/:token", getTrelloSeed);
 
 export default router;

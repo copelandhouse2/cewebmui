@@ -1,8 +1,11 @@
 # CE Webtools
 Copeland Engineering Web Tools.
 
+## v2.1.7 12/10/2021
+* Trello authorization fix.  Eliminated global Trello call which was causing the last user who refreshes the screen to instantiate the Trello call with their token.  Any other user submitting a call will end up using the other person's token, which in Trello looks like the other user requested the change.  Now Passing user token to all Trello API calls.  Trello call is now instantiated with the user token each time we use Trello API.
+
 ## v2.1.6 11/12/2021
-* Trello authorization.  Now users will authorize Webtools to leverage Trello account.  Webtools will submit trello requests on behalf of the user.
+* Trello authorization.  Now users will authorize Webtools to leverage Trello account.  Webtools will submit Trello requests on behalf of the user.
 * Inspection Entry screen.  Additional tailoring.  Now submits Trello updates.  After further review with Aaron though, still needs more work.
 * Bug fix: Project Entry, in some cases, the city would take previous value entered if city was null on the subdivision.  Fixed.
 * Bug fix: City Maintenance screen update now works.  A previous release must have broken the update feature.

@@ -126,7 +126,7 @@ class InspectionDialog extends Component {
     let listLookup = []
     this.props.loadLocalView(this.VIEW);
     if (this.state.trello_card_id) {
-      getTrelloCard(this.state.trello_card_id)
+      getTrelloCard(this.props.trelloToken, this.state.trello_card_id)
       .then((card)=>{
         if (card.hasOwnProperty('statusCode') && card.statusCode !== 200) {throw card};
         board_name = card.board.name;
@@ -160,7 +160,7 @@ class InspectionDialog extends Component {
         , trello_list: list_name, trello_list_id: INSP_LIST, trello_list_lookup: listLookup} );
     }
     if (this.state.project_trello_card_id) {
-      getTrelloCard(this.state.project_trello_card_id)
+      getTrelloCard(this.props.trelloToken, this.state.project_trello_card_id)
       .then((card)=>{
         if (card.hasOwnProperty('statusCode') && card.statusCode !== 200) {throw card};
         this.setState( {project_trello_info:card, projectTrelloCardStatus:card.closed?'Archived':'Active', trelloCreateCard:card.closed?'N':'Y'} )
@@ -238,7 +238,7 @@ class InspectionDialog extends Component {
           // console.log('Address was entered', value);
           if (value.project_trello_card_id) {
             // console.log('getting ready to fetch');
-            getTrelloCard(value.project_trello_card_id)
+            getTrelloCard(this.props.trelloToken, value.project_trello_card_id)
             .then(card=>{
                 if (card.hasOwnProperty('statusCode') && card.statusCode !== 200) {throw card};
                 // console.log('trello info', card);

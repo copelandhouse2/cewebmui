@@ -31,7 +31,7 @@ router.delete('/projects/:id', remove);
 
 //Getting the projects... those pending for the user
 router.put('/commits/:userID/:create', commit);
-router.put('/commits/:userID/:create/:v2', commit);
+router.put('/commits/:userID/:create/:v2/:trelloToken', commit);
 
 //Getting the data... the entire list
 router.get(`/dups/:test/:address/:subdivision/:phase/:section/:block/:lot`

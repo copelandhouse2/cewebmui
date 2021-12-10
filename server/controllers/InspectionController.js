@@ -226,7 +226,7 @@ export const save = async (request, response) => {
             idList: data[i].trello_list_id,
             pos: 'top'
           };
-          const cResponse = await TrelloModel.put(`/1/cards/${data[i].trello_card_id}`, card)
+          const cResponse = await TrelloModel.put(request.params.trelloToken, `/1/cards/${data[i].trello_card_id}`, card)
           modifiedCard = data[i].trello_info;
 
         }
@@ -241,7 +241,7 @@ export const save = async (request, response) => {
             idList: data[i].trello_list_id,
             pos: 'top'
           };
-          const cResponse = await TrelloModel.put(`/1/cards/${data[i].project_trello_card_id}`, card)
+          const cResponse = await TrelloModel.put(request.params.trelloToken, `/1/cards/${data[i].project_trello_card_id}`, card)
           modifiedCard = data[i].project_trello_info;
         }
 
@@ -258,12 +258,12 @@ export const save = async (request, response) => {
             pos: 'top',
           };
 
-          const cNewCard = await TrelloModel.post(`/1/cards/`, card);
+          const cNewCard = await TrelloModel.post(request.params.trelloToken, `/1/cards/`, card);
           // console.log('New Card, url to add',cNewCard, projectCard.shortUrl);
           // add MAIN card attachment
           const urlAtt = `1/cards/${cNewCard.id}/attachments`;
           const valueAtt = { url:data[i].project_trello_info.shortUrl };
-          const rAtt = await TrelloModel.post(urlAtt, valueAtt)
+          const rAtt = await TrelloModel.post(request.params.trelloToken, urlAtt, valueAtt)
           // console.log('trello response',cResponse);
           modifiedCard = cNewCard;
         }
@@ -296,7 +296,7 @@ export const save = async (request, response) => {
             const urlChkI = `1/cards/${modifiedCard.id}/checkItem/${data[i].trello_checkitem_id}`;
             // const valueChkI = { name:'PP | Travis | F', pos:'top' };
             const valueChkI = `name=${data[i].trello_checkitem}`;
-            respChkItem = await TrelloModel.put(`${urlChkI}?${valueChkI}`);
+            respChkItem = await TrelloModel.put(request.params.trelloToken, `${urlChkI}?${valueChkI}`);
           }
           // Checkitem does not exist.  Need to ADD it.  Need to check
           // and see if Inspections checklists exists or not.  If not, create.
@@ -313,19 +313,19 @@ export const save = async (request, response) => {
 
               const urlChkI = `1/checklists/${inspCL.id}/checkItems`;
               const valueChkI = `name=${data[i].trello_checkitem}`;
-              respChkItem = await TrelloModel.post(`${urlChkI}?${valueChkI}`);
+              respChkItem = await TrelloModel.post(request.params.trelloToken, `${urlChkI}?${valueChkI}`);
 
             } else {
               console.info('Checklist DNE.  Need to create it, then add checkitem');
 
               const urlChk = `1/cards/${modifiedCard.id}/checklists`;
               const valueChk = { name:'Inspections', pos:'top' };
-              const respChk = await TrelloModel.post(urlChk, valueChk)
+              const respChk = await TrelloModel.post(request.params.trelloToken, urlChk, valueChk)
               console.info('trello checklist',respChk);
 
               const urlChkI = `1/checklists/${respChk.id}/checkItems`;
               const valueChkI = `name=${data[i].trello_checkitem}`;
-              respChkItem = await TrelloModel.post(`${urlChkI}?${valueChkI}`);
+              respChkItem = await TrelloModel.post(request.params.trelloToken, `${urlChkI}?${valueChkI}`);
 
             }
           }
@@ -351,7 +351,7 @@ export const save = async (request, response) => {
                 };
                 tUrl = `1/cards/${modifiedCard.id}/customField/${field.id}/item`;
                 // console.log('url for custom field', tUrl);
-                promises.push(TrelloModel.put(tUrl, value));
+                promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
               }
               break;
             case 'CABLE COMPANY':
@@ -365,7 +365,7 @@ export const save = async (request, response) => {
                   idValue: idValue  // need to fix when null.  only update when value exists.
                 };
                 tUrl = `1/cards/${modifiedCard.id}/customField/${field.id}/item`;
-                promises.push(TrelloModel.put(tUrl, value));
+                promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
               }
               break;
             case 'TSD':
@@ -380,7 +380,7 @@ export const save = async (request, response) => {
                 };
                 tUrl = `1/cards/${modifiedCard.id}/customField/${field.id}/item`;
                 // console.log('url for custom field', tUrl);
-                promises.push(TrelloModel.put(tUrl, value));
+                promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
               }
               break;
             case 'INSP & DATE':
@@ -398,7 +398,7 @@ export const save = async (request, response) => {
                 };
                 tUrl = `1/cards/${modifiedCard.id}/customField/${field.id}/item`;
                 // console.log('url for custom field', tUrl);
-                promises.push(TrelloModel.put(tUrl, value));
+                promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
               }
               break;
             default:
