@@ -10,7 +10,7 @@ router.get("/clients", list);
 router.get("/clientsearch/:findString", find);
 
 //Getting the data... just one entity
-router.get("/clients/:id", show);
+router.get("/clients/:table/:client_id", show);
 
 //posting new and updated entries to the database
 router.post("/clientadd", create);

@@ -9,6 +9,7 @@ export default {
   },
   dups: [],
   clients: [],
+  currentClient: {},
   clientSearch: {
     find: null,
     findResults: [],
@@ -29,6 +30,7 @@ export default {
   inspectors: [],  // contacts with the role INSEPCTION
   contacts: [],  // all people in contacts table.
   // jobnumberseqs: [],
+  lookups: [],  // This is all the lookups.
   stateLookup: [],
   countryLookup: [],
   roleLookup: [],
@@ -53,6 +55,7 @@ export default {
   revRespLookup: [],
   inspTypeLookup: [],
   inspReasonLookup: [],
+  reportTypesLookup: [],
   geos: [],
   geoSearch: {
     find: null,

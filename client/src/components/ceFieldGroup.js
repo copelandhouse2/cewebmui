@@ -856,6 +856,7 @@ class extends Component {
 
     let edited = [...this.state.editedRows];
     edited[arrID] = {...edited[arrID], ...updatedValues};
+    // console.log('handleRowChange', edited);
     this.setState({ editedRows: edited });
     // this.props.handleRowChange(updatedValues, arrID);
   }
@@ -979,7 +980,7 @@ class extends Component {
                 // if (parentState.scope) {
                 //   childRec = r.scope.find(s=>s.scope === parentState.scope);
                 // }
-                // console.log('row',r, childRec);
+                // console.log('row',r);
                 return (
                   <Fragment key={ri}>
                   <TableRow key={ri}>
@@ -1049,6 +1050,8 @@ class extends Component {
                     </TableCell>
 
                     {this.state.columns.map((c,ci)=>{
+                      // console.log('col',c.name, r[c.name]);
+
                       if (this.state.editedRows[ri]) {
                         return (
                         <TableCell
@@ -1904,7 +1907,9 @@ class extends Component {
               // console.log('*** items ***',item)
               let rStr = '';
               // const item_reason = item.reasons.map(r=>r.reason).toString();
-              item.reasons.forEach(r=>rStr = rStr===''?r.reason:rStr+', '+r.reason);
+              if ('reasons' in item) {
+                item.reasons.forEach(r=>rStr = rStr===''?r.reason:rStr+', '+r.reason);
+              }
 
               return (
                 <Paper

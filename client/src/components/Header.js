@@ -21,7 +21,14 @@ const styles = theme => ({
   root: {},
   // AppBar: {marginBottom: 10, zIndex: theme.zIndex.drawer+1,},
   AppBar: {
-    height: 60
+    height: 60,
+    zIndex: theme.zIndex.drawer + 1,
+  },
+  toolbar: {
+    zIndex: theme.zIndex.drawer + 2,
+  },
+  menu: {
+    zIndex: theme.zIndex.drawer + 3,
   },
   grow: {
     flexGrow: 1,
@@ -98,6 +105,7 @@ class Header extends React.Component {
               color="inherit"
               aria-label="Open drawer"
               onClick={this.props.toggleDrawer}
+              className={classes.toolbar}
             >
               {this.props.navOpen? <CloseIcon /> : <MenuIcon />}
             </IconButton>
@@ -123,6 +131,7 @@ class Header extends React.Component {
               aria-haspopup="true"
               onClick={this.handleMenu}
               color="inherit"
+              className={classes.toolbar}
             >
               <AccountCircle className={classes.icon}/>
             </IconButton>

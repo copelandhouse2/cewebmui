@@ -151,9 +151,9 @@ export const TrelloFG = withStyles(styles, { withTheme: true })(
   dialogState.reasons.forEach(r=>{
     rString = r.order?
       r.order ===1?
-        `  | **${r.order})** ${r.reason} - ${r.comments}`
+        `  | **${r.order})** ${r.reason} - ${r.notes}`
         :
-        `${rString}  **${r.order})** ${r.reason} - ${r.comments}`
+        `${rString}  **${r.order})** ${r.reason} - ${r.notes}`
       :rString
   })
   const ciValue = `${initials}${inspDate}${type}${status}${rString}`

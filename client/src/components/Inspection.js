@@ -8,6 +8,8 @@ import { withWidth } from "@material-ui/core";
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import Fab from '@material-ui/core/Fab';
+import IconButton from '@material-ui/core/IconButton';
+
 // import AddIcon from '@material-ui/icons/Add';
 // import Checkbox from '@material-ui/core/Checkbox';
 import Tooltip from "@material-ui/core/Tooltip";
@@ -23,6 +25,7 @@ import { AddIcon } from '../img/addIcon.js';
 // import { InspectorImg } from '../img/inspector.js';
 // import { HouseSearch } from '../img/houseSearch.js';
 import { Exit } from '../img/exit.js';
+import { DownloadCSV } from '../img/csvDownloadIcon.js';
 // import SearchIcon from '@material-ui/icons/Search';
 
 import InspectionDialogContainer from '../containers/InspectionDialogContainer';
@@ -30,7 +33,7 @@ import InspectionDialogContainer from '../containers/InspectionDialogContainer';
 // import IconButton from '@material-ui/core/IconButton';
 
 const styles = theme => ({
-  root: {
+  flex: {
     display: 'flex',
   },
   container: {
@@ -271,52 +274,115 @@ class Inspection extends Component {
     )
   }
 
+  downloadCSV = () => {
+    // Use first element to choose the keys and the order
+    let result = '';
+
+    if (this.props.inspections.results.length > 0) {
+      let keys = Object.keys(this.props.inspections.results[0]);
+
+      // Build header
+      result = `data:text/csv;charset=utf-8,"${keys.join('","')}"` + '\n';
+
+      // Add the rows
+      this.props.inspections.results.forEach(function(obj) {
+        result += `"${Object.values(obj).join('","')}"` + '\n';
+        
+        // console.log('the obj', obj);
+        // result += keys.map(k => {
+        //   if (Object.prototype.toString.call(obj[k]) === '[object Array]') {
+        //     console.log('array', obj[k]);
+        //     return `"Array[]"`;  // returning the array as a string.
+        //   } else if (Object.prototype.toString.call(obj[k]) === '[object Object]') {
+        //     console.log('object', obj[k]);
+        //     return `"Object{}"`;  // returning the array as a string.
+        //   } else {
+        //     console.log('scalar', obj[k]);
+        //     return `"${obj[k]}"`;
+        //   }
+        // }).join(',') + '\n';
+
+      });
+
+      console.log('download Result', result);
+      const encodedUri = encodeURI(result);
+      // window.open(encodedUri);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "inspections.csv");
+      document.body.appendChild(link);
+      link.click();
+      URL.revokeObjectURL(link.href);
+    } else {
+      this.props.loadMessage(
+        { ok: false,
+          status: 'No data',
+          statusText: 'No results to download.  Run a query'
+        },
+        'INFO'
+      );
+    }
+
+  }
+
   // actions that show in field group title bar
   fieldGroupTools = () => {
     // return null;
     const { classes } = this.props;
 
     return (
-      <Grid container justify='space-between' style={{marginLeft:30}}>
-      <Grid item xs={2}>
-        <Field2Container
-          // key={field.id}
-          field = {{name: 'dateRange', label: 'Insp Date Within', lookup_list:'dateSearchLookup'}}
-          arrID = {false}
-          state = {this.state}
-          updateState = {this.updateState}
-          // altLookups can support multiple lookups when used with field group with multiple fields.  Array of records of fields.
-          // altLookups = {[{name: 'find', label: '', lookup_list:inspections.filter}]}
-          // altBkg = {true}
-          placeholder={'Date'}
-          // find action.  Only used when searching an object, like
-          // projects, geotechs, subdivisions, clients, etc.
-          // asYouType={4}S
-          // findAction={this.findInspections}
-          // turns off dup check, creating client,city,sub via list
-          searchMode={true}
-          // props that are not used.
-          handleListChange={false}
-          handleFocus={false}
-          handleBlur={false}
-          // call to create new client, city, sub
-          createDialogValue={false}
+      <Grid container alignItems='center' style={{marginLeft:30}}>
+        <Grid item xs={2}>
+          <Field2Container
+            // key={field.id}
+            field = {{name: 'dateRange', label: 'Insp Date Within', lookup_list:'dateSearchLookup'}}
+            arrID = {false}
+            state = {this.state}
+            updateState = {this.updateState}
+            // altLookups can support multiple lookups when used with field group with multiple fields.  Array of records of fields.
+            // altLookups = {[{name: 'find', label: '', lookup_list:inspections.filter}]}
+            // altBkg = {true}
+            placeholder={'Date'}
+            // find action.  Only used when searching an object, like
+            // projects, geotechs, subdivisions, clients, etc.
+            // asYouType={4}S
+            // findAction={this.findInspections}
+            // turns off dup check, creating client,city,sub via list
+            searchMode={true}
+            // props that are not used.
+            handleListChange={false}
+            handleFocus={false}
+            handleBlur={false}
+            // call to create new client, city, sub
+            createDialogValue={false}
 
-          // props functions in container
-          // searchForDups
-          // loadFind
-          // loadMessage
-        />
-      </Grid>
-      <Grid item>
-        <Fab className={classes.addButton}
-          color="secondary"
-          size="small"
-          onClick={()=>this.handleAddEdit(false)}
-        >
-          <AddIcon size={24} />
-        </Fab>
-      </Grid>
+            // props functions in container
+            // searchForDups
+            // loadFind
+            // loadMessage
+          />
+        </Grid>
+        <Grid item className={classes.grow} />
+        <Grid item>
+          <Tooltip title='Download csv' placement='left'>
+            <IconButton className={classes.addButton}
+              color="secondary"
+              onClick={()=>this.downloadCSV()}
+            >
+              <DownloadCSV size={40} />
+            </IconButton>
+          </Tooltip>
+        </Grid>
+        <Grid item>
+          <Tooltip title='Add Inspection' placement='left'>
+            <IconButton className={classes.addButton}
+              color="secondary"
+              onClick={()=>this.handleAddEdit(false)}
+            >
+              <AddIcon size={40} />
+            </IconButton>
+          </Tooltip>
+        </Grid>
       </Grid>
     );
 

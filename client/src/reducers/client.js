@@ -5,6 +5,13 @@ function clients(state = [], action) {
   return state;
 }
 
+function currentClient(state = {}, action) {
+  if (action.type === "CLIENT_DATA_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
 function clientSearch(state = {}, action) {
   if (action.type === "CLIENT_SEARCH_LOADED") {
     return action.value;
@@ -19,6 +26,6 @@ function showClientDialog(state = false, action) {
   return state;
 }
 
-const clientReducer = { clients, clientSearch, showClientDialog };
+const clientReducer = { clients, currentClient, clientSearch, showClientDialog };
 
 export default clientReducer

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 // import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 // import { useTheme } from '@material-ui/styles';
@@ -17,6 +17,7 @@ import CreatableSelect from 'react-select/creatable';
 import Lock from '@material-ui/icons/Lock';
 import LockOpen from '@material-ui/icons/LockOpen';
 import HelpIcon from '@material-ui/icons/Help';
+import ClearIcon from '@material-ui/icons/Clear';
 
 const styles = theme => ({
   inputProps: {
@@ -138,10 +139,10 @@ const colSelectProps = theme => ({
   }),
 });
 
-const handleChange = (name, arrID, state, updateState) => event => {
+const handleChange = (name, arrID, state, updateState, clear = false) => event => {
   // name === 'jobNumUnlock'?console.log('event target', event.target):null;
   // console.log('ceField handleChange', name, state);
-  // console.log('handleChange1', name, event.target.value);
+  // console.log('handleChange', name, event.target.value);
 
   if (arrID||arrID===0) {
     let updatedScope = [...state.scope];
@@ -177,13 +178,13 @@ const handleChange = (name, arrID, state, updateState) => event => {
     //       this.searchForExisting('LOT')
     //     }}
     //   ) :
-    updateState({ [name]: event.target.value, });
+    updateState({ [name]: clear?null:event.target.value, });
   }
 
 };
 
 const handleListChange = (selected, field, arrID, state, updateState, altList = null) => {
-  // console.log('in handleListChange:', field.name, selected, state);
+  // console.log('in handleListChange:', updateState);
   if (state.object === 'INSPECTION' && field.name === 'find') {
 
     if (selected) {
@@ -227,7 +228,8 @@ const handleListChange = (selected, field, arrID, state, updateState, altList = 
             updateState({ [field.name]: null });  // clear out
         break;
       default:
-        // field.name === 'address1'?console.log('handleListChange dft 1', field, selected, altList):null;
+        // field.name === 'city'?console.log('handleListChange dft 1', field, selected, altList):null;
+        // field.name === 'billing_city'?console.log('handleListChange billing_city', field, selected, altList):null;
         selected?  // if selected
           field.name_id?  // then if field has an id
             updateState({ [field.name_id]: selected.code, [field.name]: selected.name }) :  // fill in id and value.
@@ -684,8 +686,9 @@ const textField = (props) => {
               aria-label='job-unlock'
               color='secondary'
               title='Unlock job number for editing'
+              style={{padding:2}}
               onClick={props.toggleJob}>
-              {state.jobNumUnlock? <LockOpen /> : <Lock />}
+              {state.jobNumUnlock? <LockOpen fontSize='small' /> : <Lock fontSize='small' />}
             </IconButton>
             :null
         }}
@@ -704,7 +707,8 @@ const listField = (props) => {
   // console.info('listField', props.position);
   // field.name === 'find'? console.log('listField', field, altLookups): null;
   // field.name === 'entered_by'? console.log('listField', field, props[field.lookup_list]): null;
-  // field.name === 'requestor'? console.log('listField', field, props[field.lookup_list]): null;
+  // field.name === 'billing_city'? console.log('listField', field, props[field.lookup_list]): null;
+  // console.log('listField', field, props[field.lookup_list]);
   let currentValue;
 
   // field.name === 'inspector'?console.info('field',field.lookup_list):null;
@@ -819,6 +823,7 @@ const listField = (props) => {
       placeholder={props.placeholder||null}
       onChange={
         (selected) => {
+          // console.log('onChange',field,selected, props.handleChangeCustomized);
           props.handleListChange?
           props.handleListChange(selected, field, arrID):
           props.handleChangeCustomized?
@@ -949,7 +954,7 @@ const textField2 = (props) => {
   // const { classes, theme, field, state, arrID, updateState, searchMode, dupCheck } = props;  // passed thru call.
   // const { loadFind, searchForDups, loadMessage } = props;  // passed thru container
   const { classes, theme, field, state, arrID, updateState, searchMode } = props;  // passed thru call.
-  const { loadMessage } = props;  // passed thru container
+  const { loadMessage, endAdornment } = props;  // passed thru container
   // console.log('textField2', state);
   let currentValue = '';
   if (arrID||arrID===0) {
@@ -965,6 +970,8 @@ const textField2 = (props) => {
   let fieldDisabled = field.name === 'job_number' && state.jobNumUnlock ? 'N'
     : field.name === 'id' && state.idUnlock ? 'N'
     : field.disabled;
+  // field.name === 'id'?console.log('currentValue: id', field, fieldDisabled):null;
+
   // field.name === 'job_number'?console.log('currentValue: job', field):null;
   // field.name === 'job_number'?console.log('value for disabled', fieldDisabled):null;
   // field.name === 'inspector'?console.log('field',field):null;
@@ -973,6 +980,7 @@ const textField2 = (props) => {
       // inputRef={field.name === 'address1'? this.addrRef:null}
       required={field.required === 'Y'? true:false}
       disabled={fieldDisabled === 'Y'? true:false}
+      // placeholder={'Write a comment...'}
       // disabled={disabled}
       // select={field.list.length !== 0? true: false}
       // id={field.name}
@@ -1027,7 +1035,17 @@ const textField2 = (props) => {
               root: classes.adornment
             }}
           >
-            <IconButton
+            <IconButton size='small'
+              aria-label='Clear'
+              // onClick={search}
+              classes={{
+                root: classes.adornment2
+              }}
+              onClick={handleChange(field.name, arrID, state, updateState, true)}
+            >
+              <ClearIcon />
+            </IconButton>
+            <IconButton size='small'
               aria-label='Search'
               // onClick={search}
               classes={{
@@ -1037,7 +1055,7 @@ const textField2 = (props) => {
             >
               <SearchIcon />
             </IconButton>
-            <IconButton
+            <IconButton size='small'
               aria-label='guide'
               // onClick={search}
               classes={{
@@ -1050,22 +1068,28 @@ const textField2 = (props) => {
           </InputAdornment>
           :
           field.name === 'job_number' && !searchMode?
-          <IconButton
+          <IconButton size='small'
             aria-label='job-unlock'
             color='secondary'
             title='Unlock job number for editing'
+            style={{padding:2}}
             onClick={() => toggleJob(updateState, state)}>
-            {state.jobNumUnlock? <LockOpen /> : <Lock />}
+            {state.jobNumUnlock? <LockOpen fontSize='small' /> : <Lock fontSize='small' />}
           </IconButton>
           :
           field.name === 'id' ?
-          <IconButton
+          <IconButton size='small'
             aria-label='id-unlock'
             color='secondary'
             title='Unlock id for editing'
+            style={{padding:2}}
             onClick={() => toggleID(updateState, state)}>
-            {state.idUnlock? <LockOpen /> : <Lock />}
+            {state.idUnlock? <LockOpen fontSize='small' /> : <Lock fontSize='small' />}
           </IconButton>
+          :endAdornment?
+          <Fragment>
+            {endAdornment()}
+          </Fragment>
           :null
       }}
       InputLabelProps={{
@@ -1305,12 +1329,15 @@ export const Field2 = withStyles(styles, { withTheme: true })(
 (props) => {
   const { field, altLookups } = props;
   // console.log('field', field.name, field.lookup_list, altLookups);
+  // console.log('field', field);
   if ((field.lookup_list||altLookups) && field.creatable === 'Y' && !props.searchMode) {
+    // console.log('calling creatable list field', field);
     return creatableListField(props);
   } else if (field.lookup_list||altLookups) {
-    // console.log('list field');
+    // console.log('calling list field', field);
     return listField(props);
   } else {
+    // console.log('calling textfield2', field);
     return textField2(props);
   }
 });

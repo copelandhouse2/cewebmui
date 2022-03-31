@@ -19,7 +19,7 @@ const SQL_PREQUERY = `SELECT DISTINCT p.id, p.job_number, p.last_updated_date`
 // , p.bath1_shower_drop, p.bath2_shower_drop, p.bath3_shower_drop,
 
 
-// p.additional_options, p.comments,
+// p.additional_options, p.notes,
 
 
 // p.foundation_type, p.floor_type
@@ -27,7 +27,7 @@ const SQL_PREQUERY = `SELECT DISTINCT p.id, p.job_number, p.last_updated_date`
 
 const SQL_PROJECT_SELECT = `SELECT p.id, p.id address_id, p.job_number, p.story, p.revision, p.revision orig_rev, p.revision_desc, p.revision_desc orig_rev_desc, p.client_id, p.user_id, p.contact_id, p.city, p.subdivision, p.address1, p.address2, p.phase, p.section
 , p.lot, p.block,    p.geo_lab, p.geo_report_num, date_format(p.geo_report_date, '%Y-%m-%d') geo_report_date
-, p.geo_pi, p.em_center, p.em_edge, p.ym_center, p.ym_edge, p.soil_notes,   p.status, p.project_status, p.scope, p.classification, date_format(p.onboard_date, '%Y-%m-%d') onboard_date, date_format(p.start_date, '%Y-%m-%d') start_date
+, p.geo_pi, p.em_center, p.em_edge, p.ym_center, p.ym_edge, p.soil_notes, p.status, p.project_status, p.scope, p.classification, date_format(p.onboard_date, '%Y-%m-%d') onboard_date, date_format(p.start_date, '%Y-%m-%d') start_date
 , date_format(p.due_date, '%Y-%m-%d') due_date, date_format(p.final_due_date, '%Y-%m-%d') final_due_date, date_format(p.transmittal_date, '%Y-%m-%d') transmittal_date, p.main_contact, p.billing_contact, p.builder_contact
   , p.trello_list_id, l.name trello_list, p.trello_card_id, p.box_folder
 , p.created_by, p.last_updated_by, co3.full_name last_updated_by_name, date_format(p.creation_date, '%Y-%m-%d') creation_date, date_format(p.last_updated_date, '%Y-%m-%d') last_updated_date
@@ -334,7 +334,7 @@ const ProjectModel = {
             andClause = ` and CONCAT_WS( '~', p.job_number, p.address1, p.story, p.subdivision
             , p.city, cl.name, co.full_name, p.revision_desc
             , p.geo_lab, p.geo_report_num, p.geo_pi, p.soil_notes
-            , p.additional_options, p.comments, p.status, co.full_name, co2.full_name
+            , p.additional_options, p.notes, p.status, co.full_name, co2.full_name
             , ps.scope, ps.revision_desc, ps.plan_type, ps.garage_type, ps.garage_swing
             , ps.foundation_type, ps.floor_type, ps.roof_type )
              like ?`;
@@ -477,7 +477,7 @@ const ProjectModel = {
     , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation, masonry, garage_type
     , garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window, master_shower_drop
     , bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num, geo_report_date
-    , geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, comments, status, project_status, scope, classification, onboard_date
+    , geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, notes, status, project_status, scope, classification, onboard_date
     , start_date, due_date, final_due_date, transmittal_date, main_contact, billing_contact, builder_contact, foundation_type, floor_type
     , roof_type, num_stories, square_footage, pita_factor, dwelling_type, trello_list_id, trello_card_id, box_folder
     , created_by, last_updated_by }
@@ -496,7 +496,7 @@ const ProjectModel = {
   // + ", lot, block, fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation, masonry, garage_type"
   // + ", garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window, master_shower_drop"
   // + ", bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num,  geo_report_date"
-  // + ", geo_pi, em_center, em_edge, ym_center, ym_edge, additional_options, comments, status, created_by, last_updated_by)"
+  // + ", geo_pi, em_center, em_edge, ym_center, ym_edge, additional_options, notes, status, created_by, last_updated_by)"
   // + " VALUES(?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?)";
 
   // 11+10+7+6+11+8+6+2 fields
@@ -504,7 +504,7 @@ const ProjectModel = {
   , lot, block, fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation, masonry, garage_type
   , garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window, master_shower_drop
   , bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num,  geo_report_date
-  , geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, comments, status, project_status, classification, onboard_date
+  , geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, notes, status, project_status, classification, onboard_date
   , start_date, due_date, final_due_date, transmittal_date, main_contact, billing_contact, builder_contact, foundation_type, floor_type
   , roof_type, num_stories, square_footage, pita_factor, dwelling_type, trello_list_id, trello_card_id, box_folder
   , created_by, last_updated_by, scope)
@@ -514,7 +514,7 @@ const ProjectModel = {
   , plan_type = ?, elevation = ?, masonry = ?, garage_type = ?, garage_entry = ?, garage_swing = ?, garage_drop = ?, garage_extension = ?
   , covered_patio = ?, bay_window = ?, master_shower_drop = ?, bath1_shower_drop = ?, bath2_shower_drop = ?, bath3_shower_drop = ?
   , geo_lab = ?, geo_report_num = ?,  geo_report_date = ?, geo_pi = ?, em_center = ?, em_edge = ?, ym_center = ?, ym_edge = ?, soil_notes = ?
-  , additional_options = ?, comments = ?, status = ?, project_status = ?, classification = ?, onboard_date = ?, start_date = ?
+  , additional_options = ?, notes = ?, status = ?, project_status = ?, classification = ?, onboard_date = ?, start_date = ?
   , due_date = ?, final_due_date = ?, transmittal_date = ?, main_contact = ?, billing_contact = ?, builder_contact = ?, foundation_type = ?, floor_type = ?
   , roof_type = ?, num_stories = ?, square_footage = ?, pita_factor = ?, dwelling_type = ?, trello_list_id = ?, trello_card_id = ?, box_folder = ?
   , last_updated_by = ?, scope = ?`;
@@ -523,7 +523,7 @@ const ProjectModel = {
   , phase, section, lot, block, fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation // 10
   , masonry, garage_type, garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window // 8
   , master_shower_drop, bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num  // 6
-  , geo_report_date, geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, comments, status // 10
+  , geo_report_date, geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, notes, status // 10
   , project_status, classification, onboard_date, start_date, due_date, final_due_date, transmittal_date, main_contact // 8
   , billing_contact, builder_contact, foundation_type, floor_type, roof_type, num_stories, square_footage // 7
   , pita_factor, dwelling_type, trello_list_id, trello_card_id, box_folder // 5
@@ -533,7 +533,7 @@ const ProjectModel = {
   , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation, masonry, garage_type // 8
   , garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window, master_shower_drop // 7
   , bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num, geo_report_date // 6
-  , geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, comments, status, project_status // 10
+  , geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, notes, status, project_status // 10
   , classification, onboard_date, start_date, due_date, final_due_date, transmittal_date, main_contact, billing_contact, builder_contact // 9
   , foundation_type, floor_type, roof_type, num_stories, square_footage, pita_factor, dwelling_type, trello_list_id, trello_card_id  // 9
   , box_folder, last_updated_by, project_scope // 3
@@ -612,7 +612,7 @@ const ProjectModel = {
     , master_shower_drop, bath1_shower_drop, bath2_shower_drop, bath3_shower_drop  // 4
     , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl  // 4
     , foundation_type, floor_type, roof_type, num_stories, square_footage, dwelling_type // 6
-    , additional_options, comments  // 2
+    , additional_options, notes  // 2
     , status, created_by, last_updated_by } // 3  Total as of Dec 9, 2019 = 47
     = scope_item;
 
@@ -630,7 +630,7 @@ const ProjectModel = {
     , master_shower_drop, bath1_shower_drop, bath2_shower_drop, bath3_shower_drop
     , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl
     , foundation_type, floor_type, roof_type, num_stories, square_footage, dwelling_type
-    , additional_options, comments
+    , additional_options, notes
     , status, created_by, last_updated_by)
    VALUES(?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?)
    ON DUPLICATE KEY UPDATE project_id = ?, scope = ?, job_number = ?, description = ?, revision = ?, revision_desc = ?, scope_status = ?
@@ -641,7 +641,7 @@ const ProjectModel = {
      , master_shower_drop = ?, bath1_shower_drop = ?, bath2_shower_drop = ?, bath3_shower_drop = ?
      , fnd_height_fr = ?, fnd_height_fl = ?, fnd_height_rr = ?, fnd_height_rl = ?
      , foundation_type = ?, floor_type = ?, roof_type = ?, num_stories = ?, square_footage = ?, dwelling_type = ?
-     , additional_options = ?, comments = ?
+     , additional_options = ?, notes = ?
      , status = ?, last_updated_by = ?`;
 
   const values = [id?id:scope_id, project_id, name, job_number, description, revision, revision_desc, scope_status  // 8
@@ -652,7 +652,7 @@ const ProjectModel = {
     , master_shower_drop, bath1_shower_drop, bath2_shower_drop, bath3_shower_drop  // 4
     , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl  // 4
     , foundation_type, floor_type, roof_type, num_stories, square_footage, dwelling_type // 6
-    , additional_options, comments  // 2
+    , additional_options, notes  // 2
     , status, created_by, last_updated_by // 3
 
     , project_id, name, job_number, description, revision, revision_desc, scope_status  // 7
@@ -663,7 +663,7 @@ const ProjectModel = {
     , master_shower_drop, bath1_shower_drop, bath2_shower_drop, bath3_shower_drop  // 4
     , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl  // 4
     , foundation_type, floor_type, roof_type, num_stories, square_footage, dwelling_type // 6
-    , additional_options, comments  // 2
+    , additional_options, notes  // 2
     , status, last_updated_by // 2
   ];
 
@@ -746,7 +746,7 @@ const ProjectModel = {
       , pr.reason revision_reason_code, pr.responsibility revision_resp_code
       , pr.description revision_desc, pr.price revision_price, pr.designer_id
       , date_format(pr.rev_date, '%Y-%m-%dT%T') rev_date
-      , IFNULL(ps.scope, 'Project') scope, l1.name revision_reason, l2.name revision_resp, c.full_name designer
+      , IFNULL(ps.scope, 'Project Details') scope, l1.name revision_reason, l2.name revision_resp, c.full_name designer
       FROM projects_revisions pr
       left join projects_scope ps on pr.scope_id = ps.id
       left join lookups l1 on pr.reason = l1.code

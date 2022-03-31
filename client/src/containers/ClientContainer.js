@@ -1,7 +1,7 @@
 import { connect } from "react-redux";
 import Client from "../components/Client";
 import { loadViewsByName, saveClients, deleteClient, findClients
-, loadMessage } from "../actions";
+, loadMessage, getClientData, ynDialog } from "../actions";
 
 function mapStateToProps(state) {
   return {
@@ -10,6 +10,7 @@ function mapStateToProps(state) {
     currentViews: state.currentViews,
     currentProject: state.currentProject,
     clients: state.clients,
+    currentClient: state.currentClient,
     clientSearch: state.clientSearch,
   };
 }
@@ -30,6 +31,12 @@ function mapDispatchToProps(dispatch) {
     },
     loadMessage: function (message, type) {
       dispatch(loadMessage(message, type));
+    },
+    getClientData: function (client_id) {
+      dispatch(getClientData(client_id));
+    },
+    ynDialog: function (action) {
+      dispatch(ynDialog(action));
     },
 
   };

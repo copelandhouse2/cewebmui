@@ -13,7 +13,7 @@ const sqlPromise = (SQLstmt, values) => {
 const SQL_USER_SELECT = `SELECT u.id, u.id code, u.username, u.auth_key, u.approved
 , c.id contact_id, c.client_id, c.first_name, c.last_name, c.full_name
 , c.full_name name, c.initials, c.email, c.mobile, c.other, c.requestor, c.role, c.active
-, c.comments
+, c.notes
 FROM users u, contacts c
 WHERE u.id = c.user_id`;
 

@@ -11,6 +11,7 @@ export * from './lookup';
 export * from './project';
 export * from './inspection';
 export * from './trello';
+export * from './box';
 
 /* SESSION ACTION */
 // Loading the list of addresses
@@ -141,7 +142,7 @@ export function updateSettings(session, settings) {
 
 export function updatePreferences(prefs) {
   return function (dispatch, getState) {
-    console.log('in updatePreferences function', prefs);
+    // console.log('in updatePreferences function', prefs);
     const {session} = getState();
 
     fetch(`/users/preferences/${session.id}`, {
@@ -368,7 +369,7 @@ function usersLoaded(users) {
 }
 
 export function loadMessage(message, type) {
-  // console.log("In loadMessage", message);
+  // console.log("In loadMessage", message, type);
   if (type === 'ERROR') {
     return {
       type: "MESSAGE_LOADED",
@@ -425,7 +426,7 @@ export function ackMessage() {
 }
 
 export function ynDialog(action) {
-  // console.log("In ackMessage");
+  // console.log("In ynDialog", action);
   return {
     type: "MESSAGE_LOADED",
     value: {

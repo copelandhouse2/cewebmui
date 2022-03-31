@@ -62,7 +62,7 @@ class RevisionDialog extends Component {
       }
       return null;
     });
-    scopeLookup.unshift({code: -1, name: 'Project'});
+    scopeLookup.unshift({code: -1, name: 'Project Details'});
     const altLookup = [
       { name: 'scope',
         name_id: 'scope_id',

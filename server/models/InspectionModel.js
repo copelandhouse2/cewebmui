@@ -226,7 +226,7 @@ const InspectionModel = {
 
     let SQLstmt = SQL_INSPECTION_SELECT
     + findClause
-    + ' ORDER BY pi.insp_date desc';
+    + ' ORDER BY pi.insp_date';
 
     return sqlPromise(SQLstmt, values);
   },
@@ -371,16 +371,16 @@ const InspectionModel = {
   saveReason: function(aReason, callback = null){
     // console.log('save reason function', aReason);
 
-    const { id, inspection_id, reason, comments, created_by, last_updated_by } = aReason;
+    const { id, inspection_id, reason, notes, created_by, last_updated_by } = aReason;
 
     const SQLstmt = `INSERT into inspection_reasons
-      (id, inspection_id, reason, comments, created_by, last_updated_by)
+      (id, inspection_id, reason, notes, created_by, last_updated_by)
       values(?,?,?,?,?,?)
-      on duplicate key update inspection_id = ?, reason = ?, comments = ?
+      on duplicate key update inspection_id = ?, reason = ?, notes = ?
       , last_updated_by = ?`;
 
-    const values = [id, inspection_id, reason, comments, created_by, last_updated_by
-    , inspection_id, reason, comments, last_updated_by];
+    const values = [id, inspection_id, reason, notes, created_by, last_updated_by
+    , inspection_id, reason, notes, last_updated_by];
 
     // return sql().query(SQLstmt, values, callback);
     if (callback) {

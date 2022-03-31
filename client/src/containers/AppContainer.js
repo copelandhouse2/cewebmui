@@ -11,7 +11,7 @@ function mapStateToProps(state) {
   return {
     session: state.session,
     cities: state.cities,
-    clients: state.clients,
+    // clients: state.clients,
     subdivisions: state.subdivisions,
     avffControls: state.avffControls,
     avffRelationships: state.avffRelationships,
@@ -81,6 +81,7 @@ function mapDispatchToProps(dispatch) {
     initiateTrello: function (token) {
       dispatch(initiateTrello(token));
     },
+
   };
 }
 

@@ -40,7 +40,7 @@ if (!checkRequiredFiles([paths.appHtml, paths.appIndexJs])) {
 }
 
 // Tools like Cloud9 rely on this.
-console.log ('process.env PORT', process.env.PORT);
+// console.log ('process.env PORT', process.env, process.env.PORT);
 const DEFAULT_PORT = parseInt(process.env.PORT, 10) || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
 
@@ -94,7 +94,7 @@ choosePort(HOST, DEFAULT_PORT)
     // Launch WebpackDevServer.
     // port = 5101;
     // console.log('10');
-    console.log('dev server listen', port);
+    // console.log('dev server listen', port);
 
     devServer.listen(port, HOST, err => {
       if (err) {

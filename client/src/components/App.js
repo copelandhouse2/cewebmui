@@ -2,7 +2,7 @@
 import React, { Component, Fragment } from "react";
 
 // import "../css/App.css";
-import { BrowserRouter, Route, Switch } from "react-router-dom";
+import { Route, Switch, Redirect } from "react-router-dom";
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { withStyles } from '@material-ui/core/styles';
@@ -11,6 +11,8 @@ import HeaderContainer from "../containers/HeaderContainer";
 import Footer from "./Footer";
 // import Body from "./Body";
 import { Grid } from "@material-ui/core";
+import Button from '@material-ui/core/Button';
+
 import AlertDialogContainer from "../containers/AlertDialogContainer";
 // import StartsContainer from "./containers/StartsContainer";
 // import ClientContainer from "./containers/ClientContainer";
@@ -112,7 +114,9 @@ class App extends Component {
       open: false,  // navBar
       welcome: true,
       authInProgress: false,
-      trelloToken: localStorage.getItem('trello_token') || false
+      trelloToken: localStorage.getItem('trello_token') || false,
+      boxToken: localStorage.getItem('box_token') || false,
+      boxAuthClicked: false,
       // settings: !this.props.session.settings?{accent_color: '#42a5f5'}:this.props.session.settings,
       // accent_color: this.props.session.settings.accent_color
     };
@@ -139,29 +143,31 @@ class App extends Component {
     this.props.loadContacts();
     this.props.loadUsers();
     // this.props.loadRequestors();  // a subset of contacts
-    this.props.getLookup('STATE');
-    this.props.getLookup('COUNTRY');
-    this.props.getLookup('TRELLO_LIST');
-    this.props.getLookup('PROJECT_STATUS');
-    // this.props.getLookup('SCOPE');
-    this.props.getLookup('CLASSIFICATION');
-    this.props.getLookup('MASONRY');
-    this.props.getLookup('YN');
-    this.props.getLookup('FND_TYPE');
-    this.props.getLookup('GARAGE_TYPE');
-    this.props.getLookup('GARAGE_ENTRY');
-    this.props.getLookup('GARAGE_SWING');
-    this.props.getLookup('FLOOR_TYPE');
-    this.props.getLookup('ROOF_TYPE');
-    this.props.getLookup('COVERED_PATIO');
-    this.props.getLookup('PITA');
-    this.props.getLookup('DWELLING_TYPE');
-    this.props.getLookup('DATE_SEARCH');
-    this.props.getLookup('REV_REASON');
-    this.props.getLookup('REV_RESP');
+    this.props.getLookup('ALL');
 
-    this.props.getLookup('INSP_TYPE');
-    this.props.getLookup('INSP_REASON');
+    // this.props.getLookup('STATE');
+    // this.props.getLookup('COUNTRY');
+    // this.props.getLookup('TRELLO_LIST');
+    // this.props.getLookup('PROJECT_STATUS');
+    // // this.props.getLookup('SCOPE');
+    // this.props.getLookup('CLASSIFICATION');
+    // this.props.getLookup('MASONRY');
+    // this.props.getLookup('YN');
+    // this.props.getLookup('FND_TYPE');
+    // this.props.getLookup('GARAGE_TYPE');
+    // this.props.getLookup('GARAGE_ENTRY');
+    // this.props.getLookup('GARAGE_SWING');
+    // this.props.getLookup('FLOOR_TYPE');
+    // this.props.getLookup('ROOF_TYPE');
+    // this.props.getLookup('COVERED_PATIO');
+    // this.props.getLookup('PITA');
+    // this.props.getLookup('DWELLING_TYPE');
+    // this.props.getLookup('DATE_SEARCH');
+    // this.props.getLookup('REV_REASON');
+    // this.props.getLookup('REV_RESP');
+    //
+    // this.props.getLookup('INSP_TYPE');
+    // this.props.getLookup('INSP_REASON');
 
     // this.props.getAllLookups();
 
@@ -286,6 +292,74 @@ class App extends Component {
     console.log('Failed authentication');
   };
 
+  boxAuthWindow = window;
+  BoxAuth = () => {
+    return (
+      <Grid container style={{height:'100%'}} direction='column' justify='center' alignItems='center' spacing={40}>
+        <Grid item>
+          <h3>{this.props.session.first_name}, Webtools needs to get box authorization from you.  This will enable webtools to create folders on your behalf.</h3>
+        </Grid>
+        <Grid item>
+          <Button disabled={this.state.boxAuthClicked} variant='contained' onClick={()=>{
+            this.setState({boxAuthClicked:true})
+            this.boxAuthWindow.open(`http://localhost:3001/boxauth/${this.props.session.id}`,'Box Auth', 'width=600,height=600')
+          }}>
+            {this.state.boxAuthClicked?'Refresh Screen':'Authorize Box'}
+          </Button>
+        </Grid>
+      </Grid>
+    )
+  }
+  BoxAuthComplete = (props) => {
+    return (
+      <Grid container style={{height:'100%'}} direction='column' justify='center' alignItems='center' spacing={40}>
+        <Grid item>
+          <h3>Almost Done!  Click button to save token.</h3>
+          <h3>Then refresh previous screen</h3>
+        </Grid>
+        <Grid item>
+          <Button variant='contained' onClick={()=>this.boxSuccess(props)}>
+            Save
+          </Button>
+        </Grid>
+      </Grid>
+    )
+  }
+  boxSuccess = (props) => {
+    console.log('boxSuccess',props.match.params);
+    localStorage.setItem('box_token', props.match.params.token);
+    this.setState({ boxToken: props.match.params.token });
+    this.boxAuthWindow.close();
+  }
+
+  renderBoxAuth(classes) {
+    return (
+        <Fragment>
+        <HeaderContainer toggleDrawer = {this.toggleDrawer} navOpen = {this.state.open} updateAccentColor={this.updateAccentColor}/>
+        <Grid container className={classes.appBody}>
+          <Drawer
+            open={this.state.open}
+            variant='persistent'
+            classes={{
+              paper: classes.navBar,
+            }}
+            // anchor='left'
+          >
+            <Navbar />
+          </Drawer>
+          <Grid item xs={12} >
+            <Switch>
+              {/*when you get here, the currentMenu is loaded.*/}
+              <Route path="/boxauthcomplete/:token" component={this.BoxAuthComplete} />
+              <Route path="/" component={this.BoxAuth} />
+            </Switch>
+          </Grid>
+        </Grid>
+        <Footer />
+        </Fragment>
+    );
+  }
+
   renderApp(classes) {
     // Test for user reload of page.  Now placed in renderApp
     if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
@@ -294,7 +368,6 @@ class App extends Component {
     }
 
     return (
-      <BrowserRouter>
         <Fragment>
         <HeaderContainer toggleDrawer = {this.toggleDrawer} navOpen = {this.state.open} updateAccentColor={this.updateAccentColor}/>
         <Grid container className={classes.appBody}>
@@ -320,6 +393,20 @@ class App extends Component {
               <Route path="/subdivision" component={SubdivisionContainer} />
               <Route path="/geotech" component={GeotechContainer} />
               <Route path="/underconstruction" component={UnderConstruction} />
+              <Route path="/boxauth" component={UnderConstruction} />
+
+              <Route path="/boxauthcomplete/:token" render={(props) => {
+                return (
+                  <Grid container justify='center' alignItems='center'>
+                    <Grid item>
+                      <h1>Box is validated</h1>
+                      <Button onClick={()=>this.boxSuccess(props)}>
+                        Close window and refresh previous screen
+                      </Button>
+                    </Grid>
+                  </Grid>
+                )}
+              } />
               <Route path="/dashboard" render={() =>
                 <Grid container justify='center' alignItems='center'>
                   <Grid item>
@@ -338,7 +425,6 @@ class App extends Component {
         </Grid>
         <Footer />
         </Fragment>
-      </BrowserRouter>
     );
   }
 
@@ -380,6 +466,7 @@ class App extends Component {
     // if (session.authInProgress) return null;
     if (this.state.authInProgress) {
       console.info('still authenticating');
+      // console.info('still checking');
       return null;
     }
 
@@ -462,21 +549,12 @@ class App extends Component {
     });
 
     let whatToRender = '';
-    // let whatToRender2 = '';
-    // localStorage.removeItem('token');
 
-    // const theToken = localStorage.getItem('token');
-    // console.log('App Start', this.props.session);
-    // console.log('App Start token', theToken);
-
-    // console.log('authenticated', this.props.session.authenticated)
-
-    // if (!session.authInProgress && session.authenticated) {
     if (session.authenticated) {
       console.log('session authenticated and settings loaded.  Render something');
-      if (this.state.trelloToken) {
-        whatToRender = this.renderApp(classes);
-      } else {
+      const boxToken = localStorage.getItem('box_token')||false;
+
+      if (!this.state.trelloToken) {
         console.log('Requesting Trello authorization');
         // whatToRender = this.renderApp(classes);
         // whatToRender = this.getTrelloToken()
@@ -489,8 +567,15 @@ class App extends Component {
           expiration: 'never',
           success: this.trelloAuthSuccess,
           error: this.trelloAuthFailure
-      });
-      };
+        });
+      // // Get Box Authorization
+      // } else if (!boxToken) {
+      //   console.log('box token not set')
+      //   whatToRender = this.renderBoxAuth(classes);
+      } else {
+        whatToRender = this.renderApp(classes);
+      }
+
     }
 
     else {
@@ -502,13 +587,12 @@ class App extends Component {
     return (
       <Fragment>
         <CssBaseline />
-        <MuiThemeProvider theme={theme}>
-          {
-            whatToRender
-            // whatToRender2
-          }
-          <AlertDialogContainer />
-        </MuiThemeProvider>
+          <MuiThemeProvider theme={theme}>
+            {
+              whatToRender
+            }
+            <AlertDialogContainer />
+          </MuiThemeProvider>
       </Fragment>
     );
 
@@ -517,77 +601,3 @@ class App extends Component {
 
 }
 export default withStyles(styles)(App);
-
-
-// <Grid item className={classes.navWidth}>
-//   <Navbar handleSignOut = {this.handleSignOut}/>
-// </Grid>
-// <Grid item xs={12} md={11}>
-//   <Switch>
-//     <Route path="/create-start" component={CreateStartContainer} />
-//     <Route path="/" render={() =>
-//       <Grid container justify='center' alignItems='center'>
-//         <Grid item>
-//           <h1>The Dashboard</h1>
-//         </Grid>
-//       </Grid>
-//     } />
-//     <Route render={() => <h1>NOT FOUND!</h1>} />
-//   </Switch>
-// </Grid>
-
-// <Grid container className={classes.appBody}>
-//   <Main />
-// </Grid>
-
-// *** Modified version using Main. ***
-// <BrowserRouter>
-//   <div className={classes.root}>
-//     <Switch>
-//       <Route path="/create-start" component={Main} />
-//       <Route path="/" render={() =>
-//         <Grid container justify='center' alignItems='center'>
-//           <Grid item>
-//             <h1>The Dashboard</h1>
-//           </Grid>
-//         </Grid>
-//       } />
-//       <Route render={() => <h1>NOT FOUND!</h1>} />
-//     </Switch>
-//
-//     <Footer />
-//   </div>
-// </BrowserRouter>
-
-// ** Modified version with Drawer code **
-// <BrowserRouter>
-//   <div className={classes.root}>
-//     <HeaderContainer toggleDrawer = {this.toggleDrawer}/>
-//     <Grid container className={classes.appBody}>
-//       <Drawer
-//         open={this.state.open}
-//         variant='persistent'
-//         // anchor='left'
-//       >
-//         <div className={classes.toolbar2} />
-//         <Navbar />
-//       </Drawer>
-//       <div className={classes.toolbar2} />
-//       <Switch>
-//         <Route path="/projects" component={CreateStartContainer} />
-//         <Route path="/" render={() =>
-//           <Grid container justify='center' alignItems='center'>
-//             <Grid item>
-//               <h1>The Dashboard</h1>
-//             </Grid>
-//           </Grid>
-//         } />
-//         <Route render={() => <h1>NOT FOUND!</h1>} />
-//       </Switch>
-//     </Grid>
-//     <Footer />
-//   </div>
-// </BrowserRouter>
-
-
-// <Route path="/search" component={()=> <ProjectCustomContainer VIEW='TABULAR'/>} />

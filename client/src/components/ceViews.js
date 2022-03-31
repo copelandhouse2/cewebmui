@@ -411,7 +411,7 @@ class singleView extends Component {
 
   handleChange = (name, arrID) => event => {
     // console.log('in handleChange:', name, arrID);
-    // name === 'trello_card_id'?console.log('event target', event.target.value):null;
+    // name === 'city'?console.log('event target', event.target.value):null;
     if (arrID||arrID===0) {
       let updatedScope = [...this.state.scope];
 
@@ -441,7 +441,7 @@ class singleView extends Component {
   };
 
   handleListChange = (selected, field, arrID) => {
-    // console.log('in handleListChange:', field.name, selected, arrID);
+    console.log('in handleListChange:', field.name, selected, arrID);
 
     if (arrID||arrID===0) {
       switch (field.name) {

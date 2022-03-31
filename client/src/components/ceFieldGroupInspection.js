@@ -46,7 +46,7 @@ export const DialogInspectionAddFG = withStyles(styles, { withTheme: true })(
 
   const fStatus = fieldGroup.children.find(field=> field.name === 'inspection_status');
   const fReason = fieldGroup.children.find(field=> field.name === 'inspection_reason');
-  const fComments = fieldGroup.children.find(field=> field.name === 'comments');
+  const fNotes = fieldGroup.children.find(field=> field.name === 'notes');
   const fAttributes = fieldGroup.children.find(field=> field.name === 'attributes');
 
   const fInspContact = fieldGroup.children.find(field=> field.name === 'inspection_contact');
@@ -75,7 +75,9 @@ export const DialogInspectionAddFG = withStyles(styles, { withTheme: true })(
 
       <Paper style={{ width:'100%', padding: 10 }}>
       <Grid item xs={12}>
-        <Typography style={{padding:5,fontWeight:'bold',color:'gray'}}>Details</Typography>
+        {/*
+          <Typography style={{padding:5,fontWeight:'bold',color:'gray'}}>Details</Typography>
+        */}
         <Grid container>
           <Grid item xs={10} container justify='center' alignItems='center'>
             <Grid item xs={12} container spacing={24} style={{margin:-6}}>
@@ -319,8 +321,8 @@ export const DialogInspectionAddFG = withStyles(styles, { withTheme: true })(
 
               <Grid item xs={12} style={{marginTop:-20}}>
                 <Field2Container
-                  key={fComments.id}
-                  field = {fComments}
+                  key={fNotes.id}
+                  field = {fNotes}
                   arrID = {false}
                   state = {dialogState}
                   updateState = {updateState}
@@ -340,7 +342,7 @@ export const DialogInspectionAddFG = withStyles(styles, { withTheme: true })(
               fields = {[
                   {name:'order',data_type:'number',label:'ID',column_width:100}
                 , {name:'reason',data_type:'text',label:'Reason',column_width:200}
-                , {name:'comments',data_type:'text',label:'Notes',column_width:700}
+                , {name:'notes',data_type:'text',label:'Notes',column_width:700}
                 , {name:'overflow',label:'',column_width:50}
               ]}
               data = {dialogState.reasons}

@@ -21,7 +21,7 @@ const styles = theme => ({
   },
   container: {
     width: '90%',
-    margin: 'auto',
+    margin: 'auto'
   },
   actionBarContainer: {
     padding: '10px 0px 5px',
@@ -128,6 +128,7 @@ class CePage extends Component {
       <Fragment>
         <Grid container
           justify='space-between'
+          alignItems='center'
           className={classes.actionBarContainer}
         >
           <Grid item className={classes.firstAction}>

@@ -1,3 +1,10 @@
+function lookups(state = [], action) {
+  if (action.type === "ALL_LOOKUPS_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
 function stateLookup(state = [], action) {
   if (action.type === "STATELOOKUP_LOADED") {
     return action.value;
@@ -166,11 +173,19 @@ function inspReasonLookup(state = [], action) {
   return state;
 }
 
-const lookupReducer = { stateLookup, countryLookup
+function reportTypesLookup(state = [], action) {
+  if (action.type === "REPTYPES_LOADED") {
+    return action.value;
+  }
+  return state;
+}
+
+const lookupReducer = { lookups, stateLookup, countryLookup
 , roleLookup, trelloListLookup, recordStatusLookup, projectStatusLookup
 , scopeLookup, classificationLookup, masonryLookup, ynLookup, fndTypeLookup, garageTypeLookup
 , garageEntryLookup, garageSwingLookup, floorTypeLookup, roofTypeLookup
 , coveredPatioLookup, dwellingTypeLookup, pitaLookup
-, dateSearchLookup, revReasonLookup, revRespLookup, inspTypeLookup, inspReasonLookup };
+, dateSearchLookup, revReasonLookup, revRespLookup, inspTypeLookup
+, inspReasonLookup, reportTypesLookup };
 
 export default lookupReducer

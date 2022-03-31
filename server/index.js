@@ -22,17 +22,15 @@ import OrganizationRoutes from "./routes/OrganizationRoutes";
 import AvffRoutes from "./routes/AvffRoutes";
 import InspectionRoutes from "./routes/InspectionRoutes";
 import TrelloRoutes from "./routes/TrelloRoutes";
+import BoxRoutes from "./routes/BoxRoutes";
+import CommentRoutes from "./routes/CommentRoutes";
 
 import bodyParser from "body-parser";
 import path from "path";
 
 import { MysqlSeed, geotechs, geoMasterData } from "./seedData.js"  //not working form some reason
 
-// MongoDB connection
-// mongoose.set("debug", true);
-// mongoose.Promise = global.Promise;
-// mongoose.connect("mongodb://public:public@ds257858.mlab.com:57858/checkpoint2");
-
+// MySQL Database Connection
 console.log('MODE', env.REACT_APP_MODE);
 connect(env.REACT_APP_MODE, function(err) {
   if(!err) {
@@ -42,42 +40,16 @@ connect(env.REACT_APP_MODE, function(err) {
   }
 });
 
-// tconnect(env.REACT_APP_MODE, function(err) {
-//   if(!err) {
-//     console.log("Trello is connected ... \n\n");
-//   } else {
-//     console.log("Error connecting database ... \n\n");
-//   }
-// });
-//
-// TrelloSeed.boards( (err, resp) => {
-//   if(!err) {
-//     console.log("Got Board info. \n\n", resp);
-//   } else {
-//     console.log("Error getting board info. \n\n", err.message);
-//   }
-// });
-
-// Calling seed data
+// Calling seed data from MySQL
 MysqlSeed.queryGeos();
 MysqlSeed.queryMasterData();
-// (async () => {
-//   try {
-//     geotechs = await MysqlSeed.queryGeos2();
-//     geoMasterData = await MysqlSeed.queryMasterData2(1);
-//     console.log('seed data: geotechs', geotechs);
-//     console.log('seed data: geoMasterData', geoMasterData);
-//   } catch (err) {
-//     console.log('seed error', err);
-//   }
-//
-// })();
+
 
 const app = express();
 app.use(bodyParser.json());
 
-// console.log('dir', __dirname);
 const wwwPath = path.join(__dirname, "www");
+console.log('wwwPath', wwwPath);
 app.use("/", express.static(wwwPath));
 
 app.use(SessionRoutes);
@@ -94,6 +66,8 @@ app.use(OrganizationRoutes);
 app.use(AvffRoutes);
 app.use(InspectionRoutes);
 app.use(TrelloRoutes);
+app.use(BoxRoutes);
+app.use(CommentRoutes);
 
 const port = env.REACT_APP_MODE === 'PROD'?
   env.REACT_APP_PORT || 3001 : env.REACT_APP_PORT_TEST || 5001;
@@ -101,3 +75,5 @@ const port = env.REACT_APP_MODE === 'PROD'?
 app.listen(port, () => {
   console.log(`Listening on port:${port}`);
 });
+
+export default app;

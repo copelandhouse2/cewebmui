@@ -30,8 +30,9 @@ class AlertDialog extends React.Component {
   }
 
   render() {
-    const {ackMessage } = this.props;
+    const {ackMessage, message } = this.props;
     const { yesFunc, noFunc, ynDialog } = this.props.message;
+    // console.log('in alert dialog', message);
     return (
       <div>
         <Dialog

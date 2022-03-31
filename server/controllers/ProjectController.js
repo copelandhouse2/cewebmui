@@ -2,7 +2,7 @@ import ProjectModel from '../models/ProjectModel';
 import JobNumberSeqModel from '../models/JobNumberSeqModel';
 import { sql } from '../mysqldb';
 import { trello, tBoards, theToken, TrelloModel } from '../models/TrelloModel';
-
+import { client as boxClient } from '../models/BoxModel';
 // code to test for daylight savings time or not.
 // Date.prototype.stdTimezoneOffset = () => {
 //     var jan = new Date(this.getFullYear(), 0, 1);
@@ -30,6 +30,7 @@ const timeout = (ms) => {
 //     const returnData = {...proj, scope: scopeData};
 //     return returnData;
 // };
+const pad = (num, size) => ('00000' + num).substr(-size);
 
 export const getScope = async proj => {
     let promises = [];
@@ -362,13 +363,13 @@ export const commit = (request, response) => {
 
       // console.log('Revision info', revision, revision_desc);
 
-      let scope = '', description = '', additional_options = '', comments = '';
+      let scope = '', description = '', additional_options = '', notes = '';
       newRecord.scope.forEach(s=> {
         // console.log('s', s);
         scope = scope+s.scope+',';
         description = s.description?`${description}\n${s.scope} - ${s.description}`:description;
         additional_options = s.additional_options?`${additional_options}\n${s.scope} - ${s.additional_options}`:additional_options;
-        comments = s.comments?`${comments}\n${s.scope} - ${s.comments}`:comments;
+        notes = s.notes?`${notes}\n${s.scope} - ${s.notes}`:notes;
 
         // console.log('for each scope', scope);
       });
@@ -381,7 +382,7 @@ export const commit = (request, response) => {
       //   // console.log('for each rev', rev);
       // });
 
-      // console.log('scope, description, additional_options, comments', scope, description, additional_options, comments);
+      // console.log('scope, description, additional_options, notes', scope, description, additional_options, notes);
 
       // these scope type values used to be stored at project level.  Need to pull them out at scope
       // level now.
@@ -474,7 +475,7 @@ export const commit = (request, response) => {
         const soil = soil_notes? `\n\n**SOIL NOTES:** ${soil_notes}` : '';
         const desc = description? `\n\n**SCOPE DESCRIPTION:** ${description}` : '';
         const opt = additional_options? `\n\n**ADDL OPTIONS:** ${additional_options}` : '';
-        const com = comments? `\n\n**COMMENTS:** ${comments}` : '';
+        const com = notes? `\n\n**NOTES:** ${notes}` : '';
         // const end = `\n\n*Do not erase line below.  Used by webtools.  All information above line is auto-generated.  Anything below line is for your use and will be protected from overwrite.*\n__________`;
         const end = `\n\n*Do not erase line below.  Used by webtools.  Anything below line is protected from overwrite.*\n__________`;
         // const cardDesc = trello_list === 'CUSTOM QUEUE'? `${rev}${soil}${opt}${com}${end}${enteredDesc}`: `**${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**\n\n${rev}${soil}${opt}${com}${end}${enteredDesc}`;
@@ -999,6 +1000,62 @@ export const commit = (request, response) => {
         errors.push(err);
         // throw new Error(err);
       }
+
+      // ***************************************
+      // Creating Box Folder.  Actually works!!!
+      // The Client name and Subdivision name needs to match what's in Webtools for the search
+      // to work.  To make this easier and more accurate, I am thinking I will make the user select the parent folder.
+      // then I will create the the project folder tree in it.
+      // ****************************************
+      // try {
+      //   // console.log('in db update.  Params:', id, tCardID, trello_card_id);
+      //   // + subStr + cityStr + ' - ' + client
+      //   console.log('Creating Box Folder', client_id, client, subdivision, request.params.userID);
+      //   console.log('boxClient', boxClient);
+      //   const addrFolder = job_number + ' - ' + address1;
+      //   // Getting the CE Server/Projects Folder
+      //   const projectFolder = await boxClient[request.params.userID].search.query('Projects', {
+      //     type: 'folder',
+      //     fields: 'id,name,type,description,size,parent,item_status',
+      //     ancestor_folder_ids: '0',
+      //     content_types: 'name',
+      //   });
+      //   const projectFolderID = projectFolder.entries.find(f=>f.parent.name==='CE Server').id;
+      //   console.log('Here is Projects Folder id', projectFolderID);
+      //
+      //   console.log('Client folder to look for', client, pad(client_id,3));
+      //
+      //   // Getting the Projects/Clients Folder
+      //   const clientFolder = await boxClient[request.params.userID].search.query(client, {
+      //     type: 'folder',
+      //     fields: 'id,name,type,description,size,parent,item_status',
+      //     ancestor_folder_ids: projectFolderID,
+      //     content_types: 'name',
+      //   });
+      //   console.log('Here is Client Folder', clientFolder);
+      //
+      //   const clientFolderID = clientFolder.entries.find(f=>f.name===`${pad(client_id,3)} ${client}`).id;
+      //   console.log('Here is Client Folder id', clientFolderID);
+      //
+      //   // Getting the Clients/Address Specific/Subdivision Folder
+      //   const subFolder = await boxClient[request.params.userID].search.query(subdivision, {
+      //     type: 'folder',
+      //     fields: 'id,name,type,description,size,parent,item_status',
+      //     ancestor_folder_ids: clientFolderID,
+      //     content_types: 'name',
+      //   });
+      //   const subFolderID = subFolder.entries.find(f=>f.parent.name===`Address Specific`).id;
+      //   console.log('Here is sub Folder id', subFolderID);
+      //
+      //   const newFolder = await boxClient[request.params.userID].folders.create(subFolderID, addrFolder);
+      //   console.log('Here is Projects folder items', newFolder);
+      //
+      //   // emailFolder = await boxClient.folders.create(cmcFolder.id,'Emails');
+      //   // console.log('Here is Projects folder items', emailFolder);
+      // } catch (err) {
+      //   errors.push(err);
+      // }
+      // ***************************************
 
     } // for loop
 

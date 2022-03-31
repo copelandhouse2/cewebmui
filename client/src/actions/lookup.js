@@ -6,7 +6,14 @@ export function getLookup(type) {
     .then( (response) => {
       return response.json();
     }).then((lookupList) => {
-      dispatch(lookupLoaded(lookupList, type));
+      const types = [...new Set(lookupList.map(l => l.type))];
+      for (let i = 0; i<types.length; i++) {
+        const list = lookupList.filter(l=>l.type===types[i]);
+        // console.log('types', types[i], list);
+        dispatch(lookupLoaded(list, types[i]));
+      }
+      dispatch(lookupLoaded(lookupList, type)); // this should be ALL
+
     });
   };
 }
@@ -155,4 +162,24 @@ function lookupLoaded(lookupList, type) {
       value: lookupList
     };
   }
+  if (type === 'REPORT_TYPE') {
+    return {
+      type: "REPTYPES_LOADED",
+      value: lookupList
+    };
+  }
+  if (type === 'ALL') {
+    // console.log('all lookups', lookupList);
+    return {
+      type: "ALL_LOOKUPS_LOADED",
+      value: lookupList
+    };
+  } else {  // this is capturing all the lookups that we do not load at this point
+    // console.log('skipped lookup', type, lookupList);
+    return {
+      type: 'SKIPPED',
+      value: []
+    }
+  }
+
 }
