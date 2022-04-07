@@ -118,6 +118,32 @@ class ClientDetails extends Component {
     }
   }
 
+  handleDelete = () => {
+    // console.log('*** Client handle Cancel', this.state);
+    const { comments_history, reporting } = this.props.currentClient;
+
+    if (reporting.length>0||comments_history.length>0) {
+      this.props.loadMessage({
+        ok:false,
+        status:'Cannot Delete',
+        statusText:'Cannot delete this client.  Client has projects and/or history tied to it.  Please inactivate instead'
+      },'ERROR')
+    } else {
+      this.props.ynDialog(
+        {
+          ok: false,
+          title: 'Delete client?',
+          content: `Are you sure?`,
+          yesFunc: ()=>{
+            this.props.deleteClient(this.state.id);
+            this.props.parentState({drawer:true})
+          },
+          noFunc: false,
+        })
+    }
+
+  }
+
   alertOfChange = (e) => {
     // console.log('alerting of change', e.target, e.currentTarget,document.activeElement);
     const currentTarget = e.currentTarget;
@@ -294,7 +320,7 @@ class ClientDetails extends Component {
         </Grid>
       </Grid>
       <Grid container spacing={24}>
-        <Grid item className={classes.grow}>
+        <Grid item >
           {/*<Link to={`/`} className={classes.linkStyle}>*/}
             <Button title='Return to menu'
               variant="contained"
@@ -304,6 +330,19 @@ class ClientDetails extends Component {
               id='cancel'
             >
               Cancel
+            </Button>
+          {/*</Link>*/}
+        </Grid>
+        <Grid item className={classes.grow}>
+          {/*<Link to={`/`} className={classes.linkStyle}>*/}
+            <Button title='Return to menu'
+              variant="contained"
+              size='small'
+              color="secondary"
+              onClick={this.handleDelete}
+              id='cancel'
+            >
+              Delete
             </Button>
           {/*</Link>*/}
         </Grid>

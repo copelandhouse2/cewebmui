@@ -26,9 +26,9 @@ function mapDispatchToProps(dispatch) {
     clientAck: () => {
       dispatch(clientAck());
     },
-    // deleteClient: function (id) {
-    //   dispatch(deleteClient(id));
-    // },
+    deleteClient: function (id) {
+      dispatch(deleteClient(id));
+    },
     // findClients: function (findString) {
     //   dispatch(findClients(findString));
     // },

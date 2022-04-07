@@ -194,7 +194,7 @@ export const create = async (request, response) => {
 
   try {
     addRecordResponse = await ProjectModel.addProject(request.body);
-    // console.log('new DB record created / updated: ', addRecordResponse);
+    console.log('new DB record created / updated: ', addRecordResponse);
   } catch (err) {
     addRecordResponse = false;
     console.log('Record create error:', err);
@@ -211,7 +211,7 @@ export const create = async (request, response) => {
       let scopePromises = [];
       request.body.scope.forEach((item, i) => {
         // console.log('Scope: Adding / Adjusting: ', item.id, item.delete, item.scope);
-        console.log('Scope: Adding / Adjusting: ', item.id, item.scope_id, item.delete, item.name);
+        // console.log('Scope: Adding / Adjusting: ', item.id, item.scope_id, item.delete, item.name);
         if (!item.delete) {  // checking to see if we are to delete scope.
           item.project_id = request.body.id? request.body.id:addRecordResponse.insertId;
           scopePromises.push(ProjectModel.addProjectScope(item));
@@ -224,7 +224,7 @@ export const create = async (request, response) => {
 
       try {
         const scopeResponses = await Promise.all(scopePromises);
-        console.log('scope records created / updated: ', scopeResponses);
+        // console.log('scope records created / updated: ', scopeResponses);
       } catch (err) {
         console.log('Scope record create error:', err);
         errors.push(err);
@@ -241,12 +241,12 @@ export const create = async (request, response) => {
       project = {...p[0], categoryID: request.body.categoryID};
       if (request.params.v2 === 'true') {  // version 2 changes
         const scope = await ProjectModel.getScopeItems(proj_id);
-        // const rev = await ProjectModel.getRevisions(proj_id);
+        const rev = await ProjectModel.getRevisions(proj_id);
 
-        Object.assign(project, {scope: scope} );
+        Object.assign(project, {scope: scope, rev: rev} );
         // project = {...p[0], scope: scope, categoryID: request.body.categoryID};
       }
-      // console.log('Queried Project', project);
+      // console.log('Queried Project', proj_id, project);
     } catch (err) {
       console.log('New Project Query error:', err);
       errors.push(err);
@@ -293,7 +293,7 @@ export const create = async (request, response) => {
 // function to create a address
 export const commit = (request, response) => {
   // console.log('Project Controller.commit request', request.params);
-  console.log('commit... theToken',theToken);
+  // console.log('commit... theToken',theToken);
   // NEED TO PUT FOR LOOP ON OUTSIDE OF PROMISES.  ORDER OF PROMISES
   // Loop on request body (contains all pending records)
   //  Trello Promise (gets card id)
@@ -322,23 +322,8 @@ export const commit = (request, response) => {
           errors.push(err);
         }
 
-        // try {
-        //   // console.log('getting ready to add record.');
-        //   const addRecordResponse = await ProjectModel.addProject(request.body[i]);
-        //   newRecord = await ProjectModel.getProjectByID(addRecordResponse.insertId)
-        //   // console.log('new DB record created', newRecord);
-        //   console.log('new DB record created');
-        //
-        // } catch (err) {
-        //   console.log('Record create error:', err);
-        //   errors.push(err);
-        // }
       }
 
-      // Get the variables.
-      // var id, job_number;
-      // console.log('4. newRecord', newRecord);
-      // console.log('5. request.body:',i,request.body[i]);
       // 1/28/2020 - newRecord should always be populated now and ELSE stmt
       // could be deprecated.
       if (newRecord) {
@@ -348,7 +333,7 @@ export const commit = (request, response) => {
       }
 
       console.log('ProjectController Commit: Date, tzOffset', new Date(), new Date().getTimezoneOffset()/60);
-      console.log('Building Trello Card', id, job_number);
+      // console.log('Building Trello Card', id, job_number);
 
       // console.log('6. the id, job_number: ', id, job_number);
       const {revision, revision_desc, client_id, client, owner_id, requestor, requestor_id, city, subdivision
@@ -361,20 +346,48 @@ export const commit = (request, response) => {
       } = newRecord;
       // } = request.body[i];
 
+      // console.log('Project', newRecord);
       // console.log('Revision info', revision, revision_desc);
 
       let scope = '', description = '', additional_options = '', notes = '';
       newRecord.scope.forEach(s=> {
         // console.log('s', s);
         scope = scope+s.scope+',';
-        description = s.description?`${description}\n${s.scope} - ${s.description}`:description;
-        additional_options = s.additional_options?`${additional_options}\n${s.scope} - ${s.additional_options}`:additional_options;
-        notes = s.notes?`${notes}\n${s.scope} - ${s.notes}`:notes;
-
+        description = s.description?`${description}\n* ${s.label} - ${s.description}`:description;
+        additional_options = s.additional_options?`${additional_options}\n* ${s.label} - ${s.additional_options}`:additional_options;
+        notes = s.notes?`${notes}\n* ${s.label} - ${s.notes}`:notes;
         // console.log('for each scope', scope);
       });
       scope = scope.slice(0,scope.length-1);  // remove the last comma.
 
+      let latest = '', cRevTitle = '', cRev = '', pRev = '', current = '';
+      let pRevTitle = `\n\n**PRIOR REVS:**\n\n`
+      // revisions are queried from DB in reverse order.  rev[0] should be latest.  I am leveraging this.
+      newRecord.rev.forEach((r,i)=>{
+        // This is the very first rev.  It is the latest
+        if (i===0) {
+          latest = r.revision;
+          cRevTitle = `**REV ${r.revision} ${r.friendly_date}**\n\n`;
+        }
+        const reason = r.revision_reason?` - ${r.revision_reason}`:'';
+        const resp = r.revision_resp?` - ${r.revision_resp}`:'';
+        const desc = r.revision_desc?` - ${r.revision_desc}`:'';
+        // Generating the latest rev string.
+        cRev = r.revision === latest?`${cRev}\n* ${r.scope_label}${reason}${resp}${desc}`:cRev;
+
+        // Generating the prior revs string.
+        if (r.revision !== latest) {
+          if (r.revision === current) {
+            // pRev = `${pRev}\n* ${r.scope_label} - ${r.revision_reason} / ${r.revision_resp} - ${r.revision_desc}`;
+            pRev = `${pRev}\n* ${r.scope_label}${reason}${resp}${desc}`;
+          } else {
+            const revSubTitle = `\n\n*REV ${r.revision} ${r.friendly_date}*\n\n`
+            // pRev = `${pRev}${revSubTitle}\n* ${r.scope_label} - ${r.revision_reason} / ${r.revision_resp} - ${r.revision_desc}`;
+            pRev = `${pRev}${revSubTitle}\n* ${r.scope_label}${reason}${resp}${desc}`;
+            current = r.revision;
+          }
+        }
+      })
       // let rev = '';
       // newRecord.revisions.forEach(r=> {
       //   console.log('r', r);
@@ -431,7 +444,7 @@ export const commit = (request, response) => {
       var currentDesc = null;
       if (trello_card_id) {
         try {
-          // console.log('pulling values for the card');
+          console.log('pulling values for the card', trello_card_id,request.params.trelloToken);
           const cardInfo = await TrelloModel.get(request.params.trelloToken, `/1/cards/${trello_card_id}`);
           currentDesc = cardInfo.desc;
           // console.log('Pulled description', currentDesc);
@@ -471,15 +484,18 @@ export const commit = (request, response) => {
         const bw = bay_window === 'Y'? ', BW':'';
         const pi = geo_pi? geo_pi:'';
         // const pi = geo_pi === null? '' : geo_pi;
-        const rev = revision? `**REV ${revision}:** ${revision_desc}` : '';  //Removing the new line characters.  If custom, this is the first value.
+        const rev = revision? `**REV ${revision}:**\n\n\n* ${revision_desc}` : '';  //Removing the new line characters.  If custom, this is the first value.
         const soil = soil_notes? `\n\n**SOIL NOTES:** ${soil_notes}` : '';
-        const desc = description? `\n\n**SCOPE DESCRIPTION:** ${description}` : '';
-        const opt = additional_options? `\n\n**ADDL OPTIONS:** ${additional_options}` : '';
-        const com = notes? `\n\n**NOTES:** ${notes}` : '';
+        // const desc = description? `\n\n**SCOPE DESCRIPTION:** ${description}` : '';
+        const desc = description? `\n\n**SCOPE DESCRIPTION:** \n\n\n* **${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**${description}` : '';
+        const opt = additional_options? `\n\n**ADDL OPTIONS:**\n\n\n${additional_options}` : '';
+        const com = notes? `\n\n**NOTES:**\n\n\n${notes}` : '';
         // const end = `\n\n*Do not erase line below.  Used by webtools.  All information above line is auto-generated.  Anything below line is for your use and will be protected from overwrite.*\n__________`;
-        const end = `\n\n*Do not erase line below.  Used by webtools.  Anything below line is protected from overwrite.*\n__________`;
+        const end = `\n\n*Do not erase line below. Used by webtools. Anything below line is protected.*\n__________`;
         // const cardDesc = trello_list === 'CUSTOM QUEUE'? `${rev}${soil}${opt}${com}${end}${enteredDesc}`: `**${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**\n\n${rev}${soil}${opt}${com}${end}${enteredDesc}`;
-        const cardDesc = `**${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**\n\n${rev}${soil}${desc}${opt}${com}${end}${enteredDesc}`;
+        // const cardDesc = `**${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**\n\n${rev}${soil}${desc}${opt}${com}${end}${enteredDesc}`;
+
+        const cardDesc = `${cRevTitle}${cRev}${desc}${opt}${com}${soil}${pRevTitle}${pRev}${end}${enteredDesc}`;
 
         console.log('card name', cardName);
         // console.log('gs, cp, bw, ms, pi', gs, cp, bw, ms, pi);
@@ -988,7 +1004,7 @@ export const commit = (request, response) => {
       // In order to fully coincide, I would have to create a dummy update
       // on the project scope table right here.  Seems like a silly step.
       try {
-        // console.log('in db update.  Params:', id, tCardID, trello_card_id);
+        console.log('in db update.  Params:', id, tCardID, trello_card_id);
         if (tCardID !== trello_card_id) {
           console.log('updating the db');
           const dbResponse = await ProjectModel.commitProjectByID(id, tCardID);

@@ -7,7 +7,7 @@ export const list = async (request, response) => {
   console.log('com list', request.params.table, request.params.table_id);
   try {
     const data = await CommentModel.getComments(request.params.table,request.params.table_id);
-    console.log('Data retrieved... Subdivisions');
+    // console.log('Data retrieved... Subdivisions');
     return response.json(data);
 
   } catch (err) {
@@ -21,7 +21,7 @@ export const list = async (request, response) => {
 // uses a "change" key
 export const save = async (request, response) => {
 
-  console.log('in CommentController.save', request.body);
+  // console.log('in CommentController.save', request.body);
   var errors = [];
 
   // console.log('save: data type', request.body.constructor);
@@ -33,11 +33,11 @@ export const save = async (request, response) => {
     // console.info('request.body is an array');
     data = request.body;
   }
-  console.log('this is the data',data);
+  // console.log('this is the data',data);
 
   let comPromises = [];
   data.forEach((com, i) => {
-    console.log('Comments: Adding / Adjusting: ', com);
+    // console.log('Comments: Adding / Adjusting: ', com);
 
     // rev.change is either unset or value = add, update, delete
     // if unset, skip updating.
@@ -65,7 +65,7 @@ export const save = async (request, response) => {
     console.log('Done with error(s)', errors);
     return response.json(errors);
   }
-  console.log('Comment(s) saved',comResponses);
+  console.log('Comment(s) saved');
   return response.json(comResponses);
 
 }

@@ -746,14 +746,20 @@ const ProjectModel = {
       , pr.reason revision_reason_code, pr.responsibility revision_resp_code
       , pr.description revision_desc, pr.price revision_price, pr.designer_id
       , date_format(pr.rev_date, '%Y-%m-%dT%T') rev_date
-      , IFNULL(ps.scope, 'Project Details') scope, l1.name revision_reason, l2.name revision_resp, c.full_name designer
+      , IFNULL(ps.scope, 'Project Details') scope, IFNULL(ac.label, 'Project Details') scope_label
+      , l1.name revision_reason, l2.name revision_resp, c.full_name designer
+      , date_format(pr.rev_date, '%b %e, %Y') friendly_date
       FROM projects_revisions pr
       left join projects_scope ps on pr.scope_id = ps.id
       left join lookups l1 on pr.reason = l1.code
       left join lookups l2 on pr.responsibility = l2.code
       left join contacts c on pr.designer_id = c.id
-      where pr.project_id = ?
-      order by pr.revision desc, pr.rev_date desc, pr.id desc`;
+      left join avff_controls ac on ps.scope = ac.name
+      WHERE pr.project_id = ?
+      AND IFNULL(ac.entity_type,'ACTION') = 'ACTION'
+      AND l1.type = 'REV_REASON'
+      AND l2.type = 'REV_RESP'
+      ORDER BY pr.revision desc, pr.rev_date desc, pr.id desc`;
 
     if (callback) {
       // console.log('getScopeItems: in the callback version');

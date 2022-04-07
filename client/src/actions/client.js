@@ -2,13 +2,18 @@ import 'regenerator-runtime/runtime'
 
 /* CLIENTS ACTIONS */
 // Loading the list of clients
-export function loadClients() {
-  return function (dispatch) {
+export function loadClients(parentFunc=null,value=null) {
+  return function (dispatch, getState) {
+    const { clientSearch } = getState();
     fetch("/clients")
     .then( (response) => {
       return response.json();
     }).then((clients) => {
       dispatch(clientsLoaded(clients));
+      if (parentFunc) {  // coming from saveClients, deleteClient
+        dispatch(getClientData(value));
+        dispatch(findClients(clientSearch.find));
+      }
     });
   };
 }
@@ -25,7 +30,8 @@ function clientsLoaded(clients) {
 export function getClientData(client_id) {
   // console.log('getClientData ACTION', client_id);
   return function (dispatch,getState) {
-    if (client_id === 'new') {
+    if (client_id === 'new'||client_id === 'deleted') {
+      // console.log('did it work?')
       dispatch(clientDataLoaded({change:'updated'}));
     } else {
       let { currentClient } = getState();
@@ -126,9 +132,10 @@ export function saveClients(c) {
       (async () => {
         try {
           // console.log('saveClient async',response);
-          await Promise.all([dispatch(loadClients())]);
-          dispatch(getClientData(response.id));
-          dispatch(findClients(clientSearch.find));
+          dispatch(loadClients('save',response.id));
+          // await Promise.all([dispatch(loadClients('save',response.id))]);
+          // dispatch(getClientData(response.id));
+          // dispatch(findClients(clientSearch.find));
           // return response;
         } catch (err) {
           console.log('client error:', err);
@@ -149,9 +156,9 @@ export function deleteClient(id) {
     fetch(`/clients/${id}`, {
       method: "DELETE"
     }).then(() => {
-      dispatch(loadClients());
-      dispatch(findClients(clientSearch.find));
-
+      dispatch(loadClients('delete','deleted'));
+      // dispatch(getClientData('deleted'));
+      // dispatch(findClients(clientSearch.find));
     })
   };
 }

@@ -40,7 +40,7 @@ const CommentModel = {
   },
 
   save: function(com, callback = null){
-    console.log('save com function', com);
+    // console.log('save com function', com);
 
     const { id, parent_id, table, table_id, comments, created_by
       , last_updated_by } = com;

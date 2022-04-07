@@ -154,7 +154,7 @@ class ClientDashboard extends Component {
 
     return (
     <Fragment>
-    <Typography variant='h1' align='center'>
+    <Typography variant='h2' align='center'>
       {records.length>0?records[0].count:0}
     </Typography>
     <Typography variant='h6' align='center'>
@@ -183,7 +183,7 @@ class ClientDashboard extends Component {
 
     return (
     <Fragment>
-    <Typography variant='h1' align='center'>
+    <Typography variant='h2' align='center'>
       {total}
     </Typography>
     <Typography variant='h6' align='center'>
@@ -207,7 +207,7 @@ class ClientDashboard extends Component {
 
     return (
     <Fragment>
-    <Typography variant='h1' align='center'>
+    <Typography variant='h2' align='center'>
       {records.length>0?records[0].count:0}
     </Typography>
     <Typography variant='h6' align='center'>
@@ -231,7 +231,7 @@ class ClientDashboard extends Component {
 
     return (
     <Fragment>
-    <Typography variant='h1' align='center'>
+    <Typography variant='h2' align='center'>
       0
     </Typography>
     <Typography variant='h6' align='center'>

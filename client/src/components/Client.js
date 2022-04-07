@@ -180,7 +180,7 @@ class Client extends Component {
       currentView: this.props.VIEW||'DEFAULT',
       saveValue: '',  // stores previous values of address/lot/block to test for change      selectedIndexes: [],
       // selectedIndexes: [],
-      list: this.props.clients,
+      list: [...this.props.clients],
       page: 1, //1-50, 51-100, 101-150, count*(page-1)+1 - count*page (or array size whichever is smaller.)
       countPerPage:42,  //20, 50, 100
       sort:{field:'name',data_type:'text',direction:'A'},
@@ -910,7 +910,7 @@ class Client extends Component {
   }
 
   alertOfChange = (e) => {
-    console.log('alerting of change', e);
+    // console.log('alerting of change', e);
     if ('change' in this.state.selected) {
       console.log('There are changes');
       this.props.ynDialog(
@@ -935,7 +935,6 @@ class Client extends Component {
     // 'props Geos', this.props.geos,
     // 'props geoSearch', this.props.geoSearch,
     // 'props currentClient', currentClient,
-
     // );
 
     // if someone clicks recents and wants to navigate to project screen.
