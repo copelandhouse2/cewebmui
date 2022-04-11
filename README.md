@@ -1,6 +1,21 @@
 # CE Webtools
 Copeland Engineering Web Tools.
 
+## v2.1.9 4/11/2022
+* Webtools Revisions in Trello card description
+* Reformatting of Trello card description
+* Master frame from custom screen.  Now populates Trello custom fields.
+* Restore the Delete Client Button.  Limitations on Delete… only if client does not have assigned projects or comment history.  If there are, you can only inactivate.
+
+## v2.1.8 4/2/2022
+* Redesign of the Client Maintenance Screen…
+  * New card view and tabs to move between a dashboard, details, and history
+  * Client Dashboard showing graphs of project, slab and revision counts per client
+  * Client Tracking history.  Basically, a comment section to store relationship management information.
+* Master Frame choice in Custom Scope Screen
+* Revision “Project” scope now says “Project Details” to be more clear
+* New Rev Reasons: Address Change, CSI
+
 ## v2.1.7 12/10/2021
 * Trello authorization fix.  Eliminated global Trello call which was causing the last user who refreshes the screen to instantiate the Trello call with their token.  Any other user submitting a call will end up using the other person's token, which in Trello looks like the other user requested the change.  Now Passing user token to all Trello API calls.  Trello call is now instantiated with the user token each time we use Trello API.
 

@@ -119,10 +119,10 @@ class ClientDetails extends Component {
   }
 
   handleDelete = () => {
-    // console.log('*** Client handle Cancel', this.state);
     const { comments_history, reporting } = this.props.currentClient;
+    // console.log('*** Client handle Delete', this.state, reporting, reporting.project);
 
-    if (reporting.length>0||comments_history.length>0) {
+    if (reporting.project.length>0||comments_history.length>0) {
       this.props.loadMessage({
         ok:false,
         status:'Cannot Delete',
@@ -334,17 +334,16 @@ class ClientDetails extends Component {
           {/*</Link>*/}
         </Grid>
         <Grid item className={classes.grow}>
-          {/*<Link to={`/`} className={classes.linkStyle}>*/}
-            <Button title='Return to menu'
-              variant="contained"
-              size='small'
-              color="secondary"
-              onClick={this.handleDelete}
-              id='cancel'
-            >
-              Delete
-            </Button>
-          {/*</Link>*/}
+          <Button title='Return to menu'
+            variant="contained"
+            size='small'
+            color="secondary"
+            onClick={this.handleDelete}
+            disabled={this.state.id?false:true}
+            id='delete'
+          >
+            Delete
+          </Button>
         </Grid>
         <Grid item>
           <Button title='Save'

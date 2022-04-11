@@ -350,24 +350,67 @@ export const commit = (request, response) => {
       // console.log('Revision info', revision, revision_desc);
 
       let scope = '', description = '', additional_options = '', notes = '';
+      // let pt, ele, gs, ms, gext, gdrop, gt, cp, bw, pi;
+
       newRecord.scope.forEach(s=> {
         // console.log('s', s);
         scope = scope+s.scope+',';
-        description = s.description?`${description}\n* ${s.label} - ${s.description}`:description;
+
+        if (['volfoundation','cusfoundation'].indexOf(s.scope) > -1) {
+          const pt = s.plan_type? s.plan_type:'';
+          const ele = s.elevation? s.elevation:'';
+          const gs = s.garage_swing? s.garage_swing === 'RIGHT'? 'R':'L' : '';
+          // console.log('masonry', ':'||masonry||':');
+          const ms = s.masonry === 'PLAN'? ', PLAN' : s.masonry? `, ${s.masonry}SM`:''
+          // const ms = masonry === 'PLAN'? ', PLAN' : masonry === null||masonry ===''? '' : `, ${masonry}SM`
+          const gext = s.garage_extension? `X${s.garage_extension}` : '';
+          const gdrop = s.garage_drop? `D${s.garage_drop}` : '';
+          const gt = s.garage_type? `, ${s.garage_type}${gext}${gdrop}` : '';
+          const cp = s.covered_patio === 'EXTCP'? ', ExtCP' :
+            s.covered_patio === 'Y'? ', CP' : '';
+          const bw = s.bay_window === 'Y'? ', BW':'';
+          const pi = geo_pi? geo_pi:'';
+          description = `${description}\n* ${s.label} - **${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**`;
+        }
+        // else if (s.scope === 'cusfoundation') {
+        //   const pt = s.plan_type? s.plan_type:'';
+        //   const ele = s.elevation? s.elevation:'';
+        //   const fdntype = s.foundation_type? `, ${s.foundation_type}`:'';
+        //   const sq = s.square_footage? `, ${s.square_footage} sqft`:''
+        //   const pi = geo_pi? ` PI=${geo_pi}`:'';
+        //   const d = s.description? ` - ${s.description}`:'';
+        //   const desc = `${pt}${ele}${fdntype}${sq}${pi}${d}`
+        //   description = desc?`${description}\n* ${s.label} - ${desc}`:`${description}\n* ${s.label}`;
+        // }
+        else if (['volmf','volssf','cusframing'].indexOf(s.scope) > -1) {
+          let desc = '';
+          desc = s.plan_type? `${s.plan_type}`:desc;
+          desc = s.elevation?desc?`${desc} ${s.elevation}`:`${s.elevation}`:desc;
+          const gs = s.garage_swing?s.garage_swing === 'RIGHT'? 'R':'L' : '';
+          desc = gs?desc?`${desc}${gs}`:`${gs}`:desc;
+          // desc = s.floor_type?desc?`${desc}, Floor=${s.floor_type}`:`Floor=${s.floor_type}`:desc;
+          // desc = s.roof_type?desc?`${desc}, Roof=${s.roof_type}`:`Roof=${s.roof_type}`:desc;
+          // desc = s.num_stories?desc?`${desc}, Stories=${s.num_stories}`:`Stories=${s.num_stories}`:desc;
+          // desc = s.square_footage?desc?`${desc}, ${s.square_footage}sqft`:`${s.square_footage}sqft`:desc;
+          desc = s.description?desc?`${desc} - ${s.description}`:`${s.description}`:desc;
+          description = desc?`${description}\n* ${s.label} - ${desc}`:`${description}\n* ${s.label}`;
+        }
+        else {
+          description = s.description?`${description}\n* ${s.label} - ${s.description}`:`${description}\n* ${s.label}`;
+        }
         additional_options = s.additional_options?`${additional_options}\n* ${s.label} - ${s.additional_options}`:additional_options;
         notes = s.notes?`${notes}\n* ${s.label} - ${s.notes}`:notes;
         // console.log('for each scope', scope);
       });
       scope = scope.slice(0,scope.length-1);  // remove the last comma.
 
-      let latest = '', cRevTitle = '', cRev = '', pRev = '', current = '';
-      let pRevTitle = `\n\n**PRIOR REVS:**\n\n`
       // revisions are queried from DB in reverse order.  rev[0] should be latest.  I am leveraging this.
+      let latest = '', cRevTitle = '', cRev = '', pRev = '', current = '';
       newRecord.rev.forEach((r,i)=>{
         // This is the very first rev.  It is the latest
         if (i===0) {
           latest = r.revision;
-          cRevTitle = `**REV ${r.revision} ${r.friendly_date}**\n\n`;
+          cRevTitle = `**REV ${r.revision} ${r.friendly_date}**\n`;
         }
         const reason = r.revision_reason?` - ${r.revision_reason}`:'';
         const resp = r.revision_resp?` - ${r.revision_resp}`:'';
@@ -381,19 +424,14 @@ export const commit = (request, response) => {
             // pRev = `${pRev}\n* ${r.scope_label} - ${r.revision_reason} / ${r.revision_resp} - ${r.revision_desc}`;
             pRev = `${pRev}\n* ${r.scope_label}${reason}${resp}${desc}`;
           } else {
-            const revSubTitle = `\n\n*REV ${r.revision} ${r.friendly_date}*\n\n`
+            const revSubTitle = `\n\n*REV ${r.revision} ${r.friendly_date}*\n`
             // pRev = `${pRev}${revSubTitle}\n* ${r.scope_label} - ${r.revision_reason} / ${r.revision_resp} - ${r.revision_desc}`;
             pRev = `${pRev}${revSubTitle}\n* ${r.scope_label}${reason}${resp}${desc}`;
             current = r.revision;
           }
         }
       })
-      // let rev = '';
-      // newRecord.revisions.forEach(r=> {
-      //   console.log('r', r);
-      //   rev = rev?`${rev}\n${r.scope}:${r.revision} - ${r.revision_desc}`:`${r.scope}:${r.revision} - ${r.revision_desc}`;
-      //   // console.log('for each rev', rev);
-      // });
+      const pRevTitle = pRev?`\n\n**PRIOR REVS:**`:'';
 
       // console.log('scope, description, additional_options, notes', scope, description, additional_options, notes);
 
@@ -407,7 +445,9 @@ export const commit = (request, response) => {
         frm = frm2?frm2:frm1;  // single site frame will take precedence over master frame if both on there.  But its actually a mistake.
       } else {
         fdn = newRecord.scope.find(s => s.name === 'cusfoundation');
-        frm = newRecord.scope.find(s => s.name === 'cusframing');
+        frm1 = newRecord.scope.find(s => s.name === 'volmf');  // 4/8/22 now allowing master frame on the custom screens.
+        frm2 = newRecord.scope.find(s => s.name === 'cusframing');
+        frm = frm2?frm2:frm1;  // single site frame will take precedence over master frame if both on there.  But its actually a mistake.
       };
 
 
@@ -470,26 +510,28 @@ export const commit = (request, response) => {
         const cardName = job_number + ' - ' + address1 + subStr + cityStr + ' - ' + client;
 
         // Defining the description for volume client cards.
-        const pt = plan_type? plan_type:'';
-        const ele = elevation? elevation:'';
-        const gs = garage_swing? garage_swing === 'RIGHT'? 'R':'L' : '';
-        // console.log('masonry', ':'||masonry||':');
-        const ms = masonry === 'PLAN'? ', PLAN' : masonry? `, ${masonry}SM`:''
-        // const ms = masonry === 'PLAN'? ', PLAN' : masonry === null||masonry ===''? '' : `, ${masonry}SM`
-        const gext = garage_extension? `X${garage_extension}` : '';
-        const gdrop = garage_drop? `D${garage_drop}` : '';
-        const gt = garage_type? `, ${garage_type}${gext}${gdrop}` : '';
-        const cp = covered_patio === 'EXTCP'? ', ExtCP' :
-                   covered_patio === 'Y'? ', CP' : '';
-        const bw = bay_window === 'Y'? ', BW':'';
-        const pi = geo_pi? geo_pi:'';
+        // const pt = plan_type? plan_type:'';
+        // const ele = elevation? elevation:'';
+        // const gs = garage_swing? garage_swing === 'RIGHT'? 'R':'L' : '';
+        // // console.log('masonry', ':'||masonry||':');
+        // const ms = masonry === 'PLAN'? ', PLAN' : masonry? `, ${masonry}SM`:''
+        // // const ms = masonry === 'PLAN'? ', PLAN' : masonry === null||masonry ===''? '' : `, ${masonry}SM`
+        // const gext = garage_extension? `X${garage_extension}` : '';
+        // const gdrop = garage_drop? `D${garage_drop}` : '';
+        // const gt = garage_type? `, ${garage_type}${gext}${gdrop}` : '';
+        // const cp = covered_patio === 'EXTCP'? ', ExtCP' :
+        //            covered_patio === 'Y'? ', CP' : '';
+        // const bw = bay_window === 'Y'? ', BW':'';
+        // const pi = geo_pi? geo_pi:'';
+
         // const pi = geo_pi === null? '' : geo_pi;
-        const rev = revision? `**REV ${revision}:**\n\n\n* ${revision_desc}` : '';  //Removing the new line characters.  If custom, this is the first value.
+        const rev = revision? `**REV ${revision}:**\n\n* ${revision_desc}` : '';  //Removing the new line characters.  If custom, this is the first value.
         const soil = soil_notes? `\n\n**SOIL NOTES:** ${soil_notes}` : '';
         // const desc = description? `\n\n**SCOPE DESCRIPTION:** ${description}` : '';
-        const desc = description? `\n\n**SCOPE DESCRIPTION:** \n\n\n* **${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**${description}` : '';
-        const opt = additional_options? `\n\n**ADDL OPTIONS:**\n\n\n${additional_options}` : '';
-        const com = notes? `\n\n**NOTES:**\n\n\n${notes}` : '';
+        // const desc = description? `\n\n**SCOPE DESCRIPTION:** \n\n\n* **${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**${description}` : '';
+        const desc = `\n\n**SCOPE DESCRIPTION:** \n${description}`;
+        const opt = additional_options? `\n\n**ADDL OPTIONS:**\n${additional_options}` : '';
+        const com = notes? `\n\n**NOTES:**\n${notes}` : '';
         // const end = `\n\n*Do not erase line below.  Used by webtools.  All information above line is auto-generated.  Anything below line is for your use and will be protected from overwrite.*\n__________`;
         const end = `\n\n*Do not erase line below. Used by webtools. Anything below line is protected.*\n__________`;
         // const cardDesc = trello_list === 'CUSTOM QUEUE'? `${rev}${soil}${opt}${com}${end}${enteredDesc}`: `**${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**\n\n${rev}${soil}${opt}${com}${end}${enteredDesc}`;
