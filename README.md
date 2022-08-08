@@ -1,6 +1,9 @@
 # CE Webtools
 Copeland Engineering Web Tools.
 
+## v2.1.10 8/2/2022
+* Alternate Party Billing field in Revision screen
+
 ## v2.1.9 4/11/2022
 * Webtools Revisions in Trello card description
 * Reformatting of Trello card description
