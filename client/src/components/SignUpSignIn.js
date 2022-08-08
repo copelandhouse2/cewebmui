@@ -104,6 +104,7 @@ class SignUpSignIn extends Component {
         }, "ERROR");
     } else {
         this.setState({ approved: 'PENDING' }, () => {
+          console.log('state', this.state);
           this.props.signUp(this.state);
         });
 

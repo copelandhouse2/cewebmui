@@ -12,6 +12,7 @@ function mapStateToProps(state) {
     currentProject: state.currentProject,
     inspections: state.inspections,
     preferences: state.preferences,
+    trelloToken: state.trelloToken,
   };
 }
 

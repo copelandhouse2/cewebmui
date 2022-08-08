@@ -52,26 +52,24 @@ class InspectionDialog extends Component {
     const week = date(7,true);
 
     this.insp = this.props.parentState.inspToUpdate?{...this.props.parentState.inspToUpdate}:false;
-    // console.log('props inspections',this.props.inspections);
+    console.log('props inspections',this.props.inspections);
 
     this.state = {
+      // Dialog State Fields
       object: 'INSPECTION_DIALOG',
       renderScreen: false,
-      id: this.insp?this.insp.id:null,
       today: today,
       created_by: this.props.session.id,
       last_updated_by: this.props.session.id,
+      scopeExpand: {},
+      scopeSelected: false,
+      deleteTrue: false,
+      updateTrello: true,
+      trelloCreateCard: 'N',
 
+      // inspection info
+      id: this.insp?this.insp.id:null,
       inspection_date: this.insp?this.insp.inspection_date:tomorrow,
-      project_id: this.insp?this.insp.project_id:null,
-      address1: this.insp?this.insp.address1:'',
-      revision: this.insp?this.insp.project_revision:null,
-      job_number: this.insp?this.insp.job_number:null,
-      scope_id: this.insp?this.insp.scope_id:null,
-      scope: this.insp?this.insp.scope:null,
-      scope_name: this.insp?this.insp.scope_name:null,
-      // scope_list: this.inspections.filter[0]?insp.scope_list:null,
-      scope_list: this.insp?[{code:this.insp.scope_id,scope:this.insp.scope_name,name:this.insp.scope_name,label:this.insp.scope}]:[],
       inspection_type: this.insp?this.insp.inspection_type:null,
       inspection_status: this.insp?this.insp.inspection_status:null,
       inspection_reason: this.insp?this.insp.inspection_reason:'',
@@ -84,32 +82,54 @@ class InspectionDialog extends Component {
       upper_slab: this.insp?this.insp.upper_slab:null,
       lower_slab: this.insp?this.insp.lower_slab:null,
       ret_wall_on_slab: this.insp?this.insp.ret_wall_on_slab:null,
-      inspection_contact: this.insp?this.insp.inspection_contact:null,
-      cable_company_id: this.insp?this.insp.cable_company_id:null,
-      cable_company: this.insp?this.insp.cable_company:null,
-      target_stress_date: this.insp?this.insp.target_stress_date:week,
       notes: this.insp?this.insp.notes:null,
       contact_id: this.insp?this.insp.contact_id:this.props.session.contact_id,
       inspector: this.insp?this.insp.inspector:this.props.session.full_name,
-      deleteTrue: false,
       reasons: this.insp.hasOwnProperty('reasons')?this.insp.reasons:[],
+
+      // project info
+      project_id: this.insp?this.insp.project_id:null,
+      address1: this.insp?this.insp.address1:'',
+      revision: this.insp?this.insp.project_revision:null,
+      job_number: this.insp?this.insp.job_number:null,
+      cable_company_id: this.insp?this.insp.cable_company_id:null,
+      cable_company: this.insp?this.insp.cable_company:null,
       org_type: 'CABLE',
-      updateTrello: true,
+      insp_contact: null,  // will be set via gDSfP
+      insp_billing_contact: null, // will be set via gDSfP
+
+      // scope info
+      // scope_id: this.insp?this.insp.scope_id:null,
+      // scope: this.insp?this.insp.scope:null,
+      // scope_name: this.insp?this.insp.scope_name:null,
+      scope_list: [],
+      // scope_list: this.insp?[{code:this.insp.scope_id,scope:this.insp.scope_name,name:this.insp.scope_name,label:this.insp.scope}]:[],
+      // scope_insp_contact: null,  // will be set via gDSfP
+      // concrete_pour_date: null, // will be set via gDSfP
+      // target_stress_date: null, // this.insp?this.insp.target_stress_date:week,
+
+      // Trello Project Level
       trello_board: null,
       trello_board_id: null,
       trello_list: null,
       trello_list_id: null,
       trello_list_lookup:[],
-      trello_card_id: this.insp?this.insp.trello_card_id:null,
-      trello_checkitem: null,
-      trello_checkitem_id: this.insp?this.insp.trello_checkitem_id:null,
+      // trello_card_id: this.insp?this.insp.trello_card_id:null,
+      trello_card_id: null,
       trello_info: null,
-      project_trello_card_id: this.insp?this.insp.project_trello_card_id:null,
+      // project_trello_card_id: this.insp?this.insp.project_trello_card_id:null,
+      project_trello_card_id: null,
       project_trello_info: null,
       projectTrelloCardStatus: null,
-      trelloCreateCard: 'N',
-      scopeExpand: {},
-      scopeSelected: false
+      // Trello Scope Level
+      trello_checklist: null,
+      trello_checklist_id: null,
+      // Trello Inspection Level
+      trello_checkitem: null,
+      trello_checkitem_id: this.insp?this.insp.trello_checkitem_id:null,
+      // function to pass to getDerivedStateFromProps
+      gDSfPState: this.gDSfPState,
+      count: 0,
     };
 
     this.initState = {...this.state};
@@ -120,86 +140,81 @@ class InspectionDialog extends Component {
 
   componentDidMount = () => {
     // console.log('revision CDM: local state', this.state, 'parent state:', this.props.parentState);
-    let board_name = null;
-    let board_id = null;
-    let list_name = null;
-    let list_id = null;
-    let checkitem = null;
-    let listLookup = []
     this.props.loadLocalView(this.VIEW);
-    if (this.state.trello_card_id) {
-      getTrelloCard(this.props.trelloToken, this.state.trello_card_id)
-      .then((card)=>{
-        if (card.hasOwnProperty('statusCode') && card.statusCode !== 200) {throw card};
-        board_name = card.board.name;
-        board_id = card.board.id;
-        list_name = card.list.name;
-        list_id = card.list.id;
-        listLookup = this.props.trelloInfo.find(b=>b.id===board_id).lists.filter(l=>!l.closed).map(l=>{ return {name:l.name,code:l.id} });
-        const card_id = card.id;  // the id in the database may be the short link.  Getting the actual id.
-        let item = null;
-        // if (this.state.trello_checkitem_id) {
-        //   // console.info('find checklist item');
-        //   const found = card.checklists.some(ch=>{
-        //     item = ch.checkItems.find(chi=>chi.id === this.state.trello_checkitem_id)
-        //     // console.info('checking items',item);
-        //     return item?true:false;
-        //   })
-        // }
-        // console.info('here is the item', item);
-        checkitem = item?item.name:null;
-        this.setState( {trello_board: board_name, trello_board_id: board_id
-          , trello_list: list_name, trello_list_id: list_id, trello_list_lookup: listLookup
-          , trello_checkitem: checkitem, trello_info:card, trello_card_id: card_id} )
-        })
-      .catch(err=> console.log('Error getting trello card info', err))
-    } else {
-      const board = this.props.trelloInfo.find(b=>b.id===INSP_BOARD);
-      board_name = board.name;
-      list_name = board.lists.find(l=>l.id===INSP_LIST).name;
-      listLookup = this.props.trelloInfo.find(b=>b.id===INSP_BOARD).lists.filter(l=>!l.closed).map(l=>{ return {name:l.name,code:l.id} });
-      this.setState( {trello_board: board_name, trello_board_id: INSP_BOARD
-        , trello_list: list_name, trello_list_id: INSP_LIST, trello_list_lookup: listLookup} );
-    }
-    if (this.state.project_trello_card_id) {
-      getTrelloCard(this.props.trelloToken, this.state.project_trello_card_id)
-      .then((card)=>{
-        if (card.hasOwnProperty('statusCode') && card.statusCode !== 200) {throw card};
-        this.setState( {project_trello_info:card, projectTrelloCardStatus:card.closed?'Archived':'Active', trelloCreateCard:card.closed?'N':'Y'} )
-        })
-      .catch(err=>{
-        this.setState( {projectTrelloCardStatus:'Could not find'} )
-        // console.log('Error getting trello card info', err);
-      })
-    }
-    // project trello card missing / not created
-    else if (this.state.project_id) {
-      this.setState( {projectTrelloCardStatus:'Missing / Not Created'} )
-      // console.log('Project trello card missing');
-    }
+    console.log('CDM',this.props.inspections);
 
   }
 
+  componentDidUpdate = (prevProps, prevState) => {
+    // console.log('CDU: getting ready to update!', this.state.count);
+    // if (this.state.count === 5) return;
+    // this.setState({count: this.state.count+1})
+  }
+
   static getDerivedStateFromProps(nextProps, prevState) {
-    // console.log('in getDerivedStateFromProps');
+    console.log('in getDerivedStateFromProps');
     // const insp = this.props.parentState.inspToUpdate?{...this.props.parentState.inspToUpdate}:false;
 
     const { localView, inspections, parentState } = nextProps;
     const insp = parentState.inspToUpdate?{...parentState.inspToUpdate}:false;
 
-    const scope_list = inspections.filter.length>0?inspections.filter[0].scope:[];
-    // console.log('inspections', inspections);
+
+    // console.log('gDSfP inspections', inspections.selected.project, scope_list);
     // console.log('prevState', prevState);
     // If the views object is populated, activate the screen render toggle.
     if (!prevState.renderScreen
       && localView.constructor === Object && Object.keys(localView).length !== 0
-      && ( (insp && inspections.find === insp.job_number) || !insp)
+      && ( (insp && inspections.selected.id === insp.id) || !insp)
     )
     // if (localView.constructor === Object && Object.keys(localView).length !== 0)
     {
-      return { renderScreen: true, scope_list:scope_list };
+      console.log('gDSfP: updating render screen...');
+      const scope_list = 'scope' in inspections.selected.project?inspections.selected.project.scope:[];
+      // const updateInitialState = prevState.gDSfPState(inspections.selected.project);
+      // console.log('gDSfP: updating state...',updateInitialState);
+
+      return {
+        // ...updateInitialState,
+        renderScreen: true,
+        scope_list:scope_list,
+        project:inspections.selected.project,
+      };
+      // (async () => {
+      //   const updateInitialState = await prevState.gDSfPState(inspections.selected.project);
+      //   console.log('gDSfP: updating state...',updateInitialState);
+      //
+      //   return {
+      //     ...updateInitialState,
+      //     renderScreen: true,
+      //     // project:inspections.selected.project,
+      //   };
+      // })();
 
     }
+
+    // if ((insp && inspections.selected.id === insp.id) || !insp) {
+    //   console.log('gDSfP: updating state to include inspections info...');
+    //   (async () => {
+    //     const updateInitialState = await prevState.gDSfPState(inspections.selected.project);
+    //     console.log('gDSfP: updating state...',updateInitialState);
+    //
+    //     return {
+    //       ...updateInitialState,
+    //       renderScreen: true,
+    //       // project:inspections.selected.project,
+    //     };
+    //   })();
+    //
+    //   // const updateInitialState = prevState.gDSfPState(inspections.selected.project);
+    //   // console.log('gDSfP: updating state...',updateInitialState);
+    //   //
+    //   // return {
+    //   //   ...updateInitialState,
+    //   //   // renderScreen: true,
+    //   //   // project:inspections.selected.project,
+    //   // };
+    //
+    // }
     return null;
   }
 
@@ -222,6 +237,182 @@ class InspectionDialog extends Component {
   actions = () => {
     // const { classes, theme } = this.props;
     return null;  // skip the icon for now.
+
+  }
+
+  gDSfPState = async (proj) => {
+
+    console.log('gDSfPState',proj,this.state);
+
+    let trelloInfo = {};
+    if (proj && (proj.insp_trello_card_id || proj.trello_card_id) ) {
+      trelloInfo = await this.updateTrelloInfo(proj)
+      console.log('***gDSfPState trello***',trelloInfo);
+    }
+
+    const theState = {
+
+      // project info
+      insp_contact: proj?proj.insp_contact:null,  // will be set via gDSfP
+      insp_billing_contact: proj?proj.insp_billing_contact:null, // will be set via gDSfP
+
+      // scope info
+      // scope_insp_contact: insp?insp.scope_insp_contact:null,  // will be set via gDSfP
+      // concrete_pour_date: nuinsp?insp.insp_contact:nullll, // will be set via gDSfP
+      // target_stress_date: nuinsp?insp.insp_contact:nullll, // this.insp?this.insp.target_stress_date:week,
+      scope_list: proj?[...proj.scope]:[],
+      // Trello Project Level
+      trello_board: 'trello_board' in trelloInfo?trelloInfo.trello_board:null,
+      trello_board_id: 'trello_board_id' in trelloInfo?trelloInfo.trello_board_id:null,
+      trello_list: 'trello_list' in trelloInfo?trelloInfo.trello_list:null,
+      trello_list_id: 'trello_list_id' in trelloInfo?trelloInfo.trello_list_id:null,
+      trello_list_lookup:'trello_list_lookup' in trelloInfo?trelloInfo.trello_list_lookup:[],
+      trello_card_id: proj?proj.insp_trello_card_id:null,
+      trello_info: 'trello_info' in trelloInfo?trelloInfo.trello_info:null,
+      project_trello_card_id: proj?proj.trello_card_id:null,
+      project_trello_info: 'project_trello_info' in trelloInfo?trelloInfo.project_trello_info:null,
+      projectTrelloCardStatus: 'projectTrelloCardStatus' in trelloInfo?trelloInfo.projectTrelloCardStatus:null,
+      // Trello Scope Level
+      // trello_checklist: null,
+      // trello_checklist_id: null,
+      // Trello Inspection Level
+      // trello_checkitem: null,
+      // trello_checkitem_id: this.insp?this.insp.trello_checkitem_id:null,
+
+    };
+
+    return theState
+
+    // this.updateTrelloInfo();
+
+  }
+
+  // updateTrelloInfo = () => {
+  //
+  //   let board_name = null;
+  //   let board_id = null;
+  //   let list_name = null;
+  //   let list_id = null;
+  //   let checkitem = null;
+  //   let listLookup = []
+  //
+  //   if (this.state.trello_card_id) {
+  //     getTrelloCard(this.props.trelloToken, this.state.trello_card_id)
+  //     .then((card)=>{
+  //       if (card.hasOwnProperty('statusCode') && card.statusCode !== 200) {throw card};
+  //       board_name = card.board.name;
+  //       board_id = card.board.id;
+  //       list_name = card.list.name;
+  //       list_id = card.list.id;
+  //       listLookup = this.props.trelloInfo.find(b=>b.id===board_id).lists.filter(l=>!l.closed).map(l=>{ return {name:l.name,code:l.id} });
+  //       const card_id = card.id;  // the id in the database may be the short link.  Getting the actual id.
+  //       let item = null;
+  //       // if (this.state.trello_checkitem_id) {
+  //       //   // console.info('find checklist item');
+  //       //   const found = card.checklists.some(ch=>{
+  //       //     item = ch.checkItems.find(chi=>chi.id === this.state.trello_checkitem_id)
+  //       //     // console.info('checking items',item);
+  //       //     return item?true:false;
+  //       //   })
+  //       // }
+  //       // console.info('here is the item', item);
+  //       checkitem = item?item.name:null;
+  //       this.setState( {trello_board: board_name, trello_board_id: board_id
+  //         , trello_list: list_name, trello_list_id: list_id, trello_list_lookup: listLookup
+  //         , trello_checkitem: checkitem, trello_info:card, trello_card_id: card_id} )
+  //       })
+  //     .catch(err=> console.log('Error getting trello card info', err))
+  //   } else {
+  //     const board = this.props.trelloInfo.find(b=>b.id===INSP_BOARD);
+  //     board_name = board.name;
+  //     list_name = board.lists.find(l=>l.id===INSP_LIST).name;
+  //     listLookup = this.props.trelloInfo.find(b=>b.id===INSP_BOARD).lists.filter(l=>!l.closed).map(l=>{ return {name:l.name,code:l.id} });
+  //     this.setState( {trello_board: board_name, trello_board_id: INSP_BOARD
+  //       , trello_list: list_name, trello_list_id: INSP_LIST, trello_list_lookup: listLookup} );
+  //   }
+  //   if (this.state.project_trello_card_id) {
+  //     getTrelloCard(this.props.trelloToken, this.state.project_trello_card_id)
+  //     .then((card)=>{
+  //       if (card.hasOwnProperty('statusCode') && card.statusCode !== 200) {throw card};
+  //       this.setState( {project_trello_info:card, projectTrelloCardStatus:card.closed?'Archived':'Active', trelloCreateCard:card.closed?'N':'Y'} )
+  //       })
+  //     .catch(err=>{
+  //       this.setState( {projectTrelloCardStatus:'Could not find'} )
+  //       // console.log('Error getting trello card info', err);
+  //     })
+  //   }
+  //   // project trello card missing / not created
+  //   else if (this.state.project_id) {
+  //     this.setState( {projectTrelloCardStatus:'Missing / Not Created'} )
+  //     // console.log('Project trello card missing');
+  //   }
+  // }
+
+  updateTrelloInfo = async (proj) => {
+
+    let board_name = null;
+    let board_id = null;
+    let list_name = null;
+    let list_id = null;
+    let checkitem = null;
+    let listLookup = []
+
+    let trelloInfo = {};
+
+    if (proj.insp_trello_card_id) {
+      try {
+        const card = await getTrelloCard(this.props.trelloToken, proj.trello_card_id);
+        if (card.hasOwnProperty('statusCode') && card.statusCode !== 200) {throw card};
+        board_name = card.board.name;
+        board_id = card.board.id;
+        list_name = card.list.name;
+        list_id = card.list.id;
+        listLookup = this.props.trelloInfo.find(b=>b.id===board_id).lists.filter(l=>!l.closed).map(l=>{ return {name:l.name,code:l.id} });
+        const card_id = card.id;  // the id in the database may be the short link.  Getting the actual id.
+        let item = null;
+        // if (this.state.trello_checkitem_id) {
+        //   // console.info('find checklist item');
+        //   const found = card.checklists.some(ch=>{
+        //     item = ch.checkItems.find(chi=>chi.id === this.state.trello_checkitem_id)
+        //     // console.info('checking items',item);
+        //     return item?true:false;
+        //   })
+        // }
+        // console.info('here is the item', item);
+        checkitem = item?item.name:null;
+        Object.assign(trelloInfo, {trello_board: board_name, trello_board_id: board_id
+          , trello_list: list_name, trello_list_id: list_id, trello_list_lookup: listLookup
+          , trello_checkitem: checkitem, trello_info:card, trello_card_id: card_id} )
+      } catch (err) {
+        console.log('Error getting trello card info', err);
+      }
+    } else {
+      const board = this.props.trelloInfo.find(b=>b.id===INSP_BOARD);
+      board_name = board.name;
+      list_name = board.lists.find(l=>l.id===INSP_LIST).name;
+      listLookup = this.props.trelloInfo.find(b=>b.id===INSP_BOARD).lists.filter(l=>!l.closed).map(l=>{ return {name:l.name,code:l.id} });
+      Object.assign(trelloInfo, {trello_board: board_name, trello_board_id: INSP_BOARD
+        , trello_list: list_name, trello_list_id: INSP_LIST, trello_list_lookup: listLookup} );
+    }
+
+    console.log('Getting ready to call Trello',this.props.trelloToken, proj.project_trello_card_id)
+
+    if (proj.trello_card_id) {
+      try {
+        const card = await getTrelloCard(this.props.trelloToken, proj.project_trello_card_id)
+        console.log('Card pulled',card);
+        if (card.hasOwnProperty('statusCode') && card.statusCode !== 200) {throw card};
+        Object.assign(trelloInfo, {project_trello_info:card, projectTrelloCardStatus:card.closed?'Archived':'Active', trelloCreateCard:card.closed?'N':'Y'} );
+      } catch (err) {
+        console.log('Error',err);
+        Object.assign(trelloInfo, {projectTrelloCardStatus:'Could not find'} );
+      }
+    } else if (proj.project_id) {
+       Object.assign(trelloInfo, {projectTrelloCardStatus:'Missing / Not Created'} );
+      // console.log('Project trello card missing');
+    }
+
+    return trelloInfo;
 
   }
 
@@ -453,7 +644,7 @@ class InspectionDialog extends Component {
       return null;
     }
 
-    // console.log('Inspection Dialog Render:', 'dialog state', this.state);
+    console.log('Inspection Dialog Render:', 'dialog state', this.state);
     // console.log('Inspection Dialog Render:', 'parent state', this.props.parentState);
     // console.log('Inspection Dialog Render:', 'inspections', this.props.inspections);
 

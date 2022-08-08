@@ -50,17 +50,30 @@ export const getTrelloSeed = async (request, response) => {
 
 }
 
-export const getCard = async (request, response) => {
+export const getCard = async (request, response=null) => {
   try {
-    // console.log('trello card');
+    // console.log('trello card',request.params);
 
     const card = await TrelloModel.get(request.params.token,`1/cards/${request.params.cardID}?board=true&board_fields=name&list=true&checklists=all`);
     // console.log('Retrieved card info');
-    return response.json(card);
+
+    // return response.json(card);
+
+    if (response) {
+      return response.json(card);
+    } else {
+      return card;
+    }
 
   } catch (err) {
     console.log("Failed retrieving card", err);
-    return response.json(err);
+    // return response.json(err);
+
+    if (response) {
+      return response.json(err);
+    } else {
+      return err;
+    }
   }
 
 }

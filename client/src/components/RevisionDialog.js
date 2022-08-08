@@ -86,6 +86,8 @@ class RevisionDialog extends Component {
         revision_price: null,
         designer: null,     // contact with designer flag true.
         designer_id: null,  // will be contact id
+        alt_billing_party: null,
+        alt_billing_party_id: null,
         rev_date: today,
         altLookups: altLookup,
         created_by: this.props.session.id,
@@ -216,6 +218,8 @@ class RevisionDialog extends Component {
           revision_price: row.revision_price,
           designer: row.designer,
           designer_id: row.designer_id,
+          alt_billing_party: row.alt_billing_party,
+          alt_billing_party_id: row.alt_billing_party_id,
           rev_date: row.rev_date,
         } );
       }

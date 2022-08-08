@@ -23,6 +23,7 @@ export function loadInspections(choice_type, choice_id, date_range) {
       updatedInsp.choice_id = choice_id;
       updatedInsp.date_range = date_range;
       updatedInsp.results = [...list];
+      // console.log('inspections', updatedInsp);
       dispatch(inspectionsLoaded(updatedInsp));
       // City list is small.  So if find string is empty, filling with city list.
       //dispatch(findCities(null));
@@ -154,24 +155,49 @@ export function saveInspections(c) {
   };
 }
 
+// Called by main inspection module when selecting an inspection.
 export function editInspection(proj_id, cur_insp_id=null) {
   return function (dispatch, getState) {
-    // console.log('editInspection start', proj_id, cur_insp_id);
+    console.log('editInspection start', proj_id, cur_insp_id);
 
-    const { inspections } = getState();
+    const { inspections, trelloToken } = getState();
     // console.log('editInspection after getState', inspections);
 
-    fetch(`/inspections/project/${proj_id}/${cur_insp_id}`)
+    if (!proj_id) {  // Adding an inspection.
+      let updatedInsp = {...inspections};
+      let selected = {...updatedInsp.selected};
+      selected.id = null;
+      selected.project = null; // no projecct.
+      const inspObject = {...updatedInsp, selected:{...selected}}
+      // updatedInsp.pastProjectSpecific = [...allData.inspections];
+      console.log('editInspection then', inspObject);
+      dispatch(inspectionsLoaded(inspObject));
+      return true;
+    }
+
+    fetch(`/inspections/project/${proj_id}/${cur_insp_id}/${trelloToken}`)
     .then( (response) => {
       return response.json();
     }).then((allData) => {
       // console.log('editInspection allData', allData);
       let updatedInsp = {...inspections};
-      updatedInsp.find = allData.project.job_number;
-      updatedInsp.filter = [{...allData.project}];
-      updatedInsp.pastProjectSpecific = [...allData.inspections];
-      // console.log('editInspection then', updatedInsp);
-      dispatch(inspectionsLoaded(updatedInsp));
+      let selected = {...updatedInsp.selected};
+      // updatedInsp.find = allData.project.job_number;
+      // updatedInsp.filter = [{...allData.project}]; // should only be one project.
+      // updatedInsp.pastProjectSpecific = [...allData.inspections];
+
+      // updatedInsp.find = allData.project.job_number;
+      // updatedInsp.filter = [{...allData.project}]; // should only be one project.
+      // updatedInsp.choice_id = proj_id;
+      // updatedInsp.choice_type = 'ADDRESS';
+      // updatedInsp.date_range = 'ALLTIME';
+      // updatedInsp.results = [...allData.project.inspections];
+      selected.id = cur_insp_id;
+      selected.project = {...allData.project}; // should only be one project.
+      const inspObject = {...updatedInsp, selected:{...selected}}
+      // updatedInsp.pastProjectSpecific = [...allData.inspections];
+      console.log('editInspection then', inspObject);
+      dispatch(inspectionsLoaded(inspObject));
       // return ('done');
     }).catch((err) => {
         console.log("Error loading inspections", err.status, err.statusText)

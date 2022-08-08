@@ -110,21 +110,27 @@ const SQL_INSPECTION_SELECT = `SELECT pi.id, pi.project_id, pi.project_id code
   , pi.status, pi.status inspection_status
   , pi.billable, pi.billable inspection_billable, pi.vpo
   , pi.vpo inspection_vpo, pi.deep_beam, pi.barrier_beam, pi.reinspection, pi.rain_reinspection
-  , pi.upper_slab, pi.lower_slab, pi.ret_wall_on_slab, pi.insp_contact inspection_contact
-  , pi.cable_company_id, date_format(pi.target_stress_date, '%Y-%m-%d') target_stress_date
-  , pi.trello_card_id, pi.trello_checkitem_id
+  , pi.upper_slab, pi.lower_slab, pi.ret_wall_on_slab
+  , pi.trello_checkitem_id
   , pi.created_by, pi.last_updated_by, pi.creation_date, pi.last_updated_date
-  , p.job_number, concat(p.job_number,IFNULL(p.revision,'')) job_rev, p.address1, c.full_name inspector, ps.scope scope_name, ac.label scope
-  , p.client_id, cl.name client, p.subdivision, p.city, p.lot, p.block, p.trello_card_id project_trello_card_id, o.name cable_company
+  , p.job_number, concat(p.job_number,IFNULL(p.revision,'')) job_rev, p.address1, c.full_name inspector
+  , p.client_id, cl.name client, p.subdivision, p.city
+  , p.cable_company_id, o.name cable_company
+  , ps.scope scope_name, ac.label scope
   FROM inspections pi
   JOIN contacts c on pi.contact_id = c.id
   JOIN projects p on pi.project_id = p.id
   JOIN clients cl on p.client_id = cl.id
   JOIN projects_scope ps on pi.scope_id = ps.id
   JOIN avff_controls ac on ps.scope = ac.name
-  LEFT JOIN organizations o on pi.cable_company_id = o.id
+  LEFT JOIN organizations o on p.cable_company_id = o.id
   WHERE 1=1
   AND ac.entity_type = 'ACTION'`;
+
+// , p.insp_contact, p.insp_billing_contact
+// , date_format(ps.concrete_pour_date, '%Y-%m-%d') concrete_pour_date
+// , date_format(ps.target_stress_date, '%Y-%m-%d') target_stress_date
+// , p.trello_card_id project_trello_card_id, p.insp_trello_card_id
 
 const InspectionModel = {
   getInspections: (params) => {
@@ -152,7 +158,7 @@ const InspectionModel = {
           values.push(Number(choice));
           break;
         case 'INSP_CONTACT':
-          findClause = ` and pi.insp_contact like ?`;
+          findClause = ` and p.insp_contact like ?`;
           values.push('%'+choice+'%');
           break;
         case 'STATUS':

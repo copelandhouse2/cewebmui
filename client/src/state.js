@@ -108,13 +108,18 @@ export default {
   projectHistory: [],
   projectRevisions: [],
   inspections: {
-    date_range: 1,
-    find: null,
-    filter: [],
-    choice_type: null,
-    choice_id: null,
-    results: [],
+    // first two manage the search for inspections
+    find: null,  // This value tracks the value in filter
+    filter: [],  // These are the choices after 4+ char are entered.
+    choice_id: null,  // value is set based on selected value from filter
+    choice_type: null,  // value is set based on selected value from filter
+    date_range: 1,  // user chooses.  This adjusts the inspections returned based on date.
+    results: [],  // inspections returned based on choice id and date range.
     pastProjectSpecific: [],  // used for Inspection Dialog to show past inspections
+    selected:{
+      id: null,
+      project: {},
+    }
   },
   preferences:{
     system:{},

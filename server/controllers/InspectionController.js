@@ -1,5 +1,8 @@
 import InspectionModel from "../models/InspectionModel";
+import ProjectModel from "../models/ProjectModel";
 import { getScope } from "./ProjectController";
+
+import { getCard } from "./TrelloController";
 import { tBoards, TrelloModel } from '../models/TrelloModel';
 
 const INSP_BOARD = '57f40236ffdeb772878b1488';
@@ -429,18 +432,62 @@ export const save = async (request, response) => {
 // user has selected an inspection to modify.  Pulling the inspection information
 // also pulling previous inspections on this property.
 export const editInspection = async (request, response) => {
-  // console.log('I am here Project Specific Inspections', request.params);
+  console.log('I am here Project Specific Inspections', request.params);
 
   try {
 
-    const projects = await InspectionModel.getProjectByID(request.params.proj_id);
+    const projects = await ProjectModel.getProjectByID(request.params.proj_id);
     const projectData = await Promise.all(projects.map(proj => getScope(proj)));
 
-    const inspections = await InspectionModel.getPrevProjectInspections(request.params);
+    console.log('Project Data',request.params, projectData[0].project_trello_card_id);
+
+    projCard = null;
+    if (projectData[0].project_trello_card_id) {
+      const req = {
+        params: {
+          token: request.params.trelloToken,
+          cardID: projectData[0].project_trello_card_id,
+        }
+      };
+      const projCard = await getCard(req);
+      console.log('Proj card', projCard);
+    }
+
+    inspCard = null;
+    if (projectData[0].trello_card_id) {
+      const req = {
+        params: {
+          token: request.params.trelloToken,
+          cardID: projectData[0].trello_card_id,
+        }
+      };
+      const inspCard = await getCard(req);
+      console.log('Insp card', inspCard);
+    }
+
+    const trelloInfo = {
+      trello_board: inspCard?inspCard.board.name:null,
+      trello_board_id: inspCard?inspCard.board.id:null,
+      trello_list: inspCard?inspCard.list.name:null,
+      trello_list_id: inspCard?inspCard.list.id:null,
+      // trello_list_lookup:'trello_list_lookup' in trelloInfo?trelloInfo.trello_list_lookup:[],
+      trello_card_id: inspCard?inspCard.id:null,
+      trello_info: inspCard?inspCard:null,
+      project_trello_card_id: projCard?projCard.id:null,
+      project_trello_info: projCard?projCard:null,
+      // projectTrelloCardStatus: 'projectTrelloCardStatus' in trelloInfo?trelloInfo.projectTrelloCardStatus:null,
+    }
+    // const inspections = await InspectionModel.getPrevProjectInspections(request.params);
+    const params = {
+      choiceType: 'ADDRESS',
+      choice: request.params.proj_id,
+      dateRange: 'ALLTIME'
+    }
+    const inspections = await InspectionModel.getInspections(params);
     const data = await Promise.all(inspections.map(insp => getReasons(insp)));
 
     const allData = {
-      project: {...projectData[0]},
+      project: {...projectData[0],inspections:[...data]},
       inspections: [...data]
     }
     // console.log('Data retrieved... Inspections', allData);

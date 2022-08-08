@@ -96,8 +96,9 @@ export const DialogInspectionAddFG = withStyles(styles, { withTheme: true })(
   Object.assign(fAddress1,{name_id: 'project_id',project_id:null,lookup_list:true});
   // console.log('Inspection Dialog',fieldGroup.children);
   // console.log('Trello FG', fgTrello);
-  console.log('list of scope',dialogState.scope_list);
-  console.log('past inspections',inspections.pastProjectSpecific);
+  // console.log('list of scope',dialogState.scope_list);
+  // console.log('past inspections',inspections.pastProjectSpecific);
+  // console.log('the project',inspections);
 
   return (
     <Grid container spacing={24}>

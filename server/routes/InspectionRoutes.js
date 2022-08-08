@@ -7,7 +7,7 @@ const router = express.Router();
 //Getting the inspection data... based on project or inspector
 router.get("/inspections/list/:choiceType/:choice/:dateRange", list);
 // router.get("/inspections/project/:proj_id/:cur_insp_id", listPrevProjectInspections);
-router.get("/inspections/project/:proj_id/:cur_insp_id", editInspection);
+router.get("/inspections/project/:proj_id/:cur_insp_id/:trelloToken", editInspection);
 
 //Getting the data... just one entity
 router.get("/inspections/:id", show);

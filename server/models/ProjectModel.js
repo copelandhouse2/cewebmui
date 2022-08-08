@@ -25,13 +25,22 @@ const SQL_PREQUERY = `SELECT DISTINCT p.id, p.job_number, p.last_updated_date`
 // p.foundation_type, p.floor_type
 // , p.roof_type, p.num_stories, p.square_footage, p.pita_factor, p.dwelling_type,
 
-const SQL_PROJECT_SELECT = `SELECT p.id, p.id address_id, p.job_number, p.story, p.revision, p.revision orig_rev, p.revision_desc, p.revision_desc orig_rev_desc, p.client_id, p.user_id, p.contact_id, p.city, p.subdivision, p.address1, p.address2, p.phase, p.section
-, p.lot, p.block,    p.geo_lab, p.geo_report_num, date_format(p.geo_report_date, '%Y-%m-%d') geo_report_date
-, p.geo_pi, p.em_center, p.em_edge, p.ym_center, p.ym_edge, p.soil_notes, p.status, p.project_status, p.scope, p.classification, date_format(p.onboard_date, '%Y-%m-%d') onboard_date, date_format(p.start_date, '%Y-%m-%d') start_date
-, date_format(p.due_date, '%Y-%m-%d') due_date, date_format(p.final_due_date, '%Y-%m-%d') final_due_date, date_format(p.transmittal_date, '%Y-%m-%d') transmittal_date, p.main_contact, p.billing_contact, p.builder_contact
-  , p.trello_list_id, l.name trello_list, p.trello_card_id, p.box_folder
-, p.created_by, p.last_updated_by, co3.full_name last_updated_by_name, date_format(p.creation_date, '%Y-%m-%d') creation_date, date_format(p.last_updated_date, '%Y-%m-%d') last_updated_date
-, cl.name client, co.full_name requestor, co2.full_name entered_by, c.id city_id, su.id subdivision_id`
+const SQL_PROJECT_SELECT = `SELECT p.id, p.id address_id
+, p.job_number, p.story, p.revision, p.revision orig_rev, p.revision_desc, p.revision_desc orig_rev_desc
+, p.client_id, p.user_id, p.contact_id, p.city, p.subdivision, p.address1, p.address2, p.phase, p.section
+, p.lot, p.block, p.geo_lab, p.geo_report_num, date_format(p.geo_report_date, '%Y-%m-%d') geo_report_date
+, p.geo_pi, p.em_center, p.em_edge, p.ym_center, p.ym_edge, p.soil_notes, p.status, p.project_status
+, p.scope, p.classification, date_format(p.onboard_date, '%Y-%m-%d') onboard_date, date_format(p.start_date, '%Y-%m-%d') start_date
+, date_format(p.due_date, '%Y-%m-%d') due_date, date_format(p.final_due_date, '%Y-%m-%d') final_due_date
+, date_format(p.transmittal_date, '%Y-%m-%d') transmittal_date, p.main_contact, p.billing_contact, p.builder_contact
+, p.trello_list_id, l.name trello_list, p.trello_card_id, p.box_folder
+, p.created_by, p.last_updated_by, co3.full_name last_updated_by_name, date_format(p.creation_date, '%Y-%m-%d') creation_date
+, date_format(p.last_updated_date, '%Y-%m-%d') last_updated_date
+, cl.name client, co.full_name requestor, co2.full_name entered_by, c.id city_id, su.id subdivision_id
+, p.insp_contact, p.insp_billing_contact, p.cable_company_id, p.insp_trello_card_id
+
+, p.id code, p.id project_id, concat(p.address1,' (',p.job_number,IFNULL(p.revision,''),')') name
+, p.trello_card_id project_trello_card_id, 'ADDRESS' entity`  // inspection fields
 // + ' from projects s'
 // + ' left join clients cl on p.client_id = cl.id'  // allowing client_id to be null
 // + ' left join contacts co on p.contact_id = co.id'  // allowing contact_id to be null
@@ -480,8 +489,12 @@ const ProjectModel = {
     , geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, notes, status, project_status, scope, classification, onboard_date
     , start_date, due_date, final_due_date, transmittal_date, main_contact, billing_contact, builder_contact, foundation_type, floor_type
     , roof_type, num_stories, square_footage, pita_factor, dwelling_type, trello_list_id, trello_card_id, box_folder
+    // , insp_contact, insp_billing_contact, cable_company_id, insp_trello_card_id
     , created_by, last_updated_by }
     = project;
+
+  const insp_contact = null, insp_billing_contact = null, cable_company_id = null, insp_trello_card_id = null;
+  // console.log('new values', insp_contact, insp_billing_contact,cable_company_id,insp_trello_card_id);
 
   // console.log("dwelling_type", dwelling_type);
   // console.log("job_number", job_number);
@@ -489,6 +502,7 @@ const ProjectModel = {
   // console.log("addProject user_id", user_id);
   // console.log('addProject: Values', values)
   // console.log('addProject: Values', project, 'what is scope?', typeof scope);
+
   // Supports old v1 scope at project level just in case.  Sets variable to null if scope is the array.
   const project_scope = typeof scope === 'string'? scope:null;
 
@@ -499,53 +513,53 @@ const ProjectModel = {
   // + ", geo_pi, em_center, em_edge, ym_center, ym_edge, additional_options, notes, status, created_by, last_updated_by)"
   // + " VALUES(?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?)";
 
-  // 11+10+7+6+11+8+6+2 fields
-  const SQLstmt = `INSERT INTO projects (id, job_number, story, revision, revision_desc, client_id, user_id, contact_id, city, subdivision, address1, address2, phase, section
-  , lot, block, fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation, masonry, garage_type
-  , garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window, master_shower_drop
-  , bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num,  geo_report_date
-  , geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, notes, status, project_status, classification, onboard_date
-  , start_date, due_date, final_due_date, transmittal_date, main_contact, billing_contact, builder_contact, foundation_type, floor_type
-  , roof_type, num_stories, square_footage, pita_factor, dwelling_type, trello_list_id, trello_card_id, box_folder
-  , created_by, last_updated_by, scope)
-   VALUES(?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?)
-   ON DUPLICATE KEY UPDATE job_number = ?, story = ?, revision = ?, revision_desc = ?, client_id = ?, user_id = ?, contact_id = ?, city = ?, subdivision = ?, address1 = ?, address2 = ?
-  , phase = ?, section = ?, lot = ?, block = ?, fnd_height_fr = ?, fnd_height_fl = ?, fnd_height_rr = ?, fnd_height_rl = ?
-  , plan_type = ?, elevation = ?, masonry = ?, garage_type = ?, garage_entry = ?, garage_swing = ?, garage_drop = ?, garage_extension = ?
-  , covered_patio = ?, bay_window = ?, master_shower_drop = ?, bath1_shower_drop = ?, bath2_shower_drop = ?, bath3_shower_drop = ?
-  , geo_lab = ?, geo_report_num = ?,  geo_report_date = ?, geo_pi = ?, em_center = ?, em_edge = ?, ym_center = ?, ym_edge = ?, soil_notes = ?
-  , additional_options = ?, notes = ?, status = ?, project_status = ?, classification = ?, onboard_date = ?, start_date = ?
-  , due_date = ?, final_due_date = ?, transmittal_date = ?, main_contact = ?, billing_contact = ?, builder_contact = ?, foundation_type = ?, floor_type = ?
-  , roof_type = ?, num_stories = ?, square_footage = ?, pita_factor = ?, dwelling_type = ?, trello_list_id = ?, trello_card_id = ?, box_folder = ?
-  , last_updated_by = ?, scope = ?`;
+  // each row has 10 fields, except for last row.
+  const SQLstmt = `INSERT INTO projects (id, job_number, story, revision, revision_desc, client_id, user_id, contact_id, city, subdivision
+  , address1, address2, phase, section, lot, block, fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl
+  , plan_type, elevation, masonry, garage_type, garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window
+  , master_shower_drop, bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num, geo_report_date, geo_pi, em_center, em_edge
+  , ym_center, ym_edge, soil_notes, additional_options, notes, status, project_status, classification, onboard_date, start_date
+  , due_date, final_due_date, transmittal_date, main_contact, billing_contact, builder_contact, foundation_type, floor_type, roof_type, num_stories
+  , square_footage, pita_factor, dwelling_type, trello_list_id, trello_card_id, box_folder, created_by, last_updated_by, scope, insp_contact
+  , insp_billing_contact, cable_company_id, insp_trello_card_id)
+   VALUES(?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?)
+   ON DUPLICATE KEY UPDATE
+   job_number = ?, story = ?, revision = ?, revision_desc = ?, client_id = ?, user_id = ?, contact_id = ?, city = ?, subdivision = ?, address1 = ?
+  , address2 = ?, phase = ?, section = ?, lot = ?, block = ?, fnd_height_fr = ?, fnd_height_fl = ?, fnd_height_rr = ?, fnd_height_rl = ?, plan_type = ?
+  , elevation = ?, masonry = ?, garage_type = ?, garage_entry = ?, garage_swing = ?, garage_drop = ?, garage_extension = ?, covered_patio = ?, bay_window = ?, master_shower_drop = ?
+  , bath1_shower_drop = ?, bath2_shower_drop = ?, bath3_shower_drop = ?, geo_lab = ?, geo_report_num = ?, geo_report_date = ?, geo_pi = ?, em_center = ?, em_edge = ?, ym_center = ?
+  , ym_edge = ?, soil_notes = ?, additional_options = ?, notes = ?, status = ?, project_status = ?, classification = ?, onboard_date = ?, start_date = ?, due_date = ?
+  , final_due_date = ?, transmittal_date = ?, main_contact = ?, billing_contact = ?, builder_contact = ?, foundation_type = ?, floor_type = ?, roof_type = ?, num_stories = ?, square_footage = ?
+  , pita_factor = ?, dwelling_type = ?, trello_list_id = ?, trello_card_id = ?, box_folder = ?, last_updated_by = ?, scope = ?, insp_contact = ?, insp_billing_contact = ?, cable_company_id = ?
+  , insp_trello_card_id = ?`;
 
-  const values = [id?id:address_id, job_number, story, revision, revision_desc, client_id, user_id, contact_id, city, subdivision, address1, address2 // 11
-  , phase, section, lot, block, fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation // 10
-  , masonry, garage_type, garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window // 8
-  , master_shower_drop, bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num  // 6
-  , geo_report_date, geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, notes, status // 10
-  , project_status, classification, onboard_date, start_date, due_date, final_due_date, transmittal_date, main_contact // 8
-  , billing_contact, builder_contact, foundation_type, floor_type, roof_type, num_stories, square_footage // 7
-  , pita_factor, dwelling_type, trello_list_id, trello_card_id, box_folder // 5
-  , created_by, last_updated_by, project_scope // 3
+  const values = [id?id:address_id, job_number, story, revision, revision_desc, client_id, user_id, contact_id, city, subdivision  //10
+  , address1, address2, phase, section, lot, block, fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl
+  , plan_type, elevation, masonry, garage_type, garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window
+  , master_shower_drop, bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num, geo_report_date, geo_pi, em_center, em_edge
+  , ym_center, ym_edge, soil_notes, additional_options, notes, status, project_status, classification, onboard_date, start_date
+  , due_date, final_due_date, transmittal_date, main_contact, billing_contact, builder_contact, foundation_type, floor_type, roof_type, num_stories
+  , square_footage, pita_factor, dwelling_type, trello_list_id, trello_card_id, box_folder, created_by, last_updated_by, project_scope, insp_contact
+  , insp_billing_contact, cable_company_id, insp_trello_card_id // 3
 
-  , job_number, story, revision, revision_desc, client_id, user_id, contact_id, city, subdivision, address1, address2, phase, section, lot, block // 14
-  , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type, elevation, masonry, garage_type // 8
-  , garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window, master_shower_drop // 7
-  , bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num, geo_report_date // 6
-  , geo_pi, em_center, em_edge, ym_center, ym_edge, soil_notes, additional_options, notes, status, project_status // 10
-  , classification, onboard_date, start_date, due_date, final_due_date, transmittal_date, main_contact, billing_contact, builder_contact // 9
-  , foundation_type, floor_type, roof_type, num_stories, square_footage, pita_factor, dwelling_type, trello_list_id, trello_card_id  // 9
-  , box_folder, last_updated_by, project_scope // 3
+  , job_number, story, revision, revision_desc, client_id, user_id, contact_id, city, subdivision, address1 // 10
+  , address2, phase, section, lot, block, fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, plan_type
+  , elevation, masonry, garage_type, garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window, master_shower_drop
+  , bath1_shower_drop, bath2_shower_drop, bath3_shower_drop, geo_lab, geo_report_num, geo_report_date, geo_pi, em_center, em_edge, ym_center
+  , ym_edge, soil_notes, additional_options, notes, status, project_status, classification, onboard_date, start_date, due_date
+  , final_due_date, transmittal_date, main_contact, billing_contact, builder_contact, foundation_type, floor_type, roof_type, num_stories, square_footage
+  , pita_factor, dwelling_type, trello_list_id, trello_card_id, box_folder, last_updated_by, project_scope, insp_contact, insp_billing_contact, cable_company_id
+  , insp_trello_card_id // 1
   ];
 
     // console.log('Model addProject: SQL', SQLstmt);
     // console.log('Model addProject: Values', values);
+
     if (callback) {
       // console.log('Model addProject: in the callback version')
       return sql().query(SQLstmt, values, callback);
     } else {
-      // console.log('Model addProject: in the promise version')
+      console.log('Model addProject: in the promise version')
       return sqlPromise(SQLstmt, values);
     }
 
@@ -613,7 +627,8 @@ const ProjectModel = {
     , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl  // 4
     , foundation_type, floor_type, roof_type, num_stories, square_footage, dwelling_type // 6
     , additional_options, notes  // 2
-    , status, created_by, last_updated_by } // 3  Total as of Dec 9, 2019 = 47
+    , status, insp_contact, trello_checklist_id, concrete_pour_date, target_stress_date  // 5
+    , created_by, last_updated_by } // 2  Total as of Dec 9, 2019 = 47
     = scope_item;
 
   // console.log("dwelling_type", dwelling_type);
@@ -622,17 +637,13 @@ const ProjectModel = {
   // console.log("user_id", user_id);
   // console.log('addProject: Values', values)
 
-  const SQLstmt = `INSERT INTO projects_scope (id, project_id, scope, job_number, description, revision, revision_desc, scope_status
-    , onboard_date, start_date, due_date, final_due_date, transmittal_date
-    , trello_list_id, trello_card_id, box_folder
-    , plan_type, elevation, masonry, garage_type, garage_entry, garage_swing
-    , garage_drop, garage_extension, covered_patio, bay_window
-    , master_shower_drop, bath1_shower_drop, bath2_shower_drop, bath3_shower_drop
-    , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl
-    , foundation_type, floor_type, roof_type, num_stories, square_footage, dwelling_type
-    , additional_options, notes
-    , status, created_by, last_updated_by)
-   VALUES(?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?)
+  // each row has 10 fields, except for last row.
+  const SQLstmt = `INSERT INTO projects_scope (id, project_id, scope, job_number, description, revision, revision_desc, scope_status, onboard_date, start_date
+    , due_date, final_due_date, transmittal_date, trello_list_id, trello_card_id, box_folder, plan_type, elevation, masonry, garage_type
+    , garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window, master_shower_drop, bath1_shower_drop, bath2_shower_drop, bath3_shower_drop
+    , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, foundation_type, floor_type, roof_type, num_stories, square_footage, dwelling_type
+    , additional_options, notes, status, insp_contact, trello_checklist_id, concrete_pour_date, target_stress_date, created_by, last_updated_by)
+   VALUES(?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?)
    ON DUPLICATE KEY UPDATE project_id = ?, scope = ?, job_number = ?, description = ?, revision = ?, revision_desc = ?, scope_status = ?
      , onboard_date = ?, start_date = ?, due_date = ?, final_due_date = ?, transmittal_date = ?
      , trello_list_id = ?, trello_card_id = ?, box_folder = ?
@@ -642,18 +653,14 @@ const ProjectModel = {
      , fnd_height_fr = ?, fnd_height_fl = ?, fnd_height_rr = ?, fnd_height_rl = ?
      , foundation_type = ?, floor_type = ?, roof_type = ?, num_stories = ?, square_footage = ?, dwelling_type = ?
      , additional_options = ?, notes = ?
-     , status = ?, last_updated_by = ?`;
+     , status = ?, insp_contact = ?, trello_checklist_id = ?, concrete_pour_date = ?, target_stress_date = ?
+     , last_updated_by = ?`;
 
-  const values = [id?id:scope_id, project_id, name, job_number, description, revision, revision_desc, scope_status  // 8
-    , onboard_date, start_date, due_date, final_due_date, transmittal_date  // 5
-    , trello_list_id, trello_card_id, box_folder  // 3
-    , plan_type, elevation, masonry, garage_type, garage_entry, garage_swing  // 6
-    , garage_drop, garage_extension, covered_patio, bay_window // 4
-    , master_shower_drop, bath1_shower_drop, bath2_shower_drop, bath3_shower_drop  // 4
-    , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl  // 4
-    , foundation_type, floor_type, roof_type, num_stories, square_footage, dwelling_type // 6
-    , additional_options, notes  // 2
-    , status, created_by, last_updated_by // 3
+  const values = [id?id:scope_id, project_id, name, job_number, description, revision, revision_desc, scope_status, onboard_date, start_date  // 10
+    , due_date, final_due_date, transmittal_date, trello_list_id, trello_card_id, box_folder, plan_type, elevation, masonry, garage_type
+    , garage_entry, garage_swing, garage_drop, garage_extension, covered_patio, bay_window, master_shower_drop, bath1_shower_drop, bath2_shower_drop, bath3_shower_drop
+    , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl, foundation_type, floor_type, roof_type, num_stories, square_footage, dwelling_type
+    , additional_options, notes, status, insp_contact, trello_checklist_id, concrete_pour_date, target_stress_date, created_by, last_updated_by // 9
 
     , project_id, name, job_number, description, revision, revision_desc, scope_status  // 7
     , onboard_date, start_date, due_date, final_due_date, transmittal_date  // 5
@@ -664,7 +671,8 @@ const ProjectModel = {
     , fnd_height_fr, fnd_height_fl, fnd_height_rr, fnd_height_rl  // 4
     , foundation_type, floor_type, roof_type, num_stories, square_footage, dwelling_type // 6
     , additional_options, notes  // 2
-    , status, last_updated_by // 2
+    , status, insp_contact, trello_checklist_id, concrete_pour_date, target_stress_date // 5
+    , last_updated_by // 1
   ];
 
     // console.log('Model addProject: SQL', SQLstmt);
@@ -745,15 +753,16 @@ const ProjectModel = {
     let SQLstmt = `select pr.id, pr.project_id, ifnull(pr.scope_id, -1) scope_id, pr.revision
       , pr.reason revision_reason_code, pr.responsibility revision_resp_code
       , pr.description revision_desc, pr.price revision_price, pr.designer_id
-      , date_format(pr.rev_date, '%Y-%m-%dT%T') rev_date
+      , date_format(pr.rev_date, '%Y-%m-%dT%T') rev_date, pr.alt_billing_party_id
       , IFNULL(ps.scope, 'Project Details') scope, IFNULL(ac.label, 'Project Details') scope_label
       , l1.name revision_reason, l2.name revision_resp, c.full_name designer
-      , date_format(pr.rev_date, '%b %e, %Y') friendly_date
+      , date_format(pr.rev_date, '%b %e, %Y') friendly_date, cl.name alt_billing_party
       FROM projects_revisions pr
       left join projects_scope ps on pr.scope_id = ps.id
       left join lookups l1 on pr.reason = l1.code
       left join lookups l2 on pr.responsibility = l2.code
       left join contacts c on pr.designer_id = c.id
+      left join clients cl on pr.alt_billing_party_id = cl.id
       left join avff_controls ac on ps.scope = ac.name
       WHERE pr.project_id = ?
       AND IFNULL(ac.entity_type,'ACTION') = 'ACTION'
@@ -777,7 +786,8 @@ const ProjectModel = {
 
     //inserting into mysql
     const {id, project_id, scope_id, revision, revision_reason_code
-      , revision_resp_code, revision_desc, revision_price, designer_id, rev_date
+      , revision_resp_code, revision_desc, revision_price, designer_id
+      , rev_date, alt_billing_party_id
       , created_by, last_updated_by
     } = rev;
 
@@ -786,19 +796,22 @@ const ProjectModel = {
     console.log("rev date", updDate);
 
     const SQLstmt = `INSERT INTO projects_revisions (id, project_id, scope_id
-      , revision, reason, responsibility, description, price, designer_id, rev_date
+      , revision, reason, responsibility, description, price, designer_id
+      , rev_date, alt_billing_party_id
       , created_by, last_updated_by)
-      VALUES(?,?,?,?,?,?,?,?,?,? ,?,?)
+      VALUES(?,?,?,?,?,?,?,?,?,? ,?,?,?)
       ON DUPLICATE KEY UPDATE project_id = ?, scope_id = ?, revision = ?
       , reason = ?, responsibility = ?, description = ?, price = ?, designer_id = ?
-      , rev_date = ?, created_by = ?, last_updated_by = ?`;
+      , rev_date = ?, alt_billing_party_id = ?, created_by = ?, last_updated_by = ?`;
 
     const values = [id, project_id, scope_id===-1?null:scope_id, revision, revision_reason_code
-      , revision_resp_code, revision_desc, revision_price, designer_id, updDate
+      , revision_resp_code, revision_desc, revision_price, designer_id
+      , updDate, alt_billing_party_id
       , created_by, last_updated_by
 
       , project_id, scope_id===-1?null:scope_id, revision, revision_reason_code
-      , revision_resp_code, revision_desc, revision_price, designer_id, updDate
+      , revision_resp_code, revision_desc, revision_price, designer_id
+      , updDate, alt_billing_party_id
       , created_by, last_updated_by
     ];
 

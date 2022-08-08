@@ -287,7 +287,7 @@ class Inspection extends Component {
       // Add the rows
       this.props.inspections.results.forEach(function(obj) {
         result += `"${Object.values(obj).join('","')}"` + '\n';
-        
+
         // console.log('the obj', obj);
         // result += keys.map(k => {
         //   if (Object.prototype.toString.call(obj[k]) === '[object Array]') {
@@ -502,14 +502,15 @@ class Inspection extends Component {
 
   handleAddEdit = (inspToUpdate) => {
     // clears the inspection filter list
-    // console.log('Inspections Object', this.props.inspections);
-    // console.log('handleAddEdit: inspection to update', inspToUpdate);
+    console.log('Inspections Object', this.props.inspections);
+    console.log('handleAddEdit: inspection to update', inspToUpdate);
 
     // inspToUpdate?this.props.filterProjects(inspToUpdate.job_number)
     //   :this.props.filterChoices(null);
 
     inspToUpdate?this.props.editInspection(inspToUpdate.project_id, inspToUpdate.id)
-      :this.props.filterChoices(null);
+      // :this.props.filterChoices(null);
+      :this.props.editInspection(false);  // adding an inspeciton.
 
     this.setState({ openAddDialog: true, inspToUpdate: inspToUpdate });
   }

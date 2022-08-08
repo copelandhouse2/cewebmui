@@ -68,7 +68,7 @@ import Cancel from '@material-ui/icons/Cancel';
 
 // Custom Field Groups
 export * from './ceFieldGroupTrello';
-export * from './ceFieldGroupInspection';
+export * from './ceFieldGroupInspection.new';
 
 const {
   DraggableHeader: { DraggableContainer }
