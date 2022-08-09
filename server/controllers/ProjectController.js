@@ -408,9 +408,10 @@ export const commit = (request, response) => {
       let latest = '', cRevTitle = '', cRev = '', pRev = '', current = '';
       newRecord.rev.forEach((r,i)=>{
         // This is the very first rev.  It is the latest
+        // console.log('revisions', r);
         if (i===0) {
           latest = r.revision;
-          cRevTitle = `**REV ${r.revision} ${r.friendly_date}**\n`;
+          cRevTitle = r.alt_billing_party? `**REV ${r.revision} ${r.friendly_date} *Bill to: ${r.alt_billing_party}* **\n`: `**REV ${r.revision} ${r.friendly_date}**\n`;
         }
         const reason = r.revision_reason?` - ${r.revision_reason}`:'';
         const resp = r.revision_resp?` - ${r.revision_resp}`:'';
@@ -424,7 +425,7 @@ export const commit = (request, response) => {
             // pRev = `${pRev}\n* ${r.scope_label} - ${r.revision_reason} / ${r.revision_resp} - ${r.revision_desc}`;
             pRev = `${pRev}\n* ${r.scope_label}${reason}${resp}${desc}`;
           } else {
-            const revSubTitle = `\n\n*REV ${r.revision} ${r.friendly_date}*\n`
+            const revSubTitle = r.alt_billing_party? `\n\n*REV ${r.revision} ${r.friendly_date} Billed to: ${r.alt_billing_party}*\n` : `\n\n*REV ${r.revision} ${r.friendly_date}*\n`
             // pRev = `${pRev}${revSubTitle}\n* ${r.scope_label} - ${r.revision_reason} / ${r.revision_resp} - ${r.revision_desc}`;
             pRev = `${pRev}${revSubTitle}\n* ${r.scope_label}${reason}${resp}${desc}`;
             current = r.revision;
