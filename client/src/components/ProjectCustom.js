@@ -135,6 +135,11 @@ class ProjectCustom extends Component {
     if (drawer === 'find') this.setState( { findDrawerOpen: !this.state.findDrawerOpen } );
   }
 
+  closeDrawers = () => {
+    // console.log('new view', view);
+    this.setState( { recentsDrawerOpen: false, findDrawerOpen: false } );
+  }
+
   render() {
 
     // console.log('Project Custom', this.state);
@@ -156,6 +161,7 @@ class ProjectCustom extends Component {
           <SingleViewContainer
             handleViewButton = {this.handleViewButton}
             toggleDrawer = {this.toggleDrawer}
+            closeDrawers = {this.closeDrawers}
             toggleScopeDialog = {this.toggleScopeDialog}
             VIEW={this.state.currentView}
           /> }
@@ -169,6 +175,7 @@ class ProjectCustom extends Component {
           <GuidedViewContainer
             handleViewButton = {this.handleViewButton}
             toggleDrawer = {this.toggleDrawer}
+            closeDrawers = {this.closeDrawers}
             toggleScopeDialog = {this.toggleScopeDialog}
           /> }
         <Drawer
@@ -177,7 +184,9 @@ class ProjectCustom extends Component {
           onClose={() => this.toggleDrawer('recents')}
           classes={ {paper: classes.recentsDrawer } }
         >
-          <RecentsContainer />
+          <RecentsContainer
+            // onClose={() => this.toggleDrawer('find')}
+          />
         </Drawer>
         <Drawer
           anchor='top'
@@ -185,7 +194,9 @@ class ProjectCustom extends Component {
           onClose={() => this.toggleDrawer('find')}
           classes={ {paper: classes.findDrawer } }
         >
-          <FindContainer />
+          <FindContainer
+            // onClose={() => this.toggleDrawer('find')}
+          />
         </Drawer>
       </div>
     )

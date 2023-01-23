@@ -1,7 +1,8 @@
+// v2.1.3
 import React, { Component, Fragment } from "react";
 
 // import "../css/App.css";
-import { BrowserRouter, Route, Switch } from "react-router-dom";
+import { Route, Switch, Redirect } from "react-router-dom";
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { withStyles } from '@material-ui/core/styles';
@@ -10,6 +11,8 @@ import HeaderContainer from "../containers/HeaderContainer";
 import Footer from "./Footer";
 // import Body from "./Body";
 import { Grid } from "@material-ui/core";
+import Button from '@material-ui/core/Button';
+
 import AlertDialogContainer from "../containers/AlertDialogContainer";
 // import StartsContainer from "./containers/StartsContainer";
 // import ClientContainer from "./containers/ClientContainer";
@@ -24,7 +27,12 @@ import WelcomeContainer from "../containers/WelcomeContainer";
 import UnderConstruction from "../components/UnderConstruction";
 import ProjectCustomContainer from "../containers/ProjectCustomContainer";
 import SearchContainer from '../containers/SearchContainer';
-// import ProjectTabularContainer from "../containers/ProjectTabularContainer";
+import ClientContainer from '../containers/ClientContainer';
+import GeotechContainer from '../containers/GeotechContainer';
+import SubdivisionContainer from '../containers/SubdivisionContainer';
+import CityContainer from '../containers/CityContainer';
+import InspectionContainer from "../containers/InspectionContainer";
+// import TrelloTokenDialogContainer from "../containers/TrelloTokenDialogContainer";
 
 import blueGrey from '@material-ui/core/colors/blueGrey';
 
@@ -105,14 +113,17 @@ class App extends Component {
       authenticated: localStorage.getItem('token') || false,
       open: false,  // navBar
       welcome: true,
-      authInProgress: false
+      authInProgress: false,
+      trelloToken: localStorage.getItem('trello_token') || false,
+      boxToken: localStorage.getItem('box_token') || false,
+      boxAuthClicked: false,
       // settings: !this.props.session.settings?{accent_color: '#42a5f5'}:this.props.session.settings,
       // accent_color: this.props.session.settings.accent_color
     };
   }
 
   componentDidMount() {
-    // console.log('CDM App.js')
+    // console.log('CDM App.js',this.state);
     const theToken = localStorage.getItem('token');
     if (theToken !== null) {
       this.setState({ authInProgress: true}, () =>
@@ -120,8 +131,11 @@ class App extends Component {
         // console.log('CDM... authenticating ', theToken)
         this.props.authenticate();
       })
-
     };
+
+    if (this.state.trelloToken) this.props.initiateTrello(this.state.trelloToken);
+
+    // console.log('CDM App.js: After authenticating')
 
     this.props.loadClients();
     this.props.loadCities();
@@ -129,26 +143,33 @@ class App extends Component {
     this.props.loadContacts();
     this.props.loadUsers();
     // this.props.loadRequestors();  // a subset of contacts
-    this.props.getLookup('STATE');
-    this.props.getLookup('COUNTRY');
-    this.props.getLookup('TRELLO_LIST');
-    this.props.getLookup('PROJECT_STATUS');
-    // this.props.getLookup('SCOPE');
-    this.props.getLookup('CLASSIFICATION');
-    this.props.getLookup('MASONRY');
-    this.props.getLookup('YN');
-    this.props.getLookup('FND_TYPE');
-    this.props.getLookup('GARAGE_TYPE');
-    this.props.getLookup('GARAGE_ENTRY');
-    this.props.getLookup('GARAGE_SWING');
-    this.props.getLookup('FLOOR_TYPE');
-    this.props.getLookup('ROOF_TYPE');
-    this.props.getLookup('COVERED_PATIO');
-    this.props.getLookup('PITA');
-    this.props.getLookup('DWELLING_TYPE');
-    this.props.getLookup('DATE_SEARCH');
-    this.props.getLookup('REV_REASON');
-    this.props.getLookup('REV_RESP');
+    this.props.getLookup('ALL');
+
+    // this.props.getLookup('STATE');
+    // this.props.getLookup('COUNTRY');
+    // this.props.getLookup('TRELLO_LIST');
+    // this.props.getLookup('PROJECT_STATUS');
+    // // this.props.getLookup('SCOPE');
+    // this.props.getLookup('CLASSIFICATION');
+    // this.props.getLookup('MASONRY');
+    // this.props.getLookup('YN');
+    // this.props.getLookup('FND_TYPE');
+    // this.props.getLookup('GARAGE_TYPE');
+    // this.props.getLookup('GARAGE_ENTRY');
+    // this.props.getLookup('GARAGE_SWING');
+    // this.props.getLookup('FLOOR_TYPE');
+    // this.props.getLookup('ROOF_TYPE');
+    // this.props.getLookup('COVERED_PATIO');
+    // this.props.getLookup('PITA');
+    // this.props.getLookup('DWELLING_TYPE');
+    // this.props.getLookup('DATE_SEARCH');
+    // this.props.getLookup('REV_REASON');
+    // this.props.getLookup('REV_RESP');
+    //
+    // this.props.getLookup('INSP_TYPE');
+    // this.props.getLookup('INSP_REASON');
+
+    // this.props.getAllLookups();
 
     this.props.loadGeotechs();
     // 1 = MLALABS
@@ -157,24 +178,58 @@ class App extends Component {
     this.props.loadRelationships();
 
     this.props.loadScope();
+    this.props.loadOrganizations();
 
+    // console.log('CDM App.js: Loaded all the lookups')
 
+    // this.props.ynDialog();
   }
 
   static getDerivedStateFromProps(nextProps, prevState) {
-    const { session } = nextProps;
+    const { session, avffControls, avffRelationships } = nextProps;
     // console.log('in getDerivedStateFromProps', session);
+
+    let updatedValues = {};
     if (!session.authInProgress) {
-      return {authInProgress: false} ;
+      Object.assign(updatedValues, {authInProgress: false});
     }
-    return null;
+
+    if (!prevState.renderScreen && avffControls.length > 0 && avffRelationships.length > 0
+    ) {
+      Object.assign(updatedValues, {renderScreen: true});
+    }
+
+    return updatedValues;
   }
 
-  updateAccentColor = (color) => {
-    let settings = {...this.props.session.userSettings};
+  // updateAccentColor = (color) => {
+  //   let settings = {...this.props.session.userSettings};
+  //
+  //   settings = Object.assign({id: null, created_by: this.props.session.id}, settings,
+  //     {accent_color: color, last_updated_by: this.props.session.id});
+  //   // settings[created_by] = typeof settings.created_by === 'undefined'? this.props.session.id:settings.created_by;
+  //
+  //   // this.setState({ settings: settings }, () => {
+  //   //   console.log('in setState callback');
+  //   //   this.props.updateSettings(this.state.settings);
+  //   // });
+  //   // let session = {...this.props.session};
+  //   // session.settings.accentColor = color;
+  //   // console.log('updateColor', session);
+  //   // this.props.updateSettings(session);
+  //   // console.log('in updateAccentColor', this.props.session, settings);
+  //   this.props.updateSettings(this.props.session, settings);
+  //
+  // }
 
-    settings = Object.assign({id: null, created_by: this.props.session.id}, settings,
-      {accent_color: color, last_updated_by: this.props.session.id});
+  updateAccentColor = (color) => {
+    // let prefs = {...this.props.preferences.user};
+
+    // prefs = Object.assign(prefs,
+      // {accentColor: color});
+    const prefs = {id: this.props.preferences.user.id
+      , updatedKey: 'accentColor'
+      , value: color};
     // settings[created_by] = typeof settings.created_by === 'undefined'? this.props.session.id:settings.created_by;
 
     // this.setState({ settings: settings }, () => {
@@ -186,7 +241,7 @@ class App extends Component {
     // console.log('updateColor', session);
     // this.props.updateSettings(session);
     // console.log('in updateAccentColor', this.props.session, settings);
-    this.props.updateSettings(this.props.session, settings);
+    this.props.updatePreferences(prefs);
 
   }
 
@@ -209,7 +264,7 @@ class App extends Component {
   };
 
 
-  renderSignUpSignIn() {
+  renderSignUpSignIn = () => {
     return (
       // <div>
       //   <Navbar />
@@ -220,9 +275,99 @@ class App extends Component {
     );
   }
 
-  renderApp(classes) {
+  // getTrelloToken() {
+  //   return ( <TrelloTokenDialogContainer /> );
+  // }
+
+  trelloAuthSuccess = () => {
+    const trelloToken = localStorage.getItem('trello_token');
+    // console.log('Successful authentication', trello_token);
+    this.setState({ trelloToken: trelloToken }, ()=> {
+      this.props.initiateTrello(trelloToken);
+    });
+
+  };
+
+  trelloAuthFailure = () => {
+    console.log('Failed authentication');
+  };
+
+  boxAuthWindow = window;
+  BoxAuth = () => {
     return (
-      <BrowserRouter>
+      <Grid container style={{height:'100%'}} direction='column' justify='center' alignItems='center' spacing={40}>
+        <Grid item>
+          <h3>{this.props.session.first_name}, Webtools needs to get box authorization from you.  This will enable webtools to create folders on your behalf.</h3>
+        </Grid>
+        <Grid item>
+          <Button disabled={this.state.boxAuthClicked} variant='contained' onClick={()=>{
+            this.setState({boxAuthClicked:true})
+            this.boxAuthWindow.open(`http://localhost:3001/boxauth/${this.props.session.id}`,'Box Auth', 'width=600,height=600')
+          }}>
+            {this.state.boxAuthClicked?'Refresh Screen':'Authorize Box'}
+          </Button>
+        </Grid>
+      </Grid>
+    )
+  }
+  BoxAuthComplete = (props) => {
+    return (
+      <Grid container style={{height:'100%'}} direction='column' justify='center' alignItems='center' spacing={40}>
+        <Grid item>
+          <h3>Almost Done!  Click button to save token.</h3>
+          <h3>Then refresh previous screen</h3>
+        </Grid>
+        <Grid item>
+          <Button variant='contained' onClick={()=>this.boxSuccess(props)}>
+            Save
+          </Button>
+        </Grid>
+      </Grid>
+    )
+  }
+  boxSuccess = (props) => {
+    console.log('boxSuccess',props.match.params);
+    localStorage.setItem('box_token', props.match.params.token);
+    this.setState({ boxToken: props.match.params.token });
+    this.boxAuthWindow.close();
+  }
+
+  renderBoxAuth(classes) {
+    return (
+        <Fragment>
+        <HeaderContainer toggleDrawer = {this.toggleDrawer} navOpen = {this.state.open} updateAccentColor={this.updateAccentColor}/>
+        <Grid container className={classes.appBody}>
+          <Drawer
+            open={this.state.open}
+            variant='persistent'
+            classes={{
+              paper: classes.navBar,
+            }}
+            // anchor='left'
+          >
+            <Navbar />
+          </Drawer>
+          <Grid item xs={12} >
+            <Switch>
+              {/*when you get here, the currentMenu is loaded.*/}
+              <Route path="/boxauthcomplete/:token" component={this.BoxAuthComplete} />
+              <Route path="/" component={this.BoxAuth} />
+            </Switch>
+          </Grid>
+        </Grid>
+        <Footer />
+        </Fragment>
+    );
+  }
+
+  renderApp(classes) {
+    // Test for user reload of page.  Now placed in renderApp
+    if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
+      console.info( "User reloaded page" );
+      window.history.pushState('','',`/`);
+    }
+
+    return (
         <Fragment>
         <HeaderContainer toggleDrawer = {this.toggleDrawer} navOpen = {this.state.open} updateAccentColor={this.updateAccentColor}/>
         <Grid container className={classes.appBody}>
@@ -241,8 +386,27 @@ class App extends Component {
               {/*when you get here, the currentMenu is loaded.*/}
               <Route path="/volumeproject" component={ProjectCustomContainer} />
               <Route path="/customproject" component={ProjectCustomContainer} />
+              <Route path="/inspection" component={InspectionContainer} />
               <Route path="/search" component={SearchContainer} />
+              <Route path="/client" component={ClientContainer} />
+              <Route path="/city" component={CityContainer} />
+              <Route path="/subdivision" component={SubdivisionContainer} />
+              <Route path="/geotech" component={GeotechContainer} />
               <Route path="/underconstruction" component={UnderConstruction} />
+              <Route path="/boxauth" component={UnderConstruction} />
+
+              <Route path="/boxauthcomplete/:token" render={(props) => {
+                return (
+                  <Grid container justify='center' alignItems='center'>
+                    <Grid item>
+                      <h1>Box is validated</h1>
+                      <Button onClick={()=>this.boxSuccess(props)}>
+                        Close window and refresh previous screen
+                      </Button>
+                    </Grid>
+                  </Grid>
+                )}
+              } />
               <Route path="/dashboard" render={() =>
                 <Grid container justify='center' alignItems='center'>
                   <Grid item>
@@ -261,48 +425,8 @@ class App extends Component {
         </Grid>
         <Footer />
         </Fragment>
-      </BrowserRouter>
     );
   }
-
-  // renderApp(classes) {
-  //   return (
-  //     <BrowserRouter>
-  //
-  //       <div className={classes.root}>
-  //         {!this.state.welcome && <HeaderContainer toggleDrawer = {this.toggleDrawer} navOpen = {this.state.open}/>}
-  //         <Grid container className={this.state.welcome? classes.appBodyWide : classes.appBody}>
-  //           <Drawer
-  //             open={this.state.open}
-  //             variant='persistent'
-  //             // anchor='left'
-  //           >
-  //             <div className={classes.toolbar2} />
-  //             <Navbar toggleWelcomeScreen={this.toggleWelcomeScreen} />
-  //           </Drawer>
-  //           <Grid item xs={12}>
-  //             {!this.state.welcome && <div className={classes.toolbar2} />}
-  //             <Switch>
-  //               <Route exact path="/" render={() =>
-  //                 <WelcomeContainer toggleWelcomeScreen={this.toggleWelcomeScreen} />
-  //               } />
-  //               <Route path="/projectmgmt" component={ProjectMgmtContainer} />
-  //               <Route path="/dashboard" render={() =>
-  //                 <Grid container justify='center' alignItems='center'>
-  //                   <Grid item>
-  //                     <h1>The Dashboard</h1>
-  //                   </Grid>
-  //                 </Grid>
-  //               } />
-  //               <Redirect to="/" />
-  //             </Switch>
-  //           </Grid>
-  //         </Grid>
-  //         {!this.state.welcome && <Footer />}
-  //       </div>
-  //     </BrowserRouter>
-  //   );
-  // }
 
   // testFooter(classes) {
   //   return (
@@ -321,22 +445,42 @@ class App extends Component {
   // }
 
   render() {
+    const { classes, session, preferences } = this.props;
+    // const settings = session.userSettings;
+    // localStorage.removeItem('trello_token');
+    // console.log('the trello function',window.Trello);
 
-    const { classes, session } = this.props;
-    const settings = session.userSettings;
 
     // console.log('Render Apps.js',
-    //   'designers:', this.props.designers,
-    //   'revReasonLookup:', this.props.revReasonLookup,
-    //   'revRespLookup:', this.props.revRespLookup,
+      // 'state:', this.state,
+      // 'cities', this.props.cities,
+      // 'designers:', this.props.designers,
+      // 'inspectors:', this.props.inspectors,
+      // 'revReasonLookup:', this.props.revReasonLookup,
+      // 'revRespLookup:', this.props.revRespLookup,
+      // 'preferences', this.props.preferences,
+      // 'organizations', this.props.organizations,
+      // 'session:', session
     // );
 
     // if (session.authInProgress) return null;
     if (this.state.authInProgress) {
-      // console.log('still authenticating');
+      console.info('still authenticating');
+      // console.info('still checking');
       return null;
     }
 
+    // Test to make sure we can render Screen.  Only set to true when
+    // avffControls and avffRelationships are populated.
+    if (!this.state.renderScreen) {
+      console.info('loading views and fields...');
+      return null;
+    }
+
+    const accent = preferences.user.hasOwnProperty('accentColor')?preferences.user.accentColor:
+      preferences.system.hasOwnProperty('accentColor')?preferences.system.accentColor:
+      '#42a5f5';
+    // console.log('accent', accent, preferences);
     let theme = createMuiTheme({
       typography: {
         useNextVariants: true,
@@ -354,8 +498,8 @@ class App extends Component {
           // contrastText: '#fff'
         },
         secondary: {
-          // main: this.state.accentColor,
-          main: !settings?'#42a5f5':settings.accent_color,
+          main: accent,
+          // main: !settings?'#42a5f5':settings.accent_color,
           // main: this.state.accent_color,
           // main: '#42a5f5',
           // main: blue[400],
@@ -404,23 +548,38 @@ class App extends Component {
       },
     });
 
-
     let whatToRender = '';
-    // let whatToRender2 = '';
-    // localStorage.removeItem('token');
 
-    // const theToken = localStorage.getItem('token');
-    // console.log('App Start', this.props.session);
-    // console.log('App Start token', theToken);
-
-    // console.log('authenticated', this.props.session.authenticated)
-
-    // if (!session.authInProgress && session.authenticated) {
     if (session.authenticated) {
-      whatToRender = this.renderApp(classes);
+      console.log('session authenticated and settings loaded.  Render something');
+      const boxToken = localStorage.getItem('box_token')||false;
+
+      if (!this.state.trelloToken) {
+        console.log('Requesting Trello authorization');
+        // whatToRender = this.renderApp(classes);
+        // whatToRender = this.getTrelloToken()
+        window.Trello.authorize({
+          type: 'popup',
+          name: 'CE Webtools',
+          scope: {
+            read: 'true',
+            write: 'true' },
+          expiration: 'never',
+          success: this.trelloAuthSuccess,
+          error: this.trelloAuthFailure
+        });
+      // // Get Box Authorization
+      // } else if (!boxToken) {
+      //   console.log('box token not set')
+      //   whatToRender = this.renderBoxAuth(classes);
+      } else {
+        whatToRender = this.renderApp(classes);
+      }
+
     }
 
     else {
+      console.log('display signup signin');
       whatToRender = this.renderSignUpSignIn();
     }
 
@@ -428,13 +587,12 @@ class App extends Component {
     return (
       <Fragment>
         <CssBaseline />
-        <MuiThemeProvider theme={theme}>
-          {
-            whatToRender
-            // whatToRender2
-          }
-          <AlertDialogContainer />
-        </MuiThemeProvider>
+          <MuiThemeProvider theme={theme}>
+            {
+              whatToRender
+            }
+            <AlertDialogContainer />
+          </MuiThemeProvider>
       </Fragment>
     );
 
@@ -443,77 +601,3 @@ class App extends Component {
 
 }
 export default withStyles(styles)(App);
-
-
-// <Grid item className={classes.navWidth}>
-//   <Navbar handleSignOut = {this.handleSignOut}/>
-// </Grid>
-// <Grid item xs={12} md={11}>
-//   <Switch>
-//     <Route path="/create-start" component={CreateStartContainer} />
-//     <Route path="/" render={() =>
-//       <Grid container justify='center' alignItems='center'>
-//         <Grid item>
-//           <h1>The Dashboard</h1>
-//         </Grid>
-//       </Grid>
-//     } />
-//     <Route render={() => <h1>NOT FOUND!</h1>} />
-//   </Switch>
-// </Grid>
-
-// <Grid container className={classes.appBody}>
-//   <Main />
-// </Grid>
-
-// *** Modified version using Main. ***
-// <BrowserRouter>
-//   <div className={classes.root}>
-//     <Switch>
-//       <Route path="/create-start" component={Main} />
-//       <Route path="/" render={() =>
-//         <Grid container justify='center' alignItems='center'>
-//           <Grid item>
-//             <h1>The Dashboard</h1>
-//           </Grid>
-//         </Grid>
-//       } />
-//       <Route render={() => <h1>NOT FOUND!</h1>} />
-//     </Switch>
-//
-//     <Footer />
-//   </div>
-// </BrowserRouter>
-
-// ** Modified version with Drawer code **
-// <BrowserRouter>
-//   <div className={classes.root}>
-//     <HeaderContainer toggleDrawer = {this.toggleDrawer}/>
-//     <Grid container className={classes.appBody}>
-//       <Drawer
-//         open={this.state.open}
-//         variant='persistent'
-//         // anchor='left'
-//       >
-//         <div className={classes.toolbar2} />
-//         <Navbar />
-//       </Drawer>
-//       <div className={classes.toolbar2} />
-//       <Switch>
-//         <Route path="/projects" component={CreateStartContainer} />
-//         <Route path="/" render={() =>
-//           <Grid container justify='center' alignItems='center'>
-//             <Grid item>
-//               <h1>The Dashboard</h1>
-//             </Grid>
-//           </Grid>
-//         } />
-//         <Route render={() => <h1>NOT FOUND!</h1>} />
-//       </Switch>
-//     </Grid>
-//     <Footer />
-//   </div>
-// </BrowserRouter>
-
-
-// <Route path="/search" component={()=> <ProjectCustomContainer VIEW='TABULAR'/>} />

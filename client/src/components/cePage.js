@@ -11,6 +11,8 @@ import RecentsContainer from '../containers/RecentsContainer';
 import FindContainer from '../containers/FindContainer';
 import { Field2Container } from '../containers/ceFieldContainer';
 
+// import { Redirect } from "react-router-dom"
+
 const drawerWidth = 300;
 
 const styles = theme => ({
@@ -19,7 +21,7 @@ const styles = theme => ({
   },
   container: {
     width: '90%',
-    margin: 'auto',
+    margin: 'auto'
   },
   actionBarContainer: {
     padding: '10px 0px 5px',
@@ -120,16 +122,17 @@ class CePage extends Component {
   }
 
   render() {
-    const { classes, width, findField, topActionBar, bottomActionBar } = this.props;
+    const { classes, width, findField, topActionBarLeft, topActionBarRight, bottomActionBar } = this.props;
 
     return (
       <Fragment>
         <Grid container
           justify='space-between'
+          alignItems='center'
           className={classes.actionBarContainer}
         >
-          <Grid item xs={11} md={3} className={classes.firstAction}>
-            { findField &&
+          <Grid item className={classes.firstAction}>
+          { findField &&
             <Field2Container
               field = {{name: 'find', label: 'Find'}}
               addStyle = {classes.findField}
@@ -137,11 +140,11 @@ class CePage extends Component {
               state = {this.state}
               updateState = {this.updateState}
             />
-            }
+          }
           </Grid>
+          {topActionBarLeft()}
           <Grid item className={classes.grow} />
-          {topActionBar()}
-          <Grid item xs={1}/>
+          {topActionBarRight()}
           {(width !== 'xs' && width !== 'sm') &&
           <Grid item className={classes.lastAction}>
             <Button

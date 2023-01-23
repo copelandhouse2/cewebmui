@@ -56,7 +56,11 @@ class SignUpSignIn extends Component {
       password_confirm: "",
       showPassword: false,
       role: "",
+      requestor: 'Y',
+      designer: null,
+      inspector: null,
       client: "",
+      client_id: 0,
       approved: '',
       tab: 0,
       showError: false,
@@ -100,6 +104,7 @@ class SignUpSignIn extends Component {
         }, "ERROR");
     } else {
         this.setState({ approved: 'PENDING' }, () => {
+          console.log('state', this.state);
           this.props.signUp(this.state);
         });
 
@@ -174,6 +179,7 @@ class SignUpSignIn extends Component {
     const { classes } = this.props;
 
     return (
+
 
       <form className={classes.container} noValidate autoComplete="off">
         <DialogContent>
@@ -297,7 +303,7 @@ class SignUpSignIn extends Component {
             onClick = {this.handleSignUp}
             variant = "contained" color="secondary"
           >
-            Login
+            Sign Up
           </Button>
         </DialogActions>
       </form>
@@ -307,7 +313,15 @@ class SignUpSignIn extends Component {
   signInForm = () => {
     return (
       <div>
-        <DialogContent>
+        <DialogContent
+          onKeyDown={
+            (e) => {
+              if (e.keyCode === 13) {
+                this.handleSignIn();
+              }
+            }
+          }
+        >
           <TextField
             id="email"
             label="Email Address"

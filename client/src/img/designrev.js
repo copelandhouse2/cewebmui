@@ -1,7 +1,7 @@
 import React from 'react';
 
 export const DesignRevSvg = (props) => {
-  console.log('DesignRevSvg', props);
+  // console.log('DesignRevSvg', props);
   return (
     <svg height='24px' width='24px' xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" viewBox="0 0 100 100" enableBackground="new 0 0 100 100" xmlSpace="preserve">
     <path d="M40.4,80.4l-9.3,9.3c-0.4,0.4-0.6,1-0.6,1.5v6.5c0,1.2,1,2.2,2.2,2.2h34.8c1.2,0,2.2-1,2.2-2.2v-6.5  c0-0.6-0.2-1.1-0.6-1.5l-9.3-9.3h33.9c3.6,0,6.5-2.9,6.5-6.5V6.5c0-3.6-2.9-6.5-6.5-6.5h-87C2.9,0,0,2.9,0,6.5v67.4  c0,3.6,2.9,6.5,6.5,6.5H40.4z M65.2,92.2v3.4H34.8v-3.4l11.8-11.8h6.9L65.2,92.2z M6.5,4.3h87c1.2,0,2.2,1,2.2,2.2v58.7H4.3V6.5  C4.3,5.3,5.3,4.3,6.5,4.3z M4.3,73.9v-4.3h91.3v4.3c0,1.2-1,2.2-2.2,2.2h-87C5.3,76.1,4.3,75.1,4.3,73.9z" strokeWidth="3"></path>

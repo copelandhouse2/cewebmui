@@ -70,8 +70,8 @@ class SubdivisionDialog extends Component {
       subdivision: this.props.newValue,  // only seed data.
       city_id: '',
       city: '',
-      created_by: null,
-      last_updated_by: null
+      created_by: this.props.session.id,
+      last_updated_by: this.props.session.id
     };
 
     this.initState = {...this.state};
@@ -86,15 +86,17 @@ class SubdivisionDialog extends Component {
   handleSubmit = () => {
     // console.log('In the handleSubmit');
 
-    this.setState({
-      created_by: this.props.session.id,
-      last_updated_by: this.props.session.id
-    },
-      ()=> {
-        this.props.createSubdivision(this.state);
-        // this.setState({ id: this.setSubdivisionID() });
-      }
-    )
+    // this.setState({
+    //   created_by: this.props.session.id,
+    //   last_updated_by: this.props.session.id
+    // },
+    //   ()=> {
+    //     this.props.createSubdivision(this.state);
+    //     // this.setState({ id: this.setSubdivisionID() });
+    //   }
+    // )
+    this.props.createSubdivision(this.state);
+
     // console.log('after the setState and createSubdivision');
 
     // console.log('1st promise: setState');

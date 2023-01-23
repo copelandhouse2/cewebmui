@@ -43,7 +43,7 @@ const styles = theme => ({
 
 const ceCard = (props) => {
 
-  const { classes, project } = props;
+  const { classes, project, session } = props;
 
   return (
     <Card key={project.id} className={classes.card}>
@@ -89,9 +89,15 @@ const ceCard = (props) => {
           aria-label="Copy"
           color='secondary'
           onClick={(e) => {
-            const scope = project.scope.map(s => Object.assign({}, s, {id: null, project_id: null, scope_id: null}));
+            const scope = project.scope.map(s => Object.assign({}, s, {id: null, project_id: null
+              , revision: null, revision_desc: null, scope_id: null
+              , created_by: session.id, last_updated_by: session.id}));
             const copy = Object.assign({}, project, {address_id: null, id: null
-              , job_number: null, trello_card_id: null, scope: scope});
+              , job_number: null, revision: null, revision_desc: null
+              , trello_card_id: null, scope: scope
+              , contact_id: session.contact_id, requestor: session.full_name
+              , user_id: session.id, user: session.full_name
+              , created_by: session.id, last_updated_by: session.id});
             // console.log('Copy', copy);
             props.updateProject(copy);
           }}
