@@ -87,12 +87,14 @@ export const signUp = (request, response) => {
           const newContact = {
             id: null,
             user_id: result.insertId,
-            client_id: null,
+            client_id: request.body.client_id,
             first_name: request.body.firstName,
             last_name: request.body.lastName,
             email: request.body.email,
             mobile: request.body.mobile,
             other: null,
+            requestor: request.body.requestor,
+            designer: request.body.designer,
             role: request.body.role,
             active: "Y",
             comments: null,
@@ -265,6 +267,29 @@ export const updateSettings = async (request, response) => {
   // console.log('in usercontroller updateSettings', request.params.userID, request.body);
   try {
     const updateResp = await UserModel.updateSettings(request.params.userID, request.body);
+    // console.log('updateSettings response...', updateResp);
+    return response.json(updateResp);
+  } catch (err) {
+    console.log('SQL query error users_settings', err);
+    return response.json(err);
+  }
+}
+
+export const getPreferences = async (request, response) => {
+
+  try {
+    const prefs = await UserModel.getPreferences(request.params.userID);
+    // console.log('Data retrieved...', prefs);
+    return response.json(prefs);
+  } catch (err) {
+    return response.json(err);
+  }
+}
+// function to update a user.
+export const updatePreferences = async (request, response) => {
+  console.log('in usercontroller updatePreferences', request.params.userID, request.body);
+  try {
+    const updateResp = await UserModel.updatePreferences(request.params.userID, request.body);
     // console.log('updateSettings response...', updateResp);
     return response.json(updateResp);
   } catch (err) {

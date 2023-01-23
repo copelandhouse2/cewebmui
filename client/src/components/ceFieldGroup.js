@@ -17,7 +17,7 @@ import addIconWhite from '../img/add1-white.svg';
 
 import Minus from '@material-ui/icons/RemoveRounded';
 
-// import { DesignRevSvg } from '../img/revise';
+import { DesignRevSvg } from '../img/revise';
 import { SaveUpload } from '../img/saveUpload';
 
 import { Field2Container, ColumnContainer } from '../containers/ceFieldContainer';
@@ -28,15 +28,24 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Collapse from '@material-ui/core/Collapse';
 import Divider from '@material-ui/core/Divider';
 
+// import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
+// import Switch from '@material-ui/core/Switch';
+// import RadioGroup from '@material-ui/core/RadioGroup';
+// import Radio from '@material-ui/core/Radio';
+
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
-import Checkbox from '@material-ui/core/Checkbox';
+import ClearIcon from '@material-ui/icons/Clear';
+import { AddIcon } from '../img/addIcon.js';
+import { Sort, SortAsc, SortDesc } from '../img/sort.js';
+
 import IconButton from '@material-ui/core/IconButton';
 
 import Toolbar from '@material-ui/core/Toolbar';
 
 // import SettingsIcon from '@material-ui/icons/Settings';
-import TrackChangesIcon from '@material-ui/icons/TrackChanges';
+// import TrackChangesIcon from '@material-ui/icons/TrackChanges';
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -48,11 +57,18 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 // import RootRef from "@material-ui/core/RootRef";
 
 import Fade from '@material-ui/core/Fade';
+// import Zoom from '@material-ui/core/Zoom';
 
 import Delete from '@material-ui/icons/Delete';
 import Edit from '@material-ui/icons/Edit';
 import Save from '@material-ui/icons/Save';
 import Cancel from '@material-ui/icons/Cancel';
+// import { Exit } from '../img/exit.js';
+
+
+// Custom Field Groups
+export * from './ceFieldGroupTrello';
+export * from './ceFieldGroupInspection.new';
 
 const {
   DraggableHeader: { DraggableContainer }
@@ -145,6 +161,7 @@ const styles = theme => ({
   },
   titleFG: {
     paddingBottom: 20,
+    // fontSize: 32
     // width: 100
   },
   grow: {
@@ -157,7 +174,7 @@ const styles = theme => ({
     color: theme.palette.secondary.main,
   },
   revButton: {
-    color: theme.palette.secondary.main,
+    // color: theme.palette.secondary.main,
   },
   tableActionProps: {
     paddingLeft:0,
@@ -205,17 +222,20 @@ const styles = theme => ({
     left: 36*0,
     position: 'sticky',
     zIndex: 1100,
-    minWidth:36,
+    minWidth:36, // weirdly, need this if object is empty.  Width alone wont do it.  It will be 0.
+    width:36     // added to help with the revision table dialog box.
   },
   hCol1: {
     left: 36*1,
     zIndex: 1100,
-    minWidth:36,
+    minWidth:36, // weirdly, need this if object is empty.  Width alone wont do it.  It will be 0.
+    width:36     // added to help with the revision table dialog box.
   },
   hCol2: {
     left: 36*2,
     zIndex: 1100,
-    minWidth:36,
+    minWidth:36, // weirdly, need this if object is empty.  Width alone wont do it.  It will be 0.
+    width:36     // added to help with the revision table dialog box.
   },
   hCol2xl: {
     left: 36*2,
@@ -225,7 +245,8 @@ const styles = theme => ({
   hCol3: {
     left: 36*3,
     zIndex: 1100,
-    minWidth:36,
+    minWidth:36, // weirdly, need this if object is empty.  Width alone wont do it.  It will be 0.
+    width:36     // added to help with the revision table dialog box.
   },
   hCol3xl: {
     left: 36*4+6,
@@ -285,6 +306,7 @@ const styles = theme => ({
   tableSize: {
     // width: '100%',
     maxHeight: 530,
+    minHeight: 400,
     overflowX: 'auto',
 
   },
@@ -308,6 +330,40 @@ const styles = theme => ({
   dropHeader: {
 
   },
+  listHeader: {
+    // fontSize: 30,
+    // textAlign: 'right',
+    // background: theme.palette.secondary.dark,
+    fontWeight: 600,
+    color: theme.palette.secondary.contrastText,
+    // paddingTop: 8,
+    // marginTop: 0,
+    // width: '100%',
+    // height: '100%',
+    backgroundColor: theme.palette.secondary.main
+  },
+  listHeaderColumn: {
+    [theme.breakpoints.up("xs")]: {
+      fontSize: 13,
+    },
+    [theme.breakpoints.up("md")]: {
+      fontSize: 16,
+    },
+    cursor: 'default',
+    // textAlign: 'center',
+    // background: theme.palette.secondary.dark,
+    // fontWeight: 600,
+    // color: theme.palette.secondary.contrastText,
+    // paddingTop: 8,
+    // marginTop: 0,
+    // width: '100%',
+    // height: '100%',
+  },
+  inspFieldRow: {
+    padding: 20,
+    // paddingBottom: 20
+  },
+
 });
 
 const reorder = (list, startIndex, endIndex) => {
@@ -348,12 +404,9 @@ const toTitleCase = (str) => {
     );
 }
 
-// const handleSettings = (fg) => {
-//   // console.log('In handleSettings', fg);
-// }
-
-const defaultFG = (props) => {
-  const { classes, fieldGroup, removeScope } = props;
+export const FieldGroup = withStyles(styles, { withTheme: true })(
+(props) => {
+  const { classes, fieldGroup, removeScope, theme } = props;
   // console.log(fieldGroup);
   switch(fieldGroup.name) {
     case 'soil':
@@ -379,12 +432,12 @@ const defaultFG = (props) => {
               {fieldGroup.label}
             </Typography>
             <div className={classes.grow} />
-            {(fieldGroup.name === 'project'||fieldGroup.name === 'vol_single_project') &&
+            {(fieldGroup.name === 'story'||fieldGroup.name === 'vol_single_project') &&
               <Tooltip title={'Manage Revisions'} aria-label='Manage Revisions'>
-              <IconButton aria-label='Manage Revisions' onClick={props.reviseProject} className={classes.revButton}>
-                {/*<DesignRevSvg size={32} color={theme.palette.secondary.main} />*/}
-                <TrackChangesIcon className={classes.settings} />
-              </IconButton>
+                <Fab size='small' color='secondary' aria-label='Manage Revisions' className={classes.revButton} onClick={props.reviseProject}>
+                  <DesignRevSvg size={26} color={theme.palette.secondary.contrastText} />
+                  {/*<TrackChangesIcon className={classes.settings} />*/}
+                </Fab>
               </Tooltip>
             }
             {/*
@@ -402,6 +455,7 @@ const defaultFG = (props) => {
       )
   }
 }
+);
 
 const soilFG = (props) => {
   const { classes, fieldGroup, theme } = props;
@@ -422,7 +476,8 @@ const soilFG = (props) => {
   )
 }
 
-class fieldGroupTabular extends Component {
+export const FieldGroupTabular = withStyles(styles, { withTheme: true })(
+class extends Component {
   constructor(props) {
     super(props);
 
@@ -618,14 +673,14 @@ class fieldGroupTabular extends Component {
 
     )
   }  // render
-}
+});
 
 // Table Column Bar is the Droppable area.  Procedure uses implicit return.
 const DroppableComponent = (onDragEnd: (result, provided) => void, classes) => (props) => (
   <DragDropContext onDragEnd={onDragEnd}>
     <Droppable droppableId={'1'} direction="horizontal">
       {(provided) => {
-        // console.log('Droppable', provided, props);
+        // console.log('Droppable', classes);
         return (
           <tr ref={provided.innerRef} {...provided.droppableProps} {...props} className={classes.dropHeader}>
             {props.children}
@@ -711,16 +766,30 @@ class extends Component {
     super(props);
 
     this.state = {
-      columns: [],
-      expand: []
+      columns: this.props.fieldGroup.children,
+      expand: [],
+      editedRows: [],
     };
 
     this.initState = {...this.state};
+
+    this.INIT_REC = {
+      change: 'add',
+      id: null,
+      created_by: this.props.parentState.created_by,
+      last_updated_by: this.props.parentState.last_updated_by,
+    };
+
   }
 
   componentDidMount = () => {
-
-    this.setState({ columns: this.props.fieldGroup.children });
+    // console.log('CDM', this.props.fieldGroup.children);
+    let edited = [...this.state.editedRows];
+    if (this.props.allowAdd) {
+      // this.theData.unshift({});
+      edited.unshift(this.INIT_REC);
+    }
+    this.setState({ columns: this.props.fieldGroup.children, editedRows: edited });
   }
 
   onRowSelected = row => {
@@ -778,14 +847,97 @@ class extends Component {
     this.setState({ expand: expandArr });
   }
 
+  handleRowChange = (updatedValues, arrID)=> {
+    // console.log('handleRowChange', updatedValues);
+    if (updatedValues.openDupsDialog) {
+      // console.log('opening dups dialog');
+      this.props.updateState({...updatedValues, dupRec: this.state.editedRows[arrID]});
+    }
+
+    let edited = [...this.state.editedRows];
+    edited[arrID] = {...edited[arrID], ...updatedValues};
+    // console.log('handleRowChange', edited);
+    this.setState({ editedRows: edited });
+    // this.props.handleRowChange(updatedValues, arrID);
+  }
+
+  handleEdit = (row)=> {
+    let edited = [...this.state.editedRows];
+    // trying to do a deep copy here.  Copying scope separately since it is an
+    // array by itself.
+    // const scope = edited[row]?[...edited[row].scope]:[...this.props.data[row].scope];
+    const editRow = edited[row]?edited[row]:{...this.props.data[row]};
+    // const theRow = Object.assign({}, {...editRow}, {scope: scope});
+    const theRow = Object.assign({}, {...editRow, change: editRow.id?'edit':'add'});
+
+    edited[row] = {...theRow}
+    // console.log('handleEdit... edited', edited[row], Object.keys(edited));
+    this.setState({ editedRows: edited });
+    // this.props.handleEdit(row);
+  }
+
+  handleSave = (row, andCommit = false)=> {
+    // console.log('Save project ', this.state.editedRows[row]);
+    // updating local state.
+    let edited = [...this.state.editedRows];
+    edited[row] = this.props.allowAdd && row===0?this.INIT_REC:undefined;
+
+    // we pass one row.  However, it is received as an Array
+    // in case we want to pass a group of rows.
+    // see handleSaveAll
+    let rowToPass = [];
+    rowToPass.push(this.state.editedRows[row]);
+
+    this.setState({ editedRows: edited });
+    this.props.handleSave(rowToPass, andCommit);
+
+  }
+
+  handleDelete = (row)=> {
+    // console.log('FG: Delete project field group', row);
+    this.props.handleDelete(row);
+  }
+
+  handleCancel = (row)=> {
+    let edited = [...this.state.editedRows];
+    edited[row] = undefined;
+    // console.log('handleCanel... edited', edited, Object.keys(edited));
+
+    this.setState({ editedRows: edited });
+    // this.props.handleCancel(row);
+  }
+
   render() {
-    const { classes, theme, fieldGroup, data, parentState, subGroupKey, subFG, fgTools } = this.props;
-    // console.log('FG tabular state', fieldGroup, this.state);
+    const { classes, theme, fieldGroup, data, parentState, subGroupKey
+      , subFG, fgTools, saveHelp, editHelp, deleteHelp } = this.props;
+    // console.log('FG tabular state', fieldGroup, data, this.state.columns);
     // console.log('FG tabular state sub table', subGroupKey, subFG);
+
+    // const editedRows = this.state.editedRows.filter(r=>{
+    //   if (r) return r;
+    //   return null;
+    // });
+    // const editActive = editedRows.length>0?true:false;
+    // console.log('FG tabular edited rows', editedRows);
+
+
+    // Code to set the column widths correctly based on which columns are active.
+    let hdr0 = classes.hCol0, hdr1 = classes.hCol1, hdr2 = classes.hCol2, hdr3 = classes.hCol3;
+    let clm0 = classes.col0, clm1 = classes.col1, clm2 = classes.col2, clm3 = classes.col3;
+    if (!subGroupKey && !parentState.selectedIndexes) {
+      hdr2 = classes.hCol0; hdr3 = classes.hCol1;
+      clm2 = classes.col0; clm3 = classes.col1;
+    } else if (!subGroupKey) {
+      hdr1 = classes.hCol0; hdr2 = classes.hCol1; hdr3 = classes.hCol2;
+      clm1 = classes.col0; clm2 = classes.col1; clm3 = classes.col2;
+    } else if (!parentState.selectedIndexes) {
+      hdr0 = classes.hCol0; hdr2 = classes.hCol1; hdr3 = classes.hCol2;
+      clm0 = classes.col0; clm2 = classes.col1; clm3 = classes.col2;
+    }
 
     return (
       <Grid container justify='center'>
-        <Grid item xs={12} style={ {marginTop: 20, marginBottom: 10, borderTop: '1px solid black'} }>
+        <Grid item xs={12} style={ this.props.fgStyles? this.props.fgStyles:{marginTop: 0, marginBottom: 0, borderTop: '0px solid black'} }>
           <Toolbar variant='dense' className={classes.toolbar}>
             <Typography align='left' style={{fontWeight: 500}} className={classes.titleFG}>
               {fieldGroup.label}
@@ -799,9 +951,16 @@ class extends Component {
         <Paper className={classes.tableSize}>
           <Table>
             <TableHead>
-              <TableRow component={DroppableComponent(this.onDragEnd)}>
-                <TableCell padding='checkbox' classes={{root: classes.tableCellHeaderProps}}/>
-                <TableCell padding='checkbox' classes={{root: classes.tableCellHeaderProps}}/>
+              <TableRow component={DroppableComponent(this.onDragEnd, classes)}>
+                {subGroupKey &&
+                  <TableCell padding='checkbox' classes={{root: `${classes.tableCellHeaderProps} ${hdr0}`}}/>
+                }
+                {parentState.selectedIndexes &&
+                  <TableCell padding='checkbox' classes={{root: `${classes.tableCellHeaderProps} ${hdr1}`}}/>
+                }
+                <TableCell padding='checkbox' classes={{root: `${classes.tableCellHeaderProps} ${hdr2}`}}/>
+                <TableCell padding='checkbox' classes={{root: `${classes.tableCellHeaderProps} ${hdr3}`}}/>
+
                 {this.state.columns.map((c,i)=>(
                   <TableCell
                     key={c.name}
@@ -821,34 +980,125 @@ class extends Component {
                 // if (parentState.scope) {
                 //   childRec = r.scope.find(s=>s.scope === parentState.scope);
                 // }
-                // console.log('row',r, childRec);
+                // console.log('row',r);
                 return (
                   <Fragment key={ri}>
                   <TableRow key={ri}>
-                    <TableCell padding='checkbox' className={classes.tableActionProps}>
-                      <IconButton aria-label='Expand' onClick={()=>this.handleExpand(ri)}>
+                    {subGroupKey &&
+                    <TableCell padding='checkbox' className={`${classes.tableActionProps} ${clm0}`}>
+                      <IconButton aria-label='Expand'
+                        onClick={()=>this.handleExpand(ri)}
+                        className={classes.actionButtons}
+                      >
                         {this.state.expand[ri] ? <ExpandLess /> : <ExpandMore />}
                       </IconButton>
                     </TableCell>
-                    <TableCell padding='checkbox' className={classes.tableActionProps}>
+                    }
+                    {parentState.selectedIndexes &&
+                    <TableCell padding='checkbox' className={`${classes.tableActionProps} ${clm1}`}>
                       <Checkbox
                         onChange={()=>this.onRowSelected(ri)}
-                        checked={parentState.selectedIndexes[0]===ri}
+                        // checked={parentState.selectedIndexes[0]===ri}
+                        className={classes.actionButtons}
                       />
                     </TableCell>
-                    {this.state.columns.map((c,i)=>{
-                      return (
-                        <TableCell
-                          key={i}
-                          // padding='none'
-                          classes={{root: classes.tableCellProps}}
-                        >
-                          {r[c.name]}
-                        </TableCell>
-                      )
-                      })
                     }
+
+                    <TableCell padding='checkbox' className={`${classes.tableActionProps} ${clm2}`}>
+                      {!this.state.editedRows[ri] && //parentState.editMode[ri]
+                      <Tooltip title={editHelp?editHelp:'Edit the project here'} aria-label='Edit the project here'>
+                      <IconButton aria-label='Expand'
+                        onClick={()=>this.handleEdit(ri)}
+                        className={classes.actionButtons}
+                      >
+                        <Edit />
+                      </IconButton>
+                      </Tooltip>
+                      }
+                      {this.state.editedRows[ri] && //parentState.editMode[ri]
+                      <Tooltip title={saveHelp?saveHelp:'Just Save the project.  Changes not sent to Trello or Box yet.  Project status will be PENDING'} aria-label='Just Save the project.  Changes not sent to Trello or Box yet.  Project status will be PENDING'>
+                        <IconButton aria-label='Expand'
+                          onClick={()=>this.handleSave(ri)}
+                          className={classes.actionButtons}
+                        >
+                          <Save />
+                        </IconButton>
+                      </Tooltip>
+                      }
+                    </TableCell>
+                    <TableCell padding='checkbox' className={`${classes.tableActionProps} ${clm3}`}>
+                    {!this.state.editedRows[ri] && //parentState.editMode[ri]
+                      <Tooltip title={deleteHelp?deleteHelp:'Delete the project'} aria-label='Delete the project'>
+                        <IconButton aria-label='Expand'
+                          onClick={()=>this.handleDelete(ri)}
+                          className={classes.actionButtons}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </Tooltip>
+                      }
+                      {this.state.editedRows[ri] && !(this.props.allowAdd && ri === 0) && //parentState.editMode[ri]
+                      <Tooltip title='Cancel changes' aria-label='Cancel changes'>
+                        <IconButton aria-label='Expand'
+                          onClick={()=>this.handleCancel(ri)}
+                          className={classes.actionButtons}
+                        >
+                          <Cancel />
+                        </IconButton>
+                      </Tooltip>
+                      }
+                    </TableCell>
+
+                    {this.state.columns.map((c,ci)=>{
+                      // console.log('col',c.name, r[c.name]);
+
+                      if (this.state.editedRows[ri]) {
+                        return (
+                        <TableCell
+                          key={ci}
+                          // padding='none'
+                          classes={{root: `${classes.tableCellProps}`}}
+                        >
+                        <ColumnContainer
+                          key={ci}
+                          field = {c}
+                          childArrID = {false}
+                          // state = {parentState.editedRows[ri]}
+                          state = {this.state.editedRows[ri]}
+                          updateState = {(updatedValues)=>this.handleRowChange(updatedValues, ri)}
+                          dupCheck={false} // turn on dup check
+                          // turns off updating job number and creating client,city,sub via list
+                          searchMode={false}
+                          // props that are not used.
+                          handleListChange={false}
+                          handleFocus={false}
+                          handleBlur={false}
+                          // call to create new client, city, sub
+                          createDialogValue={false}
+                          altLookups={parentState.altLookups}
+
+                          // props functions in container
+                          // searchForDups
+                          // loadFind
+                          // loadMessage
+                        />
+                        </TableCell>
+                        )
+                      } else {
+                        return (
+                          <TableCell
+                            key={ci}
+                            // padding='none'
+                            classes={{root: classes.tableCellProps}}
+                          >
+                            {r[c.name]}
+                          </TableCell>
+                        )
+                      }
+
+                    }) }
                   </TableRow>
+                  {subGroupKey &&
                   <ChildDetailTable
                     pIdx={ri}
                     pRow={r}
@@ -856,6 +1106,7 @@ class extends Component {
                     subFG={subFG}
                     state={this.state}
                   />
+                  }
                   </Fragment>
                 )
               })}
@@ -978,10 +1229,10 @@ class extends Component {
 
   handleRowChange = (updatedValues, arrID)=> {
     // console.log('handleRowChange', updatedValues);
-    if (updatedValues.openDupsDialog) {
-      // console.log('opening dups dialog');
-      this.props.updateState({...updatedValues, dupRec: this.state.editedRows[arrID]});
-    }
+    // if (updatedValues.openDupsDialog) {
+    //   // console.log('opening dups dialog');
+    //   this.props.updateState({...updatedValues, dupRec: this.state.editedRows[arrID]});
+    // }
 
     let edited = [...this.state.editedRows];
     edited[arrID] = {...edited[arrID], ...updatedValues};
@@ -1061,9 +1312,19 @@ class extends Component {
       <Grid container justify='center'>
         <Grid item xs={12} style={ {marginTop: 10, marginBottom: 10, borderTop: '1px solid black'} }>
           <Toolbar variant='dense' className={classes.toolbar}>
+
+            {data.length>0?
+              <Tooltip placement="top-start" title={`Default limit 200.  Override by a) Find field 'limit:[value]' or b) Last Updated drop down`} aria-label='default limit 200'>
+                <Typography align='left' style={{fontWeight: 500}} className={classes.titleFG}>
+                  {`${fieldGroup.label} (${data.length} results)`}
+                </Typography>
+              </Tooltip>
+            :
             <Typography align='left' style={{fontWeight: 500}} className={classes.titleFG}>
               {fieldGroup.label}
             </Typography>
+            }
+
             <div className={classes.grow} />
             {fgTools?fgTools():null}
           </Toolbar>
@@ -1263,20 +1524,23 @@ class extends Component {
 
 export const DefaultFG = withStyles(styles, { withTheme: true })(
 (props) => {
-  const { classes, fieldGroup, state, updateState, hide, fgTools, fieldTools } = props;
+  const { classes, fieldGroup, state, updateState, hide
+    , fgTools, fieldTools, findAction, noBorder, noLabel } = props;
   // const { classes, theme, fieldGroup, state, updateState, hide, fgTools, fieldTools } = props;
   // const { classes, theme, fieldGroup, toggleScopeDialog, removeScope, dialogState, scopeID, updateState } = props;
-  // console.log('DefaultFG', hide);
+  // console.log('DefaultFG', findAction);
 
   if (hide) return null;  // hide the field group.
 
   return (
     <Grid container>
-      <Grid item xs={12} style={ {marginTop: 10, marginBottom: 0, borderTop: '1px solid black'} }>
+      <Grid item xs={12} style={ noBorder?{marginTop:0}:{marginTop: 10, marginBottom: 0, borderTop: '1px solid black'} }>
         <Toolbar variant='dense' className={classes.toolbar}>
+          {!noLabel &&
           <Typography align='left' style={{fontWeight: 500}} className={classes.titleFG}>
             {fieldGroup.label}
           </Typography>
+          }
           <div className={classes.grow} />
           {fgTools?fgTools():null}
         </Toolbar>
@@ -1290,6 +1554,9 @@ export const DefaultFG = withStyles(styles, { withTheme: true })(
               arrID = {false}
               state = {state}
               updateState = {updateState}
+              // find action.  Only used when searching an object, like
+              // projects, geotechs, subdivisions, clients, etc.
+              findAction={findAction}
               // turns off dup check, creating client,city,sub via list
               searchMode={true}
               // props that are not used.
@@ -1313,7 +1580,8 @@ export const DefaultFG = withStyles(styles, { withTheme: true })(
       </Grid>
     </Grid>
   )
-})
+}
+)
 
 export const DialogDefaultFG = withStyles(styles, { withTheme: true })(
 (props) => {
@@ -1323,20 +1591,22 @@ export const DialogDefaultFG = withStyles(styles, { withTheme: true })(
 
   return (
     <Grid container>
-      <Grid item xs={12} style={ {marginTop: 20, marginBottom: 20, borderTop: '1px solid black'} }>
+      <Grid item xs={12} style={ props.fgStyles? props.fgStyles:{marginTop: 20, marginBottom: 20, borderTop:'1px solid black'} }>
         <Typography align='left' style={{fontWeight: 500}}>
-          {fieldGroup.label}
+          {!props.hideLabel?fieldGroup.label:null}
         </Typography>
       </Grid>
       <Grid item xs={12}>
-        <Grid container spacing={16}>
+        <Grid container spacing={32}>
           {fieldGroup.children.map((field, id)=>{
+            console.log('in DialogDefaultFG', field);
             return (<Field2Container
               key={field.id}
               field = {field}
               arrID = {false}
               state = {dialogState}
               updateState = {updateState}
+              noGridWrap = {true}
               // props that are not used.
               loadFind={()=>{}}
               searchForDups={()=>{}}
@@ -1349,7 +1619,8 @@ export const DialogDefaultFG = withStyles(styles, { withTheme: true })(
     </Grid>
 
   )
-})
+}
+)
 
 export const RevUpdateFG = withStyles(styles, { withTheme: true })(
 class extends Component {
@@ -1363,24 +1634,37 @@ class extends Component {
     this.initState = {...this.state};
   }
 
-  handleClick = () => {
-    this.setState({ open: !this.state.open })
+  handleClear = () => {
+    // console.log('In handleClear');
+    // this.setState({ open: !this.state.open })
+    this.props.clearState();
+  }
+
+  handleSave = () => {
+    // console.log('In handleSave');
+    // this.setState({ open: !this.state.open });
+
+    // the save function passed takes an array to allow saving multiple
+    // rows at a time.
+    const rows = [];
+    rows.push(this.props.parentState)
+    this.props.saveState(rows);
   }
 
   toggleCheckbox = () => {
-    const { dialogState, updateState } = this.props;
-    updateState( { checkboxCopyDesc: !dialogState.checkboxCopyDesc })
+    const { parentState, updateState } = this.props;
+    updateState( { checkboxCopyDesc: !parentState.checkboxCopyDesc })
   }
 
   render() {
-    const { classes, fieldGroup, dialogState, updateState } = this.props;
+    const { fieldGroup, parentState, updateState } = this.props;
     // const { classes, theme, fieldGroup, dialogState, updateState } = this.props;
     // const { classes, theme, fieldGroup, toggleScopeDialog, removeScope, dialogState, scopeID, updateState } = props;
-    // console.log(fieldGroup);
+    // console.log('RevUpdateFG', dialogState.altLookups);
     let i=0;
     return (
       <Grid container>
-        {/*}<Grid item xs={12} style={ {marginTop: 20, marginBottom: 20, borderTop: '1px solid black'} }>
+        {/*<Grid item xs={12} style={ {marginTop: 20, marginBottom: 20, borderTop: '1px solid black'} }>
           <Typography align='left' style={{fontWeight: 500}}>
             {fieldGroup.label}
           </Typography>
@@ -1388,7 +1672,6 @@ class extends Component {
         <Grid item xs={12}>
           <List dense={true}>
             <ListItem key={i} >
-              <ListItemText className={classes.listItemText} primary='Project'/>
               {fieldGroup.children.map((field, id)=>{
                 if (field.hidden === 'Y') return null;
                 return (
@@ -1397,53 +1680,65 @@ class extends Component {
                     // key={field.id}
                     field = {field}
                     arrID = {false}
-                    state = {dialogState}
+                    state = {parentState}
                     updateState = {updateState}
+                    altLookups={parentState.altLookups.find(f=>f.name === field.name)?parentState.altLookups:null}
                     // props that are not used.
                     loadFind={()=>{}}
                     searchForDups={()=>{}}
                     loadMessage={()=>{}}
-
                   />);
               })}
+              {/*}
               <Tooltip title='Cascade description to scope items' aria-label='Cascade Description'>
                 <Checkbox
                   onChange={this.toggleCheckbox}
                   checked={dialogState.checkboxCopyDesc}
                 />
               </Tooltip>
-              <IconButton aria-label='Expand' onClick={this.handleClick}>
-                {this.state.open ? <ExpandLess /> : <ExpandMore />}
-              </IconButton>
+              */}
+              <Tooltip title='Clear the selection' aria-label='Clear selection'>
+                <IconButton aria-label='Clear' onClick={this.handleClear} color='secondary' >
+                  <ClearIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title='Add Revison' aria-label='Add Revision'>
+                <IconButton aria-label='Add' onClick={this.handleSave} color='secondary' >
+                  <AddIcon size={30} />
+                </IconButton>
+              </Tooltip>
             </ListItem>
-            <Collapse in={this.state.open} timeout='auto'>
-            {dialogState.scope.map((scope,scopeID)=>{
-              return (
-                <ListItem key={i++}>
-                <ListItemText inset className={classes.listInset} primary={scope.label||toTitleCase(scope.scope)}/>
-                {fieldGroup.children.map((field, id)=>{
-                  // console.log('child', field, scopeID);
-                  if (field.hidden === 'Y') return null;
-                  if (field.name === 'revision_price') return null; // don't show revision price at scope level
-                  return (<Field2Container
-                    // key={field.id*(scopeID+2)}
-                    key={id}
-                    field = {field}
-                    arrID = {scopeID||scopeID===0?scopeID:false}
-                    state = {dialogState}
-                    updateState = {updateState}
-                    // props that are not used.
-                    loadFind={()=>{}}
-                    searchForDups={()=>{}}
-                    loadMessage={()=>{}}
+            {/*
+              <Collapse in={this.state.open} timeout='auto'>
+              {dialogState.scope.map((scope,scopeID)=>{
+                return (
+                  <ListItem key={i++}>
+                  <ListItemText inset className={classes.listInset} primary={scope.label||toTitleCase(scope.scope)}/>
+                  {fieldGroup.children.map((field, id)=>{
+                    // console.log('child', field, scopeID);
+                    if (field.hidden === 'Y') return null;
+                    if (field.name === 'revision_price') return null; // don't show revision price at scope level
+                    return (<Field2Container
+                      // key={field.id*(scopeID+2)}
+                      key={id}
+                      field = {field}
+                      arrID = {scopeID||scopeID===0?scopeID:false}
+                      state = {dialogState}
+                      updateState = {updateState}
+                      // props that are not used.
+                      loadFind={()=>{}}
+                      searchForDups={()=>{}}
+                      loadMessage={()=>{}}
 
-                  />);
-                })}
-              </ListItem>
-              )
-            })
-            }
-            </Collapse>
+                    />);
+                  })}
+                </ListItem>
+                )
+              })
+              }
+              </Collapse>
+            */}
+
             <Divider />
 
           </List>
@@ -1474,8 +1769,9 @@ class extends Component {
   render() {
     const { fieldGroup, history } = this.props;
     // const { classes, theme, fieldGroup, toggleScopeDialog, removeScope, dialogState, scopeID, updateState } = props;
-    // console.log('RevHistoryFG render', this.state);
+    // console.log('RevHistoryFG render', this.state, history);
     // let i=500;
+    // return null;
     return (
       <Grid container>
         {/*<Grid item xs={12} style={ {marginTop: 20, marginBottom: 20, borderTop: '1px solid black'} }>
@@ -1523,6 +1819,661 @@ class extends Component {
 }  // class
 )  // end of the withStyles wrapper
 
-export const FieldGroup = withStyles(styles, { withTheme: true })(defaultFG);
-export const FieldGroupTabular = withStyles(styles, { withTheme: true })(fieldGroupTabular);
-// export const FieldGroup2 = withStyles(styles, { withTheme: true })(fieldGroup2);
+export const ListTabularFG = withStyles(styles, { withTheme: true })(
+class extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+
+    };
+
+    this.initState = {...this.state};
+  }
+
+  handleClick = (item) => {
+    this.setState({ [item.id]: !this.state[item.id] })
+  }
+
+  labelHeader = (field,fieldSupportsSort=true) => {
+    const { theme, parentState } = this.props;
+    const { sort } = parentState;
+
+    return (
+      sort&&fieldSupportsSort?
+      <Fragment>
+        {field.label}
+        {field.name === sort.field?
+          sort.direction==='A'?
+          <SortAsc style={{marginLeft:5, verticalAlign:'text-bottom'}} size={20} color={theme.palette.secondary.contrastText} />
+          : <SortDesc style={{marginLeft:5, verticalAlign:'text-bottom'}} size={20} color={theme.palette.secondary.contrastText} />
+        : <Sort style={{marginLeft:5, verticalAlign:'text-bottom'}} size={20} color={theme.palette.secondary.contrastText} />
+        }
+      </Fragment>
+      :
+      <Fragment>{field.label}</Fragment>
+
+    )
+  }
+
+  render() {
+    const { classes, title, titleStyles, fieldGroup
+      , primaryFields, nestedFields, fgStyles, fgTools } = this.props;
+    const { parentState, data, sort, handleAddEdit } = this.props;
+    // const { classes, theme, fieldGroup, toggleScopeDialog, removeScope, dialogState, scopeID, updateState } = props;
+    // console.log('ListTabular render', data);
+    // let i=500;
+    // return null;
+    const listFields = primaryFields?primaryFields:fieldGroup.children;
+    // const subFields = nestedFields?nestedFields:[];
+    // console.log('ListTabular fields', primaryFields, listFields, nestedFields);
+    return (
+      <Grid container>
+        <Grid item xs={12} style={ fgStyles? fgStyles:{marginTop: 0, marginBottom: 0, borderTop: '0px solid black'} }>
+          <Toolbar variant='dense' className={classes.toolbar}>
+            <Typography align='left' style={ titleStyles?titleStyles:{font: 'italic bold 20px "Roboto"',paddingBottom:20} } >
+              {title?title:fieldGroup.label}
+            </Typography>
+            <div className={classes.grow} />
+            {fgTools?fgTools():null}
+          </Toolbar>
+        </Grid>
+
+        <Grid item xs={12}>
+          <List dense={true}>
+            <Paper classes={{root: classes.listHeader}} >
+              <ListItem divider={true}>
+                {listFields.map((field, id1)=>{
+                  if (parentState.object === 'INSPECTION' && field.name === 'inspection_status') {
+                    // console.log('testing, testing!');
+                    return (
+                      <ListItemText key={id1} onClick={()=>sort(field)} disableTypography={true} className={classes.listHeaderColumn} style={{ width:field.column_width, textAlign:'center' }} primary={this.labelHeader(field)}/>
+                    );
+                  }
+                  if (parentState.object === 'INSPECTION' && field.name === 'inspection_reason') {
+                    // console.log('testing, testing!');
+                    return (
+                      <ListItemText key={id1} onClick={()=>sort(field)} disableTypography={true} className={classes.listHeaderColumn} style={{ width:field.column_width }} primary={this.labelHeader(field,false)}/>
+                    );
+                  }
+                  return (
+                    <ListItemText key={id1} onClick={()=>sort(field)} disableTypography={true} className={classes.listHeaderColumn} style={{ width:field.column_width }} primary={this.labelHeader(field)}/>
+                  );
+                })}
+
+              </ListItem>
+            </Paper>
+            {data.map((item, item_id) => {
+              // console.log('*** items ***',item)
+              let rStr = '';
+              // const item_reason = item.reasons.map(r=>r.reason).toString();
+              if ('reasons' in item) {
+                item.reasons.forEach(r=>rStr = rStr===''?r.reason:rStr+', '+r.reason);
+              }
+
+              return (
+                <Paper
+                  key={item_id}
+                  style={item.inspection_status===null?
+                    {backgroundColor:'#fff9c4'}
+                    :item.inspection_status==='F'?
+                      {backgroundColor:'#ffcdd2'}
+                      :item.inspection_status==='P'?
+                        {backgroundColor:'#c8e6c9'}
+                        :item.inspection_status==='C'?
+                          {backgroundColor:'lightgray'}
+                          :null}
+                  onClick={handleAddEdit?(e)=>handleAddEdit(item):(e)=>this.handleClick(item)}
+                >
+                <ListItem divider={true}>
+                  {listFields.map((field, field_id)=>{
+                    // console.log('list item', field);
+                    if (parentState.object === 'INSPECTION' && field.name === 'address1') {
+                      // console.log('testing, testing!');
+                      return (
+                          <ListItemText key={field_id} style={{ width:field.column_width }} primary={
+                            <span><b style={{fontWeight: 500}}>{item[field.name]}</b><b style={{fontWeight: 300}}>, {item.subdivision}, {item.city}</b></span>}/>
+                      );
+                    }
+                    if (parentState.object === 'INSPECTION' && field.name === 'inspection_status') {
+                      // console.log('testing, testing!');
+                      return (<ListItemText key={field_id} style={{ width:field.column_width, textAlign:'center'}} primary={item[field.name]}/>);
+                    }
+                    if (parentState.object === 'INSPECTION' && field.name === 'job_number') {
+                      // console.log('testing, testing!');
+                      return (<ListItemText key={field_id} style={{ width:field.column_width}} primary={item['job_rev']}/>);
+                    }
+                    if (parentState.object === 'INSPECTION' && field.name === 'inspection_reason') {
+                      // console.log('testing, testing!');
+                      return (<ListItemText key={field_id} style={{ width:field.column_width, }} primary={rStr}/>);
+                    }
+                    return (<ListItemText key={field_id} style={{ width:field.column_width }} primary={item[field.name]}/>);
+                  })}
+                </ListItem>
+                {nestedFields?
+                <Collapse in={this.state[item.id]} timeout='auto'>
+                  <ListItem >
+                    {nestedFields.map((f2, id2)=>{
+                      return (<ListItemText key={id2} disableTypography={true}  style={{ width:f2.column_width }} primary={this.labelHeader(f2,false)}/>)
+                    })}
+                  </ListItem>
+                  <ListItem >
+                    {nestedFields.map((f3, id3)=>{
+                      return (<ListItemText key={id3} style={{ width:f3.column_width }} primary={item[f3.name]}/>)
+                    })}
+                  </ListItem>
+                </Collapse>
+                :null
+                }
+                </Paper>
+              )
+            })}
+          </List>
+        </Grid>
+      </Grid>
+    )
+  }  // render
+}  // class
+)  // end of the withStyles wrapper
+
+export const SimpleListView = withStyles(styles, { withTheme: true })(
+(props) => {
+  const { classes, label, fields, data, sort, deleteRow } = props;
+  // const { classes, theme, fieldGroup, toggleScopeDialog, removeScope, dialogState, scopeID, updateState } = props;
+  // console.log(fieldGroup);
+  const labelHeader = (field,fieldSupportsSort=true) => {
+    const { theme } = props;
+    return (
+      sort && fieldSupportsSort?
+      <Fragment>
+        {field.label}
+        {field.name === sort.field?
+          sort.direction==='A'?
+          <SortAsc style={{marginLeft:5, verticalAlign:'text-bottom'}} size={20} color={theme.palette.secondary.contrastText} />
+          : <SortDesc style={{marginLeft:5, verticalAlign:'text-bottom'}} size={20} color={theme.palette.secondary.contrastText} />
+        : <Sort style={{marginLeft:5, verticalAlign:'text-bottom'}} size={20} color={theme.palette.secondary.contrastText} />
+        }
+      </Fragment>
+      :
+      <Fragment>{field.label}</Fragment>
+    )
+  }
+
+  return (
+    <Grid container>
+      <Grid item xs={12} >
+        <Toolbar variant='dense' className={classes.toolbar}>
+          <Typography align='left' style={{font: 'italic bold 20px "Roboto"'} } className={classes.titleFG}>
+            {label}
+          </Typography>
+        </Toolbar>
+      </Grid>
+
+      <Grid item xs={12}>
+        <List dense={true}>
+          <Paper classes={{root: classes.listHeader}} >
+            <ListItem divider={true}>
+              {deleteRow?
+              <ListItemText
+                disableTypography={true}
+                style={{ fontSize:13,cursor:'default',width:40 }}
+                primary={'Delete'}
+              />
+              :null
+              }
+              {fields.map((field, id1)=>{
+                return (
+                  <ListItemText
+                    key={id1}
+                    onClick={()=>sort(field)}
+                    disableTypography={true}
+                    style={field.name==='overflow'?
+                      { fontSize:13,cursor:'default',width:field.column_width,flexGrow:1 }
+                      :
+                      { fontSize:13,cursor:'default',width:field.column_width }}
+                    primary={labelHeader(field)}
+                  />
+                );
+              })}
+
+            </ListItem>
+          </Paper>
+          {data.map((item, item_id) => {
+            if (item.change !== 'delete') {
+            return (
+              <Paper
+                key={item_id}
+              >
+              <ListItem >
+                {deleteRow?
+                <ListItemText style={{ cursor:'default' }} primary={
+                  <IconButton aria-label='Delete reason' color='secondary' style={{padding:4}} onClick={()=>deleteRow(item_id)}>
+                    <Tooltip title='Delete reason'>
+                      <Delete size='small'/>
+                    </Tooltip>
+                  </IconButton>}
+                />
+                :null
+                }
+                {fields.map((field, field_id)=>{
+                  // console.log('list item', field);
+                  return (<ListItemText
+                    key={field_id}
+                    style={field.name==='overflow'?
+                      { width:field.column_width,flexGrow:1 }
+                      :
+                      { width:field.column_width, wordWrap:'break-word' }}
+                    primary={item[field.name]}
+                    />);
+                })}
+              </ListItem>
+              </Paper>
+            )}
+            return null;
+          })}
+        </List>
+      </Grid>
+    </Grid>
+  )
+}
+)
+
+// Has sorting capability.  Handles add and deletes.
+export const SimpleSortListView = withStyles(styles, { withTheme: true })(
+class extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      // data:[...this.props.data],
+      sort:this.props.sort||{field:this.props.fields[0].name,
+        data_type:this.props.fields[0].display_value_data_type?this.props.fields[0].display_value_data_type:this.props.fields[0].data_type,
+        direction:'A'}
+    };
+
+    this.initState = {...this.state};
+  }
+
+  // static getDerivedStateFromProps(nextProps, prevState) {
+  //   console.log('SimpleNestedListView gDSFP');
+  //   const { data } = nextProps;
+  //
+  //   // console.log('SimpleNestedListView gDSFP: data', data);
+  //
+  //   // return {data: data };
+  //   return null;
+  // }
+
+  labelHeader = (field,fieldSupportsSort=true) => {
+    const { theme } = this.props;
+
+    return (
+      // using data type to
+      this.state.sort && field.hasOwnProperty('data_type') && fieldSupportsSort?
+      <Fragment>
+        {field.label}
+        {field.name === this.state.sort.field?
+          this.state.sort.direction==='A'?
+          <SortAsc style={{marginLeft:5, verticalAlign:'text-bottom'}} size={20} color={theme.palette.secondary.contrastText} />
+          : <SortDesc style={{marginLeft:5, verticalAlign:'text-bottom'}} size={20} color={theme.palette.secondary.contrastText} />
+        : <Sort style={{marginLeft:5, verticalAlign:'text-bottom'}} size={20} color={theme.palette.secondary.contrastText} />
+        }
+      </Fragment>
+      :
+      <Fragment>{field.label}</Fragment>
+
+    )
+  }
+
+  sort = (field) => {
+    let direction = this.state.sort.direction;
+    if (field.name === this.state.sort.field) {
+      direction = this.state.sort.direction === 'A'?'D':'A'
+    } else {
+      direction = 'A'
+    }
+
+    // let sortData = [...this.state.data];
+    // sortData.sort(this.sortIt(field, direction));
+
+    this.setState({ sort:{field:field.name
+      ,data_type:field.display_value_data_type?field.display_value_data_type:field.data_type
+      ,direction:direction} });
+  }
+
+  sortIt = (f = null, t = null, d = null) => {
+    const field = f?f:this.state.sort.field;
+    const data_type = t?t:this.state.sort.data_type;
+    const direction = d?d:this.state.sort.direction;
+    // console.log('sortIt', field, data_type, direction);
+    switch(data_type) {
+      case 'text':
+        // console.log('sort text');
+        return (
+          (a, b) => {
+            const aStr = a[field] === null? '':a[field].toLowerCase();
+            const bStr = b[field] === null? '':b[field].toLowerCase();
+            if (direction === 'A') {
+              return ((aStr < bStr) ? -1 : ((aStr > bStr) ? 1 : 0));
+            }
+            return ((aStr > bStr) ? -1 : ((aStr < bStr) ? 1 : 0));
+          }
+        )
+      case 'number':
+        // console.log('sort number');
+        return (
+          (a, b) => {
+            const aNum = a[field];
+            const bNum = b[field];
+            // console.log('sortNumber',aNum, bNum);
+            if (direction === 'A') {
+              return (aNum-bNum);
+            }
+            return (bNum-aNum);
+          }
+        )
+      case 'date':
+        // console.log('sort date');
+        return (
+          (a, b) => {
+            const aDate = new Date(a[field]);
+            const bDate = new Date(b[field]);
+            if (direction === 'A') {
+              return (aDate-bDate);
+            }
+            return (bDate-aDate);
+          }
+        )
+      default:
+      // console.log('sort default');
+        return (
+          (a, b) => {
+            const aStr = a[field.name] === null? '':a[field.name].toLowerCase();
+            const bStr = b[field.name] === null? '':b[field.name].toLowerCase();
+            if (direction === 'A') {
+              return ((aStr < bStr) ? -1 : ((aStr > bStr) ? 1 : 0));
+            }
+            return ((aStr > bStr) ? -1 : ((aStr < bStr) ? 1 : 0));
+          }
+        )
+    }
+  }
+
+  render() {
+    const { classes, label, fields, deleteRow } = this.props;
+    let data = [...this.props.data];
+    data.sort(this.sortIt());
+
+    return (
+      <Grid container>
+        <Grid item xs={12} >
+          <Toolbar variant='dense' className={classes.toolbar}>
+            <Typography align='left' style={{font: 'italic bold 20px "Roboto"'} } className={classes.titleFG}>
+              {label}
+            </Typography>
+          </Toolbar>
+        </Grid>
+
+        <Grid item xs={12}>
+          <List dense={true}>
+            <Paper classes={{root: classes.listHeader}} >
+              <ListItem divider={true}>
+                {deleteRow?
+                <ListItemText
+                  disableTypography={true}
+                  style={{ fontSize:13,cursor:'default',width:40 }}
+                  primary={'Delete'}
+                />
+                :null
+                }
+                {fields.map((field, id1)=>{
+                  return (
+                    <ListItemText
+                      key={id1}
+                      onClick={()=>this.sort(field)}
+                      disableTypography={true}
+                      style={field.name==='overflow'?
+                        { fontSize:13,cursor:'default',width:field.column_width,flexGrow:1 }
+                        :
+                        { fontSize:13,cursor:'default',width:field.column_width }}
+                      primary={this.labelHeader(field)}
+                    />
+                  );
+                })}
+
+              </ListItem>
+            </Paper>
+            {data.map((item, item_id) => {
+              if (item.change !== 'delete') {
+              return (
+                <Paper
+                  key={item_id}
+                >
+                <ListItem >
+                  {deleteRow?
+                  <ListItemText style={{ cursor:'default' }} primary={
+                    <IconButton aria-label='Delete reason' color='secondary' style={{padding:4}} onClick={()=>deleteRow(item.order)}>
+                      <Tooltip title='Delete reason'>
+                        <Delete size='small'/>
+                      </Tooltip>
+                    </IconButton>}
+                  />
+                  :null
+                  }
+                  {fields.map((field, field_id)=>{
+                    // console.log('list item', field);
+                    return (<ListItemText
+                      key={field_id}
+                      style={field.name==='overflow'?
+                        { width:field.column_width,flexGrow:1 }
+                        :
+                        { width:field.column_width, wordWrap:'break-word' }}
+                      primary={item[field.name]}
+                      />);
+                  })}
+                </ListItem>
+                </Paper>
+              )}
+            })}
+          </List>
+        </Grid>
+      </Grid>
+    )  // return
+  }  // render
+}  // class
+)  // end of the withStyles wrapper
+
+// Has nesting capability to one level.
+export const SimpleSortNestListView = withStyles(styles, { withTheme: true })(
+class extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      // data:[...this.props.data],
+      sort:this.props.sort||{field:this.props.fields[0].name,
+        data_type:this.props.fields[0].data_type,
+        direction:'A'}
+    };
+
+    this.initState = {...this.state};
+  }
+
+  labelHeader = (field, fieldSupportsSort=true) => {
+    const { theme } = this.props;
+
+    return (
+      // using data type to
+      this.state.sort && field.hasOwnProperty('data_type') && fieldSupportsSort?
+      <Fragment>
+        {field.label}
+        {field.name === this.state.sort.field?
+          this.state.sort.direction==='A'?
+          <SortAsc style={{marginLeft:5, verticalAlign:'text-bottom'}} size={20} color={theme.palette.secondary.contrastText} />
+          : <SortDesc style={{marginLeft:5, verticalAlign:'text-bottom'}} size={20} color={theme.palette.secondary.contrastText} />
+        : <Sort style={{marginLeft:5, verticalAlign:'text-bottom'}} size={20} color={theme.palette.secondary.contrastText} />
+        }
+      </Fragment>
+      :
+      <Fragment>{field.label}</Fragment>
+
+    )
+  }
+
+  sort = (field) => {
+    let direction = this.state.sort.direction;
+    if (field.name === this.state.sort.field) {
+      direction = this.state.sort.direction === 'A'?'D':'A'
+    } else {
+      direction = 'A'
+    }
+
+    // let sortData = [...this.state.data];
+    // sortData.sort(this.sortIt(field, direction));
+
+    this.setState({ sort:{field:field.name
+      ,data_type:field.display_value_data_type?field.display_value_data_type:field.data_type
+      ,direction:direction} });
+  }
+
+  sortIt = (f = null, t = null, d = null) => {
+    const field = f?f:this.state.sort.field;
+    const data_type = t?t:this.state.sort.data_type;
+    const direction = d?d:this.state.sort.direction;
+    // console.log('sortIt', field, data_type, direction);
+    switch(data_type) {
+      case 'text':
+        // console.log('sort text');
+        return (
+          (a, b) => {
+            const aStr = a[field] === null? '':a[field].toLowerCase();
+            const bStr = b[field] === null? '':b[field].toLowerCase();
+            if (direction === 'A') {
+              return ((aStr < bStr) ? -1 : ((aStr > bStr) ? 1 : 0));
+            }
+            return ((aStr > bStr) ? -1 : ((aStr < bStr) ? 1 : 0));
+          }
+        )
+      case 'number':
+        // console.log('sort number');
+        return (
+          (a, b) => {
+            const aNum = a[field];
+            const bNum = b[field];
+            // console.log('sortNumber',aNum, bNum);
+            if (direction === 'A') {
+              return (aNum-bNum);
+            }
+            return (bNum-aNum);
+          }
+        )
+      case 'date':
+        // console.log('sort date');
+        return (
+          (a, b) => {
+            const aDate = new Date(a[field]);
+            const bDate = new Date(b[field]);
+            if (direction === 'A') {
+              return (aDate-bDate);
+            }
+            return (bDate-aDate);
+          }
+        )
+      default:
+      // console.log('sort default');
+        return (
+          (a, b) => {
+            const aStr = a[field.name] === null? '':a[field.name].toLowerCase();
+            const bStr = b[field.name] === null? '':b[field.name].toLowerCase();
+            if (direction === 'A') {
+              return ((aStr < bStr) ? -1 : ((aStr > bStr) ? 1 : 0));
+            }
+            return ((aStr > bStr) ? -1 : ((aStr < bStr) ? 1 : 0));
+          }
+        )
+    }
+  }
+
+  render() {
+    const { classes, label, fields, deleteRow } = this.props;
+    let data = [...this.props.data];
+    data.sort(this.sortIt());
+
+    return (
+      <Grid container>
+        <Grid item xs={12} >
+          <Toolbar variant='dense' className={classes.toolbar}>
+            <Typography align='left' style={{font: 'italic bold 20px "Roboto"'} } className={classes.titleFG}>
+              {label}
+            </Typography>
+          </Toolbar>
+        </Grid>
+
+        <Grid item xs={12}>
+          <List dense={true}>
+            <Paper classes={{root: classes.listHeader}} >
+              <ListItem divider={true}>
+                {deleteRow?
+                <ListItemText
+                  disableTypography={true}
+                  style={{ fontSize:13,cursor:'default',width:40 }}
+                  primary={'Delete'}
+                />
+                :null
+                }
+                {fields.map((field, id1)=>{
+                  return (
+                    <ListItemText
+                      key={id1}
+                      onClick={()=>this.sort(field)}
+                      disableTypography={true}
+                      style={field.name==='overflow'?
+                        { fontSize:13,cursor:'default',width:field.column_width,flexGrow:1 }
+                        :
+                        { fontSize:13,cursor:'default',width:field.column_width }}
+                      primary={this.labelHeader(field)}
+                    />
+                  );
+                })}
+
+              </ListItem>
+            </Paper>
+            {data.map((item, item_id) => {
+              if (item.change !== 'delete') {
+              return (
+                <Paper
+                  key={item_id}
+                >
+                <ListItem >
+                  {deleteRow?
+                  <ListItemText style={{ cursor:'default' }} primary={
+                    <IconButton aria-label='Delete reason' color='secondary' style={{padding:4}} onClick={()=>deleteRow(item_id)}>
+                      <Tooltip title='Delete reason'>
+                        <Delete size='small'/>
+                      </Tooltip>
+                    </IconButton>}
+                  />
+                  :null
+                  }
+                  {fields.map((field, field_id)=>{
+                    // console.log('list item', field);
+                    return (<ListItemText
+                      key={field_id}
+                      style={field.name==='overflow'?
+                        { width:field.column_width,flexGrow:1 }
+                        :
+                        { width:field.column_width, wordWrap:'break-word' }}
+                      primary={item[field.name]}
+                      />);
+                  })}
+                </ListItem>
+                </Paper>
+              )}
+            })}
+          </List>
+        </Grid>
+      </Grid>
+    )  // return
+  }  // render
+}  // class
+)  // end of the withStyles wrapper

@@ -166,11 +166,11 @@ class scopeSelection extends Component {
   };
 
   render() {
-    const { classes, currentMenu } = this.props;
+    const { classes, currentMenu, currentViews } = this.props;
 
-    // console.log('scope selector', 'menu',currentMenu, 'views',currentViews, 'project',currentProject);
+    console.log('scope selector', 'menu',currentMenu, 'views',currentViews);
     // console.log('scope selector', 'menu',currentMenu);
-    // console.log('state', this.state);
+    console.log('state', this.state);
     return (
       <Dialog
         open={this.props.open}
@@ -182,7 +182,7 @@ class scopeSelection extends Component {
         <DialogContent className={classes.content}>
           <Grid
             container
-            justify='space-around'
+            justify='flex-start'
             alignItems='flex-start'
             spacing={16}
           >

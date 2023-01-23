@@ -44,6 +44,10 @@ function mapStateToProps(state) {
     revReasonLookup: state.revReasonLookup,
     revRespLookup: state.revRespLookup,
     designers: state.designers,
+    inspectors: state.inspectors,
+    inspTypeLookup: state.inspTypeLookup,
+    inspReasonLookup: state.inspReasonLookup,
+    organizations: state.organizations,
   };
 }
 

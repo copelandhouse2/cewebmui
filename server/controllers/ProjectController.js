@@ -1,14 +1,8 @@
-// import addresses from '../addresses.js';
-// import AddressModel from '../models/AddressModel';
 import ProjectModel from '../models/ProjectModel';
 import JobNumberSeqModel from '../models/JobNumberSeqModel';
 import { sql } from '../mysqldb';
-import { trello, tBoards } from '../trello';
-import TrelloModel from '../models/TrelloModel';
-
-// import { tBoards } from "./TrelloInitController"  // not working.  Bizarre
-// import { TRELLO_PARAMS } from '../../envVars';
-
+import { trello, tBoards, theToken, TrelloModel } from '../models/TrelloModel';
+import { client as boxClient } from '../models/BoxModel';
 // code to test for daylight savings time or not.
 // Date.prototype.stdTimezoneOffset = () => {
 //     var jan = new Date(this.getFullYear(), 0, 1);
@@ -31,12 +25,29 @@ const timeout = (ms) => {
 
 // a function used by list and listPending to get the scope of each project.  Called by
 // Promise.all below.
-const getScope = async proj => {
-    const scopeData = await ProjectModel.getScopeItems(proj.id);
-    const returnData = {...proj, scope: scopeData};
-    return returnData;
-};
+// const getScope = async proj => {
+//     const scopeData = await ProjectModel.getScopeItems(proj.id);
+//     const returnData = {...proj, scope: scopeData};
+//     return returnData;
+// };
+const pad = (num, size) => ('00000' + num).substr(-size);
 
+export const getScope = async proj => {
+    let promises = [];
+    promises.push(ProjectModel.getScopeItems(proj.id));
+    promises.push(ProjectModel.getRevisions(proj.id));
+    const childData = await Promise.all(promises);
+
+    // childData[0] = scope; childData[1] = revisions
+    // console.log('getScope data', childData);
+    const maxRev = childData[1].length > 0?childData[1][0].revision:null;
+    const maxRevDesc = childData[1].length > 0?childData[1][0].revision_desc:null;
+    const returnData = {...proj, scope: childData[0], revisions: childData[1], revision: maxRev, revision_desc: maxRevDesc};
+    return returnData;
+
+    // promises.push(TrelloModel.put(tUrl, value));
+
+};
 // function to get the list of addresses.
 export const list = async (request, response) => {
 
@@ -99,7 +110,7 @@ export const listSearch = async (request, response) => {
         projects = await ProjectModel.getProjectsByArr(idListObj, orderField);
         // console.log('listSearch: projects', projects);
       } else {
-        console.log('listSearch no projects to pull');
+        // console.log('listSearch no projects to pull');
       }
     } else {
       projects = await ProjectModel.getProjects(request.params);
@@ -155,11 +166,13 @@ export const create = async (request, response) => {
   let processDate = new Date();
   const min = processDate.getMinutes();
   const tzOffset = processDate.getTimezoneOffset(); // in minutes.
+  const sList = request.body.scope.map(s=>{return s.name});
   // processDate.setMinutes(min-tzOffset);
   console.log('*************************************************');
   console.log('ProjectController Create / Update');
   console.log(processDate+'');
-  console.log(request.body.job_number+'    ', request.body.address1);
+  console.log(request.body.id+'    ', request.body.job_number+'    ', request.body.address1);
+  console.log(`Classification: ${request.body.classification}   Scope: ${sList.toString()}`);
   console.log('*************************************************');
 
   // console.log('in ProjectController.create', request.body);
@@ -181,7 +194,7 @@ export const create = async (request, response) => {
 
   try {
     addRecordResponse = await ProjectModel.addProject(request.body);
-    // console.log('new DB record created / updated: ', addRecordResponse);
+    console.log('new DB record created / updated: ', addRecordResponse);
   } catch (err) {
     addRecordResponse = false;
     console.log('Record create error:', err);
@@ -198,7 +211,7 @@ export const create = async (request, response) => {
       let scopePromises = [];
       request.body.scope.forEach((item, i) => {
         // console.log('Scope: Adding / Adjusting: ', item.id, item.delete, item.scope);
-        console.log('Scope: Adding / Adjusting: ', item.id, item.scope_id, item.delete, item.name);
+        // console.log('Scope: Adding / Adjusting: ', item.id, item.scope_id, item.delete, item.name);
         if (!item.delete) {  // checking to see if we are to delete scope.
           item.project_id = request.body.id? request.body.id:addRecordResponse.insertId;
           scopePromises.push(ProjectModel.addProjectScope(item));
@@ -211,7 +224,7 @@ export const create = async (request, response) => {
 
       try {
         const scopeResponses = await Promise.all(scopePromises);
-        console.log('scope records created / updated: ', scopeResponses);
+        // console.log('scope records created / updated: ', scopeResponses);
       } catch (err) {
         console.log('Scope record create error:', err);
         errors.push(err);
@@ -228,10 +241,12 @@ export const create = async (request, response) => {
       project = {...p[0], categoryID: request.body.categoryID};
       if (request.params.v2 === 'true') {  // version 2 changes
         const scope = await ProjectModel.getScopeItems(proj_id);
-        Object.assign(project, {scope: scope});
+        const rev = await ProjectModel.getRevisions(proj_id);
+
+        Object.assign(project, {scope: scope, rev: rev} );
         // project = {...p[0], scope: scope, categoryID: request.body.categoryID};
       }
-      // console.log('Queried Project', project);
+      // console.log('Queried Project', proj_id, project);
     } catch (err) {
       console.log('New Project Query error:', err);
       errors.push(err);
@@ -278,7 +293,7 @@ export const create = async (request, response) => {
 // function to create a address
 export const commit = (request, response) => {
   // console.log('Project Controller.commit request', request.params);
-
+  // console.log('commit... theToken',theToken);
   // NEED TO PUT FOR LOOP ON OUTSIDE OF PROMISES.  ORDER OF PROMISES
   // Loop on request body (contains all pending records)
   //  Trello Promise (gets card id)
@@ -307,23 +322,8 @@ export const commit = (request, response) => {
           errors.push(err);
         }
 
-        // try {
-        //   // console.log('getting ready to add record.');
-        //   const addRecordResponse = await ProjectModel.addProject(request.body[i]);
-        //   newRecord = await ProjectModel.getProjectByID(addRecordResponse.insertId)
-        //   // console.log('new DB record created', newRecord);
-        //   console.log('new DB record created');
-        //
-        // } catch (err) {
-        //   console.log('Record create error:', err);
-        //   errors.push(err);
-        // }
       }
 
-      // Get the variables.
-      // var id, job_number;
-      // console.log('4. newRecord', newRecord);
-      // console.log('5. request.body:',i,request.body[i]);
       // 1/28/2020 - newRecord should always be populated now and ELSE stmt
       // could be deprecated.
       if (newRecord) {
@@ -333,7 +333,7 @@ export const commit = (request, response) => {
       }
 
       console.log('ProjectController Commit: Date, tzOffset', new Date(), new Date().getTimezoneOffset()/60);
-      console.log('Building Trello Card', id, job_number);
+      // console.log('Building Trello Card', id, job_number);
 
       // console.log('6. the id, job_number: ', id, job_number);
       const {revision, revision_desc, client_id, client, owner_id, requestor, requestor_id, city, subdivision
@@ -346,20 +346,95 @@ export const commit = (request, response) => {
       } = newRecord;
       // } = request.body[i];
 
+      // console.log('Project', newRecord);
+      // console.log('Revision info', revision, revision_desc);
 
-      let scope = '', description = '', additional_options = '', comments = '';
+      let scope = '', description = '', additional_options = '', notes = '';
+      // let pt, ele, gs, ms, gext, gdrop, gt, cp, bw, pi;
+
       newRecord.scope.forEach(s=> {
         // console.log('s', s);
         scope = scope+s.scope+',';
-        description = s.description?`${description}\n${s.scope} - ${s.description}`:description;
-        additional_options = s.additional_options?`${additional_options}\n${s.scope} - ${s.additional_options}`:additional_options;
-        comments = s.comments?`${comments}\n${s.scope} - ${s.comments}`:comments;
 
+        if (['volfoundation','cusfoundation'].indexOf(s.scope) > -1) {
+          const pt = s.plan_type? s.plan_type:'';
+          const ele = s.elevation? s.elevation:'';
+          const gs = s.garage_swing? s.garage_swing === 'RIGHT'? 'R':'L' : '';
+          // console.log('masonry', ':'||masonry||':');
+          const ms = s.masonry === 'PLAN'? ', PLAN' : s.masonry? `, ${s.masonry}SM`:''
+          // const ms = masonry === 'PLAN'? ', PLAN' : masonry === null||masonry ===''? '' : `, ${masonry}SM`
+          const gext = s.garage_extension? `X${s.garage_extension}` : '';
+          const gdrop = s.garage_drop? `D${s.garage_drop}` : '';
+          const gt = s.garage_type? `, ${s.garage_type}${gext}${gdrop}` : '';
+          const cp = s.covered_patio === 'EXTCP'? ', ExtCP' :
+            s.covered_patio === 'Y'? ', CP' : '';
+          const bw = s.bay_window === 'Y'? ', BW':'';
+          const pi = geo_pi? geo_pi:'';
+          description = `${description}\n* ${s.label} - **${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**`;
+        }
+        // else if (s.scope === 'cusfoundation') {
+        //   const pt = s.plan_type? s.plan_type:'';
+        //   const ele = s.elevation? s.elevation:'';
+        //   const fdntype = s.foundation_type? `, ${s.foundation_type}`:'';
+        //   const sq = s.square_footage? `, ${s.square_footage} sqft`:''
+        //   const pi = geo_pi? ` PI=${geo_pi}`:'';
+        //   const d = s.description? ` - ${s.description}`:'';
+        //   const desc = `${pt}${ele}${fdntype}${sq}${pi}${d}`
+        //   description = desc?`${description}\n* ${s.label} - ${desc}`:`${description}\n* ${s.label}`;
+        // }
+        else if (['volmf','volssf','cusframing'].indexOf(s.scope) > -1) {
+          let desc = '';
+          desc = s.plan_type? `${s.plan_type}`:desc;
+          desc = s.elevation?desc?`${desc} ${s.elevation}`:`${s.elevation}`:desc;
+          const gs = s.garage_swing?s.garage_swing === 'RIGHT'? 'R':'L' : '';
+          desc = gs?desc?`${desc}${gs}`:`${gs}`:desc;
+          // desc = s.floor_type?desc?`${desc}, Floor=${s.floor_type}`:`Floor=${s.floor_type}`:desc;
+          // desc = s.roof_type?desc?`${desc}, Roof=${s.roof_type}`:`Roof=${s.roof_type}`:desc;
+          // desc = s.num_stories?desc?`${desc}, Stories=${s.num_stories}`:`Stories=${s.num_stories}`:desc;
+          // desc = s.square_footage?desc?`${desc}, ${s.square_footage}sqft`:`${s.square_footage}sqft`:desc;
+          desc = s.description?desc?`${desc} - ${s.description}`:`${s.description}`:desc;
+          description = desc?`${description}\n* ${s.label} - ${desc}`:`${description}\n* ${s.label}`;
+        }
+        else {
+          description = s.description?`${description}\n* ${s.label} - ${s.description}`:`${description}\n* ${s.label}`;
+        }
+        additional_options = s.additional_options?`${additional_options}\n* ${s.label} - ${s.additional_options}`:additional_options;
+        notes = s.notes?`${notes}\n* ${s.label} - ${s.notes}`:notes;
         // console.log('for each scope', scope);
       });
       scope = scope.slice(0,scope.length-1);  // remove the last comma.
 
-      // console.log('scope, description, additional_options, comments', scope, description, additional_options, comments);
+      // revisions are queried from DB in reverse order.  rev[0] should be latest.  I am leveraging this.
+      let latest = '', cRevTitle = '', cRev = '', pRev = '', current = '';
+      newRecord.rev.forEach((r,i)=>{
+        // This is the very first rev.  It is the latest
+        // console.log('revisions', r);
+        if (i===0) {
+          latest = r.revision;
+          cRevTitle = r.alt_billing_party? `**REV ${r.revision} ${r.friendly_date} *Bill to: ${r.alt_billing_party}* **\n`: `**REV ${r.revision} ${r.friendly_date}**\n`;
+        }
+        const reason = r.revision_reason?` - ${r.revision_reason}`:'';
+        const resp = r.revision_resp?` - ${r.revision_resp}`:'';
+        const desc = r.revision_desc?` - ${r.revision_desc}`:'';
+        // Generating the latest rev string.
+        cRev = r.revision === latest?`${cRev}\n* ${r.scope_label}${reason}${resp}${desc}`:cRev;
+
+        // Generating the prior revs string.
+        if (r.revision !== latest) {
+          if (r.revision === current) {
+            // pRev = `${pRev}\n* ${r.scope_label} - ${r.revision_reason} / ${r.revision_resp} - ${r.revision_desc}`;
+            pRev = `${pRev}\n* ${r.scope_label}${reason}${resp}${desc}`;
+          } else {
+            const revSubTitle = r.alt_billing_party? `\n\n*REV ${r.revision} ${r.friendly_date} Billed to: ${r.alt_billing_party}*\n` : `\n\n*REV ${r.revision} ${r.friendly_date}*\n`
+            // pRev = `${pRev}${revSubTitle}\n* ${r.scope_label} - ${r.revision_reason} / ${r.revision_resp} - ${r.revision_desc}`;
+            pRev = `${pRev}${revSubTitle}\n* ${r.scope_label}${reason}${resp}${desc}`;
+            current = r.revision;
+          }
+        }
+      })
+      const pRevTitle = pRev?`\n\n**PRIOR REVS:**`:'';
+
+      // console.log('scope, description, additional_options, notes', scope, description, additional_options, notes);
 
       // these scope type values used to be stored at project level.  Need to pull them out at scope
       // level now.
@@ -371,7 +446,9 @@ export const commit = (request, response) => {
         frm = frm2?frm2:frm1;  // single site frame will take precedence over master frame if both on there.  But its actually a mistake.
       } else {
         fdn = newRecord.scope.find(s => s.name === 'cusfoundation');
-        frm = newRecord.scope.find(s => s.name === 'cusframing');
+        frm1 = newRecord.scope.find(s => s.name === 'volmf');  // 4/8/22 now allowing master frame on the custom screens.
+        frm2 = newRecord.scope.find(s => s.name === 'cusframing');
+        frm = frm2?frm2:frm1;  // single site frame will take precedence over master frame if both on there.  But its actually a mistake.
       };
 
 
@@ -408,8 +485,8 @@ export const commit = (request, response) => {
       var currentDesc = null;
       if (trello_card_id) {
         try {
-          // console.log('pulling values for the card');
-          const cardInfo = await TrelloModel.get(`/1/cards/${trello_card_id}`);
+          console.log('pulling values for the card', trello_card_id,request.params.trelloToken);
+          const cardInfo = await TrelloModel.get(request.params.trelloToken, `/1/cards/${trello_card_id}`);
           currentDesc = cardInfo.desc;
           // console.log('Pulled description', currentDesc);
           // console.log('Pulled description');
@@ -434,28 +511,34 @@ export const commit = (request, response) => {
         const cardName = job_number + ' - ' + address1 + subStr + cityStr + ' - ' + client;
 
         // Defining the description for volume client cards.
-        const pt = plan_type? plan_type:'';
-        const ele = elevation? elevation:'';
-        const gs = garage_swing? garage_swing === 'RIGHT'? 'R':'L' : '';
-        // console.log('masonry', ':'||masonry||':');
-        const ms = masonry === 'PLAN'? ', PLAN' : masonry? `, ${masonry}SM`:''
-        // const ms = masonry === 'PLAN'? ', PLAN' : masonry === null||masonry ===''? '' : `, ${masonry}SM`
-        const gext = garage_extension? `X${garage_extension}` : '';
-        const gdrop = garage_drop? `D${garage_drop}` : '';
-        const gt = garage_type? `, ${garage_type}${gext}${gdrop}` : '';
-        const cp = covered_patio === 'EXTCP'? ', ExtCP' :
-                   covered_patio === 'Y'? ', CP' : '';
-        const bw = bay_window === 'Y'? ', BW':'';
-        const pi = geo_pi? geo_pi:'';
+        // const pt = plan_type? plan_type:'';
+        // const ele = elevation? elevation:'';
+        // const gs = garage_swing? garage_swing === 'RIGHT'? 'R':'L' : '';
+        // // console.log('masonry', ':'||masonry||':');
+        // const ms = masonry === 'PLAN'? ', PLAN' : masonry? `, ${masonry}SM`:''
+        // // const ms = masonry === 'PLAN'? ', PLAN' : masonry === null||masonry ===''? '' : `, ${masonry}SM`
+        // const gext = garage_extension? `X${garage_extension}` : '';
+        // const gdrop = garage_drop? `D${garage_drop}` : '';
+        // const gt = garage_type? `, ${garage_type}${gext}${gdrop}` : '';
+        // const cp = covered_patio === 'EXTCP'? ', ExtCP' :
+        //            covered_patio === 'Y'? ', CP' : '';
+        // const bw = bay_window === 'Y'? ', BW':'';
+        // const pi = geo_pi? geo_pi:'';
+
         // const pi = geo_pi === null? '' : geo_pi;
-        const rev = revision? `**REV ${revision}:** ${revision_desc}` : '';  //Removing the new line characters.  If custom, this is the first value.
+        const rev = revision? `**REV ${revision}:**\n\n* ${revision_desc}` : '';  //Removing the new line characters.  If custom, this is the first value.
         const soil = soil_notes? `\n\n**SOIL NOTES:** ${soil_notes}` : '';
-        const desc = description? `\n\n**SCOPE DESCRIPTION:** ${description}` : '';
-        const opt = additional_options? `\n\n**ADDL OPTIONS:** ${additional_options}` : '';
-        const com = comments? `\n\n**COMMENTS:** ${comments}` : '';
-        const end = `\n\n*Do not erase line below.  Used by webtools.  All information above line is auto-generated.  Anything below line is for your use and will be protected from overwrite.*\n__________`;
+        // const desc = description? `\n\n**SCOPE DESCRIPTION:** ${description}` : '';
+        // const desc = description? `\n\n**SCOPE DESCRIPTION:** \n\n\n* **${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**${description}` : '';
+        const desc = `\n\n**SCOPE DESCRIPTION:** \n${description}`;
+        const opt = additional_options? `\n\n**ADDL OPTIONS:**\n${additional_options}` : '';
+        const com = notes? `\n\n**NOTES:**\n${notes}` : '';
+        // const end = `\n\n*Do not erase line below.  Used by webtools.  All information above line is auto-generated.  Anything below line is for your use and will be protected from overwrite.*\n__________`;
+        const end = `\n\n*Do not erase line below. Used by webtools. Anything below line is protected.*\n__________`;
         // const cardDesc = trello_list === 'CUSTOM QUEUE'? `${rev}${soil}${opt}${com}${end}${enteredDesc}`: `**${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**\n\n${rev}${soil}${opt}${com}${end}${enteredDesc}`;
-        const cardDesc = `**${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**\n\n${rev}${soil}${desc}${opt}${com}${end}${enteredDesc}`;
+        // const cardDesc = `**${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**\n\n${rev}${soil}${desc}${opt}${com}${end}${enteredDesc}`;
+
+        const cardDesc = `${cRevTitle}${cRev}${desc}${opt}${com}${soil}${pRevTitle}${pRev}${end}${enteredDesc}`;
 
         console.log('card name', cardName);
         // console.log('gs, cp, bw, ms, pi', gs, cp, bw, ms, pi);
@@ -525,14 +608,14 @@ export const commit = (request, response) => {
           if (trello_card_id) { // update card.  Leave on current list.
 
             // console.log('In the update trello card');
-            const cardUpdResponse = await TrelloModel.put(`/1/cards/${trello_card_id}`, cardUpd)
+            const cardUpdResponse = await TrelloModel.put(request.params.trelloToken, `/1/cards/${trello_card_id}`, cardUpd)
             // console.log('trello: response', cardUpdResponse);
             console.log('Trello card updated');
             tCardID = trello_card_id;
             // console.log('card id(s)', trello_card_id, cardUpdResponse);
           } else if (trello_list_id) {  // create card on incoming list
             // console.log('In the insert trello card', card);
-            const cardInsResponse = await TrelloModel.post('/1/cards/', card);
+            const cardInsResponse = await TrelloModel.post(request.params.trelloToken, '/1/cards/', card);
             // console.log('trello: response', cardInsResponse);
             console.log('Trello card created');
             tCardID = cardInsResponse.id;
@@ -552,12 +635,13 @@ export const commit = (request, response) => {
             // console.log('Trello Update custom Fields');
             // const me = await TrelloModel.get(`/1/members/me`);
             // console.log('me', me);
-            const currentBoard = await TrelloModel.get(`/1/cards/${tCardID}/board`);
-            // console.log('the board', currentBoard.id);
-            const custFields = tBoards.find(board => board.id === currentBoard.id).customFields;
-            // console.log('currentBoard: ', currentBoard);
+            const currentBoard = await TrelloModel.get(request.params.trelloToken, `/1/cards/${tCardID}/board`);
+            const currentBoardInfo = await TrelloModel.get(request.params.trelloToken, `1/boards/${currentBoard.id}/?customFields=true`);
+            // console.log('the current board', currentBoardInfo);
+            // const custFields = tBoards.find(board => board.id === currentBoard.id).customFields;
+            // console.log('custFields: ', custFields);
             let value = {}, tUrl = '', idValue = '';
-            custFields.forEach(field => {
+            currentBoardInfo.customFields.forEach(field => {
               switch (field.name.toUpperCase()) {
                 case 'DESIGN DUE DATE':
                 case 'FINAL DUE DATE':
@@ -574,7 +658,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'PHASE':
@@ -587,7 +671,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'YM (C,E)':
@@ -600,7 +684,7 @@ export const commit = (request, response) => {
                   };
                   tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                   // console.log('url for custom field', tUrl);
-                  promises.push(TrelloModel.put(tUrl, value));
+                  promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   break;
                 case 'EM (C,E)':
                 case 'EM(C,E)':
@@ -612,7 +696,7 @@ export const commit = (request, response) => {
                   };
                   tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                   // console.log('url for custom field', tUrl);
-                  promises.push(TrelloModel.put(tUrl, value));
+                  promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   break;
                 case 'DESIGN P.I.':
                 case 'DESIGN PI':
@@ -623,7 +707,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'SQFT':
@@ -634,7 +718,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case '# STORYS':
@@ -647,7 +731,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'STORYS':
@@ -658,7 +742,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'ROOF TYPE':
@@ -671,7 +755,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'FLOOR TYPE':
@@ -684,7 +768,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'FOUNDATION TYPE':
@@ -698,7 +782,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'CLIENT ID':
@@ -708,7 +792,7 @@ export const commit = (request, response) => {
                   };
                   tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                   // console.log('url for custom field', tUrl);
-                  promises.push(TrelloModel.put(tUrl, value));
+                  promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   break;
                 case 'ON -BOARD DATE':
                 case 'ONBOARD DATE':
@@ -723,7 +807,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'BLOCK, LOT':
@@ -734,7 +818,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'BLOCK':
@@ -745,7 +829,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'LOT':
@@ -756,7 +840,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'ORIGINAL DUE DATE':
@@ -774,7 +858,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'JOB NUMBER':
@@ -784,7 +868,7 @@ export const commit = (request, response) => {
                   };
                   tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                   // console.log('url for custom field', tUrl);
-                  promises.push(TrelloModel.put(tUrl, value));
+                  promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   break;
                 case 'START DATE':
                   // console.log('Start Date', start_date);
@@ -800,7 +884,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'BUILDER':
@@ -811,7 +895,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'SUBDIVISION':
@@ -822,7 +906,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'BILLING':
@@ -834,7 +918,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'CONTACT':
@@ -846,7 +930,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'CLASSIFICATION':
@@ -860,7 +944,7 @@ export const commit = (request, response) => {
                       };
                       tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                       // console.log('url for custom field', tUrl);
-                      promises.push(TrelloModel.put(tUrl, value));
+                      promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                     }
                   }
                   break;
@@ -875,7 +959,7 @@ export const commit = (request, response) => {
                       };
                       tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                       // console.log('url for custom field', tUrl);
-                      promises.push(TrelloModel.put(tUrl, value));
+                      promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                     }
                   }
                   break;
@@ -887,7 +971,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'GEOTECH':
@@ -898,7 +982,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'GEO REPORT DATE':
@@ -915,7 +999,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'GEO REPORT NUM':
@@ -926,7 +1010,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 case 'SCOPE':  // now an array of scope records
@@ -937,7 +1021,7 @@ export const commit = (request, response) => {
                     };
                     tUrl = `1/cards/${tCardID}/customField/${field.id}/item`;
                     // console.log('url for custom field', tUrl);
-                    promises.push(TrelloModel.put(tUrl, value));
+                    promises.push(TrelloModel.put(request.params.trelloToken, tUrl, value));
                   }
                   break;
                 default:
@@ -963,7 +1047,7 @@ export const commit = (request, response) => {
       // In order to fully coincide, I would have to create a dummy update
       // on the project scope table right here.  Seems like a silly step.
       try {
-        // console.log('in db update.  Params:', id, tCardID, trello_card_id);
+        console.log('in db update.  Params:', id, tCardID, trello_card_id);
         if (tCardID !== trello_card_id) {
           console.log('updating the db');
           const dbResponse = await ProjectModel.commitProjectByID(id, tCardID);
@@ -975,6 +1059,62 @@ export const commit = (request, response) => {
         errors.push(err);
         // throw new Error(err);
       }
+
+      // ***************************************
+      // Creating Box Folder.  Actually works!!!
+      // The Client name and Subdivision name needs to match what's in Webtools for the search
+      // to work.  To make this easier and more accurate, I am thinking I will make the user select the parent folder.
+      // then I will create the the project folder tree in it.
+      // ****************************************
+      // try {
+      //   // console.log('in db update.  Params:', id, tCardID, trello_card_id);
+      //   // + subStr + cityStr + ' - ' + client
+      //   console.log('Creating Box Folder', client_id, client, subdivision, request.params.userID);
+      //   console.log('boxClient', boxClient);
+      //   const addrFolder = job_number + ' - ' + address1;
+      //   // Getting the CE Server/Projects Folder
+      //   const projectFolder = await boxClient[request.params.userID].search.query('Projects', {
+      //     type: 'folder',
+      //     fields: 'id,name,type,description,size,parent,item_status',
+      //     ancestor_folder_ids: '0',
+      //     content_types: 'name',
+      //   });
+      //   const projectFolderID = projectFolder.entries.find(f=>f.parent.name==='CE Server').id;
+      //   console.log('Here is Projects Folder id', projectFolderID);
+      //
+      //   console.log('Client folder to look for', client, pad(client_id,3));
+      //
+      //   // Getting the Projects/Clients Folder
+      //   const clientFolder = await boxClient[request.params.userID].search.query(client, {
+      //     type: 'folder',
+      //     fields: 'id,name,type,description,size,parent,item_status',
+      //     ancestor_folder_ids: projectFolderID,
+      //     content_types: 'name',
+      //   });
+      //   console.log('Here is Client Folder', clientFolder);
+      //
+      //   const clientFolderID = clientFolder.entries.find(f=>f.name===`${pad(client_id,3)} ${client}`).id;
+      //   console.log('Here is Client Folder id', clientFolderID);
+      //
+      //   // Getting the Clients/Address Specific/Subdivision Folder
+      //   const subFolder = await boxClient[request.params.userID].search.query(subdivision, {
+      //     type: 'folder',
+      //     fields: 'id,name,type,description,size,parent,item_status',
+      //     ancestor_folder_ids: clientFolderID,
+      //     content_types: 'name',
+      //   });
+      //   const subFolderID = subFolder.entries.find(f=>f.parent.name===`Address Specific`).id;
+      //   console.log('Here is sub Folder id', subFolderID);
+      //
+      //   const newFolder = await boxClient[request.params.userID].folders.create(subFolderID, addrFolder);
+      //   console.log('Here is Projects folder items', newFolder);
+      //
+      //   // emailFolder = await boxClient.folders.create(cmcFolder.id,'Emails');
+      //   // console.log('Here is Projects folder items', emailFolder);
+      // } catch (err) {
+      //   errors.push(err);
+      // }
+      // ***************************************
 
     } // for loop
 
@@ -1044,6 +1184,74 @@ export const getHistory = async (request, response) => {
     return response.json(historyData);
 
   } catch (err) {
+    return response.json(err);
+
+  }
+}
+
+export const getRevisions = async (request, response) => {
+
+  // The main section.  Get history of project, then loop on projects
+  // with map function to get the scope items.
+  try {
+    const revisionData = await ProjectModel.getRevisions(request.params.id);
+    // console.log('getHistory:', historyData);
+    return response.json(revisionData);
+
+  } catch (err) {
+    return response.json(err);
+
+  }
+}
+
+// function to create a address
+export const saveRevisions = async (request, response) => {
+
+  // console.log('in ProjectController.saveRevisions', request.body);
+  var errors = [];
+
+  let revPromises = [];
+  request.body.forEach((rev, i) => {
+    // console.log('rev: Adding / Adjusting: ', rev.id, rev.scope);
+
+    // rev.change is either unset or value = add, update, delete
+    // if unset, skip updating.
+    if (rev.change === 'delete') { //checking to see if we are to delete rev.
+      // console.log('delete scope', item.id);
+      revPromises.push(ProjectModel.deleteRevisions(rev.id));
+    } else if (rev.change) {  // wish to delete the scope record.
+      revPromises.push(ProjectModel.addRevisions(rev));
+    }
+
+  });
+
+  try {
+    const revResponses = await Promise.all(revPromises);
+    console.log('scope records created / updated: ', revResponses);
+  } catch (err) {
+    console.log('Scope record create error:', err);
+    errors.push(err);
+  }
+
+  // console.log('Create return... back to browser');
+  if (errors.length) {
+    console.log('Done with error(s)', errors);
+    return response.json(errors);
+  }
+  console.log('Revision(s) saved');
+  return response.json({message: 'Revisions committed'});
+
+}
+
+export const removeRevision = async (request, response) => {
+
+  try {
+    // console.log('in db update.  Params:', id, tCardID);
+    const deleteResp = await ProjectModel.deleteRevision(request.params.id);
+    return response.json('Revision Deleted');
+
+  } catch (err) {
+    // console.log('MySQL Update record Error: ', `${err.errno}:${err.code} - ${err.sqlMessage}`);
     return response.json(err);
 
   }

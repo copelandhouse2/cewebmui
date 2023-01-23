@@ -74,8 +74,8 @@ class CityDialog extends Component {
       state_prov_long: 'Texas',
       country: 'US',
       country_long: 'United States',
-      created_by: null,
-      last_updated_by: null
+      created_by: this.props.session.id,
+      last_updated_by: this.props.session.id
     };
 
     this.initState = {...this.state};
@@ -91,15 +91,17 @@ class CityDialog extends Component {
   handleSubmit = () => {
     // console.log('In the handleSubmit');
 
-    this.setState({
-      created_by: this.props.session.id,
-      last_updated_by: this.props.session.id
-    },
-      ()=> {
-        this.props.createCity(this.state);
-      }
-    )
+    // this.setState({
+    //   created_by: this.props.session.id,
+    //   last_updated_by: this.props.session.id
+    // },
+    //   ()=> {
+    //     this.props.createCity(this.state);
+    //   }
+    // )
     // console.log('after the setState and createCity');
+    this.props.createCity(this.state);
+
 
   }
 
@@ -224,13 +226,13 @@ class CityDialog extends Component {
               // this.props.closeDialog('',subdivision_id, this.state.subdivision);
               this.props.closeDialog('',values);
             }}
-            variant = 'contained' color='secondary'
+            variant = 'text' color='secondary'
           >
             Close
           </Button>
           <Button
             onClick = {this.handleSubmit}
-            variant = 'contained' color='secondary'
+            variant = 'text' color='secondary'
           >
             Save
           </Button>

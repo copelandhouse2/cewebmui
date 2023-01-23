@@ -3,15 +3,22 @@ import { connect } from "react-redux";
 import { loadPending, loadSession, loadCities
   , loadClients, loadSubdivisions, loadContacts, getLookup
   , authenticate, loadGeotechs, loadGeoMasterData, loadControls, loadRelationships
-  , updateSettings, loadUsers, loadScope }
+  , updateSettings, updatePreferences, loadUsers, loadScope, ynDialog
+  , loadOrganizations, initiateTrello }
   from "../actions";
 
 function mapStateToProps(state) {
   return {
     session: state.session,
     cities: state.cities,
-    clients: state.clients,
+    // clients: state.clients,
     subdivisions: state.subdivisions,
+    avffControls: state.avffControls,
+    avffRelationships: state.avffRelationships,
+    designers: state.designers,
+    inspectors: state.inspectors,
+    preferences: state.preferences,
+    organizations: state.organizations
   };
 }
 
@@ -59,9 +66,22 @@ function mapDispatchToProps(dispatch) {
     updateSettings: function (session, settings) {
       dispatch(updateSettings(session, settings));
     },
+    updatePreferences: function (prefs) {
+      dispatch(updatePreferences(prefs));
+    },
     loadScope: function () {
       dispatch(loadScope());
     },
+    ynDialog: function () {
+      dispatch(ynDialog());
+    },
+    loadOrganizations: function () {
+      dispatch(loadOrganizations());
+    },
+    initiateTrello: function (token) {
+      dispatch(initiateTrello(token));
+    },
+
   };
 }
 

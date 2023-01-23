@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Fragment } from 'react';
 import PropTypes from "prop-types";
 import { withStyles } from "@material-ui/core/styles";
 import { withWidth } from "@material-ui/core";
@@ -11,16 +11,24 @@ import {
   Menu,
   MenuItem
 } from "@material-ui/core";
+import Grid from "@material-ui/core/Grid";
 import { AccountCircle } from "@material-ui/icons";
 import MenuIcon from '@material-ui/icons/Menu';
 import CloseIcon from '@material-ui/icons/Close';
-import Paper from '@material-ui/core/Paper';
+// import Paper from '@material-ui/core/Paper';
 
 const styles = theme => ({
   root: {},
   // AppBar: {marginBottom: 10, zIndex: theme.zIndex.drawer+1,},
   AppBar: {
-    height: 60
+    height: 60,
+    zIndex: theme.zIndex.drawer + 1,
+  },
+  toolbar: {
+    zIndex: theme.zIndex.drawer + 2,
+  },
+  menu: {
+    zIndex: theme.zIndex.drawer + 3,
   },
   grow: {
     flexGrow: 1,
@@ -37,7 +45,16 @@ const styles = theme => ({
   paper: {
     backgroundColor: theme.palette.primary.main,
     padding: '0px 30px',
+  },
+  pageTitleContainer: {
+    position: 'absolute',
+  },
+  pageTitle: {
+    color: theme.palette.primary.contrastText,
+    verticalAlign: 'middle',
+    fontStyle: 'italic'
   }
+
 });
 
 class Header extends React.Component {
@@ -72,72 +89,78 @@ class Header extends React.Component {
     // console.log('header', currentMenu, currentViews, currentProject);
 
     return (
-      <div>
-      <AppBar className={classes.AppBar} >
-        <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="Open drawer"
-            onClick={this.props.toggleDrawer}
-          >
-            {this.props.navOpen? <CloseIcon /> : <MenuIcon />}
-          </IconButton>
+      <Fragment>
+        <AppBar className={classes.AppBar} >
 
-          <Typography
-            variant="h5"
-            color="inherit"
-            // className={classes.grow}
-          >
-            {width === "sm"||width === "xs" ? "CE Tools" : "Copeland Engineering Webtools"}
-          </Typography>
+          <Grid container justify='center' alignItems='center' className={`${classes.AppBar} ${classes.pageTitleContainer}`}>
+            <Grid item>
+              <Typography variant='h4' className={classes.pageTitle}>
+                {this.props.pageTitle||'Welcome'}
+              </Typography>
+            </Grid>
+          </Grid>
 
-          <div className={classes.grow} />
-          <Paper elevation={4} className={classes.paper}>
-          <Typography variant='h5' color='inherit'>
-            {this.props.pageTitle||'Welcome'}
-          </Typography>
-          </Paper>
-          <div className={classes.grow2} />
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="Open drawer"
+              onClick={this.props.toggleDrawer}
+              className={classes.toolbar}
+            >
+              {this.props.navOpen? <CloseIcon /> : <MenuIcon />}
+            </IconButton>
 
-          <Typography
-            variant="body2"
-            color="inherit"
-          >
-            Welcome {this.props.session.first_name}
-          </Typography>
-          <IconButton
-            aria-owns={open ? 'menu-navbar' : undefined}
-            aria-haspopup="true"
-            onClick={this.handleMenu}
-            color="inherit"
-          >
-            <AccountCircle className={classes.icon}/>
-          </IconButton>
-          <Menu
-            id="menu-navbar"
-            anchorEl={anchorEl}
-            // anchorOrigin={{
-            //   vertical: 'top',
-            //   horizontal: 'right',
-            // }}
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            open={open}
-            onClose={this.handleClose}
-          >
-            <MenuItem onClick={this.handleSettings}>Settings</MenuItem>
-            <MenuItem onClick={this.props.signOut}>Log Out</MenuItem>
-          </Menu>
-        </Toolbar>
-      </AppBar>
-      <SettingsContainer
-        open={this.state.settings}
-        handleClose={this.handleSettings}
-        updateAccentColor={this.props.updateAccentColor}
-      />
-      </div>
+            <Typography
+              variant="h5"
+              color="inherit"
+              // className={classes.grow}
+            >
+              {width === "sm"||width === "xs" ? "CE Tools" : "Copeland Engineering Webtools"}
+            </Typography>
+
+            <div className={classes.grow} />
+
+            <Typography
+              variant="body2"
+              color="inherit"
+            >
+              Welcome {this.props.session.first_name}
+            </Typography>
+            <IconButton
+              aria-owns={open ? 'menu-navbar' : undefined}
+              aria-haspopup="true"
+              onClick={this.handleMenu}
+              color="inherit"
+              className={classes.toolbar}
+            >
+              <AccountCircle className={classes.icon}/>
+            </IconButton>
+            <Menu
+              id="menu-navbar"
+              anchorEl={anchorEl}
+              // anchorOrigin={{
+              //   vertical: 'top',
+              //   horizontal: 'right',
+              // }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              open={open}
+              onClose={this.handleClose}
+            >
+              <MenuItem onClick={this.handleSettings}>Settings</MenuItem>
+              <MenuItem onClick={this.props.signOut}>Log Out</MenuItem>
+            </Menu>
+          </Toolbar>
+        </AppBar>
+
+        <SettingsContainer
+          open={this.state.settings}
+          handleClose={this.handleSettings}
+          updateAccentColor={this.props.updateAccentColor}
+        />
+      </Fragment>
     );
   }
 }
