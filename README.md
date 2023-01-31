@@ -11,6 +11,7 @@ Copeland Engineering Web Tools.
 - Bug: City Maintenance: fix city query to pull cities with a blank state or blank country.
 - Enh: City Maintenance: Added check to make sure state and country are filled in.
 - Enh: Custom and Volume Project Screen: Removed the Save Only button. Rarely used.
+- Enh: Revision Price field is now a text field to support per hour rates.
 
 ## v2.1.10 8/2/2022
 
