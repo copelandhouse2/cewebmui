@@ -1,4 +1,4 @@
-import { sql } from "../mysqldb";
+import { sql } from '../mysqldb';
 
 const sqlPromise = (SQLstmt, values) => {
   return new Promise((resolve, reject) => {
@@ -25,8 +25,7 @@ const sqlPromise = (SQLstmt, values) => {
 //   to each other.
 
 const AvffModel = {
-  getAllControls: function(callback = null) {
-
+  getAllControls: function (callback = null) {
     // , CONVERT(ac.image USING utf8mb4) image
 
     const SQLstmt = `select ac.id, ac.name, ac.label, ac.entity_type, ac.scope_section
@@ -34,8 +33,7 @@ const AvffModel = {
       , ac.background_color, ac.url, ac.category, ac.name_id, ac.data_type, ac.field_length
       , ac.lookup_list, ac.creatable, ac.help_text, ac.disabled, ac.display_value_data_type
       from avff_controls ac
-      order by ac.id`
-    ;
+      order by ac.id`;
     // let values = [];
 
     if (callback) {
@@ -45,11 +43,9 @@ const AvffModel = {
       // console.log('getPendingProjects: in the promise version');
       return sqlPromise(SQLstmt);
     }
-
   },
 
-  getScopeControls: function(callback = null) {
-
+  getScopeControls: function (callback = null) {
     // , CONVERT(ac.image USING utf8mb4) image
 
     const SQLstmt = `select ac.id, ac.name, ac.name code, ac.label, ac.label name, ac.entity_type, ac.scope_section
@@ -59,8 +55,7 @@ const AvffModel = {
       from avff_controls ac
       where entity_type = "ACTION"
       and category <> 'SETUP'
-      order by ac.id`
-    ;
+      order by ac.id`;
     // let values = [];
 
     if (callback) {
@@ -70,18 +65,15 @@ const AvffModel = {
       // console.log('getPendingProjects: in the promise version');
       return sqlPromise(SQLstmt);
     }
-
   },
-  getAllRelationships: function(callback = null) {
-
+  getAllRelationships: function (callback = null) {
     const SQLstmt = `select ar.id rship_id, ar.control_id, ar.parent_id
       , ar.order, ar.display_width, ar.column_width, ar.disabled, ar.hidden
       , ar.readonly, ar.required, ar.resizable, ar.z_index, ar.column_formatter
       , ar.header_formatter, ar.field_formatter, ar.label_formatter, ar.hide_label
       , ar.alt_label, ar.alt_data_type
       from avff_relationships ar
-      order by ar.parent_id, ar.order, ar.id`
-    ;
+      order by ar.parent_id, ar.order, ar.id`;
     // let values = [];
 
     if (callback) {
@@ -91,11 +83,9 @@ const AvffModel = {
       // console.log('getPendingProjects: in the promise version');
       return sqlPromise(SQLstmt);
     }
-
   },
 
-  getTopMenu: function(callback = null) {
-
+  getTopMenu: function (callback = null) {
     // , CONVERT(ac.image USING utf8mb4) image
 
     const SQLstmt = `select ac.id, ac.name, IFNULL(ar.alt_label, ac.label) label
@@ -108,11 +98,11 @@ const AvffModel = {
       , ar.order, ar.display_width, ar.column_width, ar.disabled, ar.hidden
       , ar.required, ar.resizable, ar.z_index, ar.column_formatter
       , ar.header_formatter, ar.field_formatter, ar.label_formatter, ar.hide_label
+      , ar.alt_label, ar.alt_data_type
       from avff_controls ac
       left join avff_relationships ar on ac.id = ar.control_id
       where ar.parent_id IS NULL
-      order by ar.order`
-    ;
+      order by ar.order`;
     // let values = [];
 
     if (callback) {
@@ -122,11 +112,9 @@ const AvffModel = {
       // console.log('getPendingProjects: in the promise version');
       return sqlPromise(SQLstmt);
     }
-
   },
 
-  getChildren: function(parentID, callback = null) {
-
+  getChildren: function (parentID, callback = null) {
     const SQLstmt = `select ac.id, ac.name, IFNULL(ar.alt_label, ac.label) label
       , ac.entity_type, CONVERT(ac.image USING utf8mb4) image
       , ac.background_color, ac.url, ac.name_id, IFNULL(ar.alt_data_type, ac.data_type) data_type
@@ -137,11 +125,10 @@ const AvffModel = {
       , ar.order, ar.display_width, ar.column_width, ar.disabled, ar.hidden
       , ar.required, ar.resizable, ar.z_index, ar.column_formatter
       , ar.header_formatter, ar.field_formatter, ar.label_formatter, ar.hide_label
+      , ar.alt_label, ar.alt_data_type
       left join avff_relationships ar on ac.id = ar.control_id
       where ar.parent_id = ?
-      order by ar.order`
-    ;
-
+      order by ar.order`;
     let values = [parentID];
 
     if (callback) {
@@ -151,14 +138,11 @@ const AvffModel = {
       // console.log('getPendingProjects: in the promise version');
       return sqlPromise(SQLstmt, values);
     }
-
   },
 
-  addUpdControl: function(control, callback = null) {
-
+  addUpdControl: function (control, callback = null) {
     //inserting into mysql
-    const { disable_date, created_by, last_updated_by }
-      = control;
+    const { disable_date, created_by, last_updated_by } = control;
 
     const SQLstmt = `INSERT INTO avff_controls (id, name, label, description, entity_type
       , image, background_color, url, disable_date, created_by, last_updated_by)
@@ -166,11 +150,28 @@ const AvffModel = {
      ON DUPLICATE KEY UPDATE name=?, label=?, description = ?, entity_type=?, image=?
      , background_color=?, url=?, disable_date=?, last_updated_by = ?`;
 
-    const values = [contol_id, name, label, description, entity_type, image  // 6
-    , background_color, url, disable_date, created_by, last_updated_by // 5
+    const values = [
+      contol_id,
+      name,
+      label,
+      description,
+      entity_type,
+      image, // 6
+      background_color,
+      url,
+      disable_date,
+      created_by,
+      last_updated_by, // 5
 
-    , name, label, description, entity_type, image, background_color  // 6
-    , url, disable_date, last_updated_by // 3
+      name,
+      label,
+      description,
+      entity_type,
+      image,
+      background_color, // 6
+      url,
+      disable_date,
+      last_updated_by, // 3
     ];
 
     if (callback) {
@@ -180,13 +181,11 @@ const AvffModel = {
       // console.log('getPendingProjects: in the promise version');
       return sqlPromise(SQLstmt, values);
     }
-
   },
 
-  disableControl: function(control, callback = null) {
-
+  disableControl: function (control, callback = null) {
     //inserting into mysql
-    const {control_id, last_updated_by } = control;
+    const { control_id, last_updated_by } = control;
 
     const SQLstmt = `UPDATE avff_controls
     SET disabled = ?, last_updated_by = ?
@@ -201,13 +200,11 @@ const AvffModel = {
       // console.log('getPendingProjects: in the promise version');
       return sqlPromise(SQLstmt, values);
     }
-
   },
 
-  enableControl: function(control, callback = null) {
-
+  enableControl: function (control, callback = null) {
     //inserting into mysql
-    const {control_id, last_updated_by } = control;
+    const { control_id, last_updated_by } = control;
 
     const SQLstmt = `UPDATE avff_controls
     SET disabled = ?, last_updated_by = ?
@@ -222,11 +219,9 @@ const AvffModel = {
       // console.log('getPendingProjects: in the promise version');
       return sqlPromise(SQLstmt, values);
     }
-
   },
 
-  deleteControl: function(control_id, callback = null) {
-
+  deleteControl: function (control_id, callback = null) {
     //inserting into mysql
     // const {action_id, last_updated_by } = action;
 
@@ -241,7 +236,6 @@ const AvffModel = {
       // console.log('getPendingProjects: in the promise version');
       return sqlPromise(SQLstmt, values);
     }
-
   },
 };
 
