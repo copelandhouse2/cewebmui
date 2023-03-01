@@ -54,9 +54,10 @@ class RevisionDialog extends Component {
     const today = date();
     // const today = new Date();
 
+    // console.log('scope', this.props.parentState.scope);
     let scopeLookup = this.props.parentState.scope.map((s) => {
       if (s.id !== null) {
-        return { code: s.id, name: s.name };
+        return { code: s.id, name: s.label };
       }
       return null;
     });
@@ -220,13 +221,12 @@ class RevisionDialog extends Component {
           rev_date: row.rev_date,
         });
       }
-
-      if (noError) {
-        // console.log('Saving...');
-        this.props.saveRevisions(this.state.project_id, revisions);
-        this.handleClear(incrementRev);
-      }
     });
+    if (noError) {
+      // console.log('Saving... ', revisions);
+      this.props.saveRevisions(this.state.project_id, revisions);
+      this.handleClear(incrementRev);
+    }
   }; // handleSave
 
   // handleClose... handles closing the dialog box.  Uses props.updateParentState
@@ -278,7 +278,7 @@ class RevisionDialog extends Component {
         handleSubmit={false}
         actions={this.actions()}
         dialogWidth={'xl'}
-        dialogHeight={500}>
+        dialogHeight={800}>
         {this.props.localView.children.map((group, id) => {
           switch (group.name) {
             case 'revision_update':

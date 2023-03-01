@@ -28,7 +28,10 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Collapse from '@material-ui/core/Collapse';
 import Divider from '@material-ui/core/Divider';
 
-// import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormControl from '@material-ui/core/FormControl';
+import FormLabel from '@material-ui/core/FormLabel';
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 // import Switch from '@material-ui/core/Switch';
 // import RadioGroup from '@material-ui/core/RadioGroup';
@@ -398,7 +401,7 @@ const toTitleCase = (str) => {
 };
 
 export const FieldGroup = withStyles(styles, { withTheme: true })((props) => {
-  const { classes, fieldGroup, removeScope, theme } = props;
+  const { classes, fieldGroup, removeScope, theme, title } = props;
   // console.log(fieldGroup);
   switch (fieldGroup.name) {
     case 'soil':
@@ -412,13 +415,13 @@ export const FieldGroup = withStyles(styles, { withTheme: true })((props) => {
             <Toolbar variant='dense' className={classes.toolbar}>
               <Typography align='left' style={{ fontWeight: 500 }} className={classes.titleFG}>
                 {removeScope && (
-                  <Tooltip title='Remove scope item' aria-label='Remove'>
+                  <Tooltip title={'Remove scope item'} aria-label='Remove'>
                     <Fab color='secondary' className={classes.fabMinus} onClick={() => removeScope(props.arrID)}>
                       <Minus className={classes.minus} />
                     </Fab>
                   </Tooltip>
                 )}
-                {fieldGroup.label}
+                {title || fieldGroup.label}
               </Typography>
               <div className={classes.grow} />
               {(fieldGroup.name === 'story' || fieldGroup.name === 'vol_single_project') && (
@@ -1290,6 +1293,7 @@ export const SearchTabularFG = withStyles(styles, { withTheme: true })(
                 </TableHead>
                 <TableBody>
                   {data.map((r, ri) => {
+                    // console.log('row', r);
                     var childID = -1; // this happens to be the no value for findIndex.
                     if (this.state.scopeToParent) {
                       childID = r.scope.findIndex((s) => s.scope === this.state.scopeToParent);
@@ -1577,10 +1581,30 @@ export const RevUpdateFG = withStyles(styles, { withTheme: true })(
       this.initState = { ...this.state };
     }
 
+    componentDidMount = () => {
+      // console.log('revision CDM: local state', this.state, 'parent state:', this.props.parentState);
+      this.resetScope();
+    };
+
+    resetScope = () => {
+      let scopeList = {};
+      this.props.parentState.altLookups
+        .find((f) => f.name === 'scope')
+        .lookup_list.forEach((s, i) => {
+          scopeList[s.code] = false;
+        });
+      this.setState(scopeList);
+    };
+
+    handleChange = (name) => (e) => {
+      this.setState({ [name]: e.target.checked });
+    };
+
     handleClear = () => {
       // console.log('In handleClear');
       // this.setState({ open: !this.state.open })
       this.props.clearState();
+      this.resetScope();
     };
 
     handleSave = () => {
@@ -1590,7 +1614,13 @@ export const RevUpdateFG = withStyles(styles, { withTheme: true })(
       // the save function passed takes an array to allow saving multiple
       // rows at a time.
       const rows = [];
-      rows.push(this.props.parentState);
+      this.props.parentState.altLookups
+        .find((f) => f.name === 'scope')
+        .lookup_list.forEach((s, i) => {
+          if (this.state[s.code]) rows.push({ ...this.props.parentState, scope_id: s.code });
+        });
+      // rows.push(this.props.parentState);
+      // console.log('the rows', rows);
       this.props.saveState(rows);
     };
 
@@ -1604,19 +1634,18 @@ export const RevUpdateFG = withStyles(styles, { withTheme: true })(
       // const { classes, theme, fieldGroup, dialogState, updateState } = this.props;
       // const { classes, theme, fieldGroup, toggleScopeDialog, removeScope, dialogState, scopeID, updateState } = props;
       // console.log('RevUpdateFG', dialogState.altLookups);
+      // console.log('alt lookups', parentState.altLookups);
+      // console.log('state', this.state);
+
       let i = 0;
       return (
         <Grid container>
-          {/*<Grid item xs={12} style={ {marginTop: 20, marginBottom: 20, borderTop: '1px solid black'} }>
-          <Typography align='left' style={{fontWeight: 500}}>
-            {fieldGroup.label}
-          </Typography>
-        </Grid>*/}
-          <Grid item xs={12}>
+          <Grid item xs={11}>
             <List dense={true}>
               <ListItem key={i}>
                 {fieldGroup.children.map((field, id) => {
                   if (field.hidden === 'Y') return null;
+                  if (field.name === 'scope') return null;
                   return (
                     <Field2Container
                       key={id}
@@ -1633,58 +1662,54 @@ export const RevUpdateFG = withStyles(styles, { withTheme: true })(
                     />
                   );
                 })}
-                {/*}
-              <Tooltip title='Cascade description to scope items' aria-label='Cascade Description'>
-                <Checkbox
-                  onChange={this.toggleCheckbox}
-                  checked={dialogState.checkboxCopyDesc}
-                />
-              </Tooltip>
-              */}
+
                 <Tooltip title='Clear the selection' aria-label='Clear selection'>
                   <IconButton aria-label='Clear' onClick={this.handleClear} color='secondary'>
                     <ClearIcon />
                   </IconButton>
                 </Tooltip>
-                <Tooltip title='Add Revison' aria-label='Add Revision'>
-                  <IconButton aria-label='Add' onClick={this.handleSave} color='secondary'>
-                    <AddIcon size={30} />
-                  </IconButton>
-                </Tooltip>
               </ListItem>
-              {/*
-              <Collapse in={this.state.open} timeout='auto'>
-              {dialogState.scope.map((scope,scopeID)=>{
-                return (
-                  <ListItem key={i++}>
-                  <ListItemText inset className={classes.listInset} primary={scope.label||toTitleCase(scope.scope)}/>
-                  {fieldGroup.children.map((field, id)=>{
-                    // console.log('child', field, scopeID);
-                    if (field.hidden === 'Y') return null;
-                    if (field.name === 'revision_price') return null; // don't show revision price at scope level
-                    return (<Field2Container
-                      // key={field.id*(scopeID+2)}
-                      key={id}
-                      field = {field}
-                      arrID = {scopeID||scopeID===0?scopeID:false}
-                      state = {dialogState}
-                      updateState = {updateState}
-                      // props that are not used.
-                      loadFind={()=>{}}
-                      searchForDups={()=>{}}
-                      loadMessage={()=>{}}
 
-                    />);
-                  })}
-                </ListItem>
-                )
-              })
-              }
-              </Collapse>
-            */}
-
-              <Divider />
+              <ListItem key={i + 1}>
+                <FormControl component='fieldset'>
+                  <FormLabel component='legend'>Scope</FormLabel>
+                  <FormGroup row>
+                    {parentState.altLookups
+                      .find((f) => f.name === 'scope')
+                      .lookup_list.map((s, i) => {
+                        if (s.code === -1) {
+                          // Project details
+                          return (
+                            <Tooltip key={i} title='Changes to address, lot, or soil information.  Do not use as an "other" or catch all revision'>
+                              <FormControlLabel
+                                control={<Checkbox checked={this.state[s.code] || false} onChange={this.handleChange(s.code)} />}
+                                label={s.name}
+                              />
+                            </Tooltip>
+                          );
+                        }
+                        return (
+                          <FormControlLabel
+                            key={i}
+                            control={<Checkbox checked={this.state[s.code] || false} onChange={this.handleChange(s.code)} />}
+                            label={s.name}
+                          />
+                        );
+                      })}
+                  </FormGroup>
+                </FormControl>
+              </ListItem>
             </List>
+            <Divider />
+          </Grid>
+          <Grid container item justify='center' alignItems='center' xs={1} spacing={8}>
+            <Grid item>
+              <Tooltip title='Add Revison' aria-label='Add Revision'>
+                <Fab aria-label='Add' onClick={this.handleSave} size='large' color='secondary'>
+                  <AddIcon size={54} />
+                </Fab>
+              </Tooltip>
+            </Grid>
           </Grid>
         </Grid>
       );

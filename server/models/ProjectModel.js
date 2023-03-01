@@ -655,14 +655,14 @@ const ProjectModel = {
       trello_list_id,
       trello_card_id,
       box_folder,
-      // , insp_contact, insp_billing_contact, cable_company_id, insp_trello_card_id
+      insp_contact,
+      insp_billing_contact,
+      // , cable_company_id, insp_trello_card_id
       created_by,
       last_updated_by,
     } = project;
 
-    const insp_contact = null,
-      insp_billing_contact = null,
-      cable_company_id = null,
+    const cable_company_id = null,
       insp_trello_card_id = null;
     console.log('new values', architect_contact);
 
@@ -1218,7 +1218,7 @@ const ProjectModel = {
 
     // const updDate = rev_date.replace('T', ' ');
     const updDate = rev_date;
-    console.log('rev date', updDate);
+    // console.log('rev date', updDate);
 
     const SQLstmt = `INSERT INTO projects_revisions (id, project_id, scope_id
       , revision, reason, responsibility, description, price, designer_id

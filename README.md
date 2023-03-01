@@ -2,6 +2,14 @@
 
 Copeland Engineering Web Tools.
 
+## v2.1.12 3/1/2023
+
+- Enh: Revision Dialog Screen: Now allows you to select multiple scope items for a revision.
+- Enh: Project Screen: Now displays creation date and revisions of the scope item
+- Enh: Project Screen: Now displays created by, creation date, last updated by, and last update date of the project. Mouse over the job number at the top of screen
+- Enh: Custom Project Screen: Added Inspection and Inspection Billing contact
+- Enh: Trello Update: Webtools will no longer move an updated card to bottom of current list. It will remain in its spot.
+
 ## v2.1.11 1/27/2023
 
 - Enh: Client Details Screen: Ability to assign a main contact and billing contact to a client
