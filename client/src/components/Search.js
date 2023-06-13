@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import { Redirect, Link } from "react-router-dom"
+import { Redirect, Link } from 'react-router-dom';
 // import { withNavigationFocus } from 'react-navigation';
 // import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import { withWidth } from "@material-ui/core";
+import { withWidth } from '@material-ui/core';
 
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
@@ -30,7 +30,7 @@ import Switch from '@material-ui/core/Switch';
 
 import DupsDialogContainer from '../containers/DupsDialogContainer';
 
-const styles = theme => ({
+const styles = (theme) => ({
   root: {
     display: 'flex',
   },
@@ -44,7 +44,7 @@ const styles = theme => ({
   },
   titleText: {
     color: theme.palette.secondary.contrastText,
-    backgroundColor: theme.palette.secondary.main
+    backgroundColor: theme.palette.secondary.main,
   },
   imageSrc: {
     height: 20,
@@ -57,7 +57,7 @@ const styles = theme => ({
   findField: {
     backgroundColor: theme.palette.secondary.main,
     color: theme.palette.secondary.contrastText,
-    '&:hover': {backgroundColor: theme.palette.secondary.dark}
+    '&:hover': { backgroundColor: theme.palette.secondary.dark },
   },
   commitType: {
     // width: 120,
@@ -65,7 +65,7 @@ const styles = theme => ({
   addScope: {
     position: 'fixed',
     right: '20%',
-    top: 380
+    top: 380,
   },
   grow: {
     flexGrow: 1,
@@ -85,8 +85,8 @@ const styles = theme => ({
     // padding: 10,
   },
   linkStyle: {
-    textDecoration: 'none'
-  }
+    textDecoration: 'none',
+  },
 });
 
 // const date = (dayAdj=0) => {
@@ -106,21 +106,20 @@ class Search extends Component {
       object: 'PROJECT',
       renderScreen: false,
       currentMenuID: this.props.currentViews.id,
-      currentView: this.props.VIEW||'DEFAULT',
-      saveValue: '',  // stores previous values of address/lot/block to test for change      selectedIndexes: [],
+      currentView: this.props.VIEW || 'DEFAULT',
+      saveValue: '', // stores previous values of address/lot/block to test for change      selectedIndexes: [],
       selectedIndexes: [],
       selected: null,
-      showSearchByFields: false,  // show the old Search By fields.  Hide the Find field.
+      showSearchByFields: false, // show the old Search By fields.  Hide the Find field.
       scope: 'volfoundation',
       redirectUrl: null,
       openDupsDialog: false,
       dupRec: {},
     };
 
-    this.initState = {...this.state};
+    this.initState = { ...this.state };
 
-    this.scopeField = {}
-
+    this.scopeField = {};
   }
 
   componentDidMount = () => {
@@ -133,11 +132,11 @@ class Search extends Component {
     // if (this.props.currentViews.name !== 'update') this.props.loadViewsByName('update');
     if (this.props.currentViews.name !== 'search') this.props.loadViewsByName('search');
 
-    this.scopeField = this.props.avffControls.find(control=>control.entity_type === 'FIELD' && control.name === 'scope');
+    this.scopeField = this.props.avffControls.find((control) => control.entity_type === 'FIELD' && control.name === 'scope');
     this.scopeField.display_width = 3;
 
     // console.log('scope field', this.scopeField);
-  }
+  };
 
   static getDerivedStateFromProps(nextProps, prevState) {
     // console.log('gDSFP');
@@ -150,8 +149,8 @@ class Search extends Component {
     //   return {renderScreen: true };
     // }
     if (!prevState.renderScreen && currentViews.length > 0) {
-      if (currentViews.findIndex(view => view.category === 'DEFAULT') > -1) {
-        return {renderScreen: true };
+      if (currentViews.findIndex((view) => view.category === 'DEFAULT') > -1) {
+        return { renderScreen: true };
       }
     }
     return null;
@@ -180,54 +179,42 @@ class Search extends Component {
     //     </Button>
     //   </Grid>
     // );
-
-  }
+  };
 
   // actions that show on top of page.  Right side next to Recents
   topActionBarRight = () => {
     return null;
-  }
+  };
 
   // actions that show on bottom of page
   bottomActionBar = () => {
-
     const { classes, search } = this.props;
 
     return (
-    <Grid container justify="flex-end" style={{marginTop: 10, marginBottom: 10}} spacing={16}>
-
-      <Grid item>
-        <Link to={`/`} className={classes.linkStyle}>
-          <Button title='Return to menu'
-            variant="contained"
-            size='small'
-            color="secondary"
-          >
-            Cancel
+      <Grid container justify='flex-end' style={{ marginTop: 10, marginBottom: 10 }} spacing={16}>
+        <Grid item>
+          <Link to={`/`} className={classes.linkStyle}>
+            <Button title='Return to menu' variant='contained' size='small' color='secondary'>
+              Cancel
+            </Button>
+          </Link>
+        </Grid>
+        <Grid item className={classes.grow}>
+          <Tooltip
+            placement='top-start'
+            title={`Default limit 200.  Override by a) Find field 'limit:[value]' or b) Last Updated drop down`}
+            aria-label='default limit 200'>
+            <Typography>{search.findResults.length} results displayed.</Typography>
+          </Tooltip>
+        </Grid>
+        <Grid item>
+          <Button title='Select record' variant='contained' size='small' color='secondary' onClick={this.handleSelected}>
+            Edit
           </Button>
-        </Link>
+        </Grid>
       </Grid>
-      <Grid item className={classes.grow}>
-      <Tooltip placement="top-start" title={`Default limit 200.  Override by a) Find field 'limit:[value]' or b) Last Updated drop down`} aria-label='default limit 200'>
-        <Typography>
-          {search.findResults.length} results displayed.
-        </Typography>
-      </Tooltip>
-      </Grid>
-      <Grid item>
-        <Button title='Select record'
-          variant="contained"
-          size='small'
-          color="secondary"
-          onClick={this.handleSelected}
-        >
-          Edit
-        </Button>
-      </Grid>
-
-    </Grid>
-    )
-  }
+    );
+  };
 
   // actions that show in field group title bar
   fieldGroupTools = () => {
@@ -243,23 +230,25 @@ class Search extends Component {
         control={
           <Switch
             checked={this.state.showSearchByFields}
-            onChange={(e)=>{this.handleSwitch(e)}}
+            onChange={(e) => {
+              this.handleSwitch(e);
+            }}
             value='showSearchByFields'
           />
         }
-        label={this.state.showSearchByFields?'Back to Find Field':'Show Fields'}
+        label={this.state.showSearchByFields ? 'Back to Find Field' : 'Show Fields'}
       />
-    )
-  }
+    );
+  };
 
   fieldGroupToolsTabular = () => {
     // const { search } = this.props;
     return (
       <Field2Container
-        field = {this.scopeField}
-        scopeID = {false}
-        state = {this.state}
-        updateState = {this.updateState}
+        field={this.scopeField}
+        scopeID={false}
+        state={this.state}
+        updateState={this.updateState}
         // turns off dup check, creating client,city,sub via list
         searchMode={true}
         // props that are not used.
@@ -269,65 +258,59 @@ class Search extends Component {
         // call to create new client, city, sub
         createDialogValue={false}
       />
-    )
-  }
+    );
+  };
 
   // actions that show next to / below fields in field group
   fieldTools = () => {
-
     return (
       <Grid item>
-      <Button title='Find records'
-        variant="contained"
-        size='small'
-        color="secondary"
-        onClick={this.findProjects}
-      >
-        Search
-      </Button>
+        <Button title='Find records' variant='contained' size='small' color='secondary' onClick={this.findProjects}>
+          Search
+        </Button>
       </Grid>
-    )
-  }
+    );
+  };
 
   updateState = (updatedValues) => {
     // console.log('updateState', updatedValues);
     this.setState(updatedValues);
-  }
+  };
 
   handleSelected = () => {
     // console.log('In the handleSelected', this.state.selectedIndexes[0]);
-    if (this.state.selectedIndexes[0] > -1) {  // gets 0 and above.
+    if (this.state.selectedIndexes[0] > -1) {
+      // gets 0 and above.
       // console.log('In the if');
       this.props.updateProject(this.props.search.findResults[this.state.selectedIndexes[0]]);
       // this.props.clearDups();  // in container
-    } else {  // user selected first row (index = 0) which was the curent entry
+    } else {
+      // user selected first row (index = 0) which was the curent entry
       // console.log('In the else');
       // this.props.clearDups();  // in container
     }
-  }
+  };
 
   handleSwitch = (e) => {
     // console.log('In the handleSwitch');
 
     if (e.target.checked) {
       this.updateState({
-        showSearchByFields:e.target.checked,
-        find: null
+        showSearchByFields: e.target.checked,
+        find: null,
       });
     } else {
-      const keys = Object.keys(this.state)
-      const stateReset = keys.reduce((acc, v) => ({ ...acc, [v]: undefined }), {})
+      const keys = Object.keys(this.state);
+      const stateReset = keys.reduce((acc, v) => ({ ...acc, [v]: undefined }), {});
       this.setState({ ...stateReset, ...this.initState });
     }
-
-  }
+  };
 
   // Only called by Search button.
   findProjects = () => {
-
     // console.log('find projects', this.state);
     this.props.loadFind(null, this.state);
-  }
+  };
 
   handleSave = (updatedRows, andCommit = false) => {
     // let updated = updatedRows.filter(r=>{if (r) return r});
@@ -336,14 +319,13 @@ class Search extends Component {
     // Testing to make sure all the edited projects still have
     // an address, client, and city.
     let dataOk = true;
-    for (let i=0; i<updatedRows.length; i++) {
+    for (let i = 0; i < updatedRows.length; i++) {
       const { address1, client_id, city } = updatedRows[i];
-      if (!address1 || !client_id || !city ) {
+      if (!address1 || !client_id || !city) {
         this.props.loadMessage(
-          { ok:false,
-            status: 'Missing Data for '+updatedRows[i].job_number,
-            statusText: "Missing Address, Client, or City.  Please fill in"
-          }, "ERROR");
+          { ok: false, status: 'Missing Data for ' + updatedRows[i].job_number, statusText: 'Missing Address, Client, or City.  Please fill in' },
+          'ERROR'
+        );
         dataOk = false;
         break;
       }
@@ -352,7 +334,7 @@ class Search extends Component {
     // Testing to make sure all the edited projects still have
     // an address, client, and city.
     if (dataOk) {
-      for (let i=0; i<updatedRows.length; i++) {
+      for (let i = 0; i < updatedRows.length; i++) {
         // console.log('all is ok right now.  State:', updatedRows[i]);
         if (andCommit) {
           updatedRows[i].status = 'ACTIVE';
@@ -362,40 +344,37 @@ class Search extends Component {
           this.props.createAddress(updatedRows[i], true, true);
         }
       }
-    }  // if dataOk
+    } // if dataOk
+  }; // end of function
 
-  }  // end of function
-
-  handleDelete = (row)=> {
+  handleDelete = (row) => {
     // console.log('Delete project ', row);
     // console.log('Inspection Dialog: handleDelete', this.state);
-    this.props.ynDialog(
-      {
-        ok: false,
-        title: 'Delete Project?',
-        content: `Are you sure you want to Project ${this.props.search.findResults[row].address1}`,
-        yesFunc: ()=>{
-          this.props.deleteProject(this.props.search.findResults[row].id);
-        },
-        noFunc: false
-      }
-    )
+    this.props.ynDialog({
+      ok: false,
+      title: 'Delete Project?',
+      content: `Are you sure you want to Project ${this.props.search.findResults[row].address1}`,
+      yesFunc: () => {
+        this.props.deleteProject(this.props.search.findResults[row].id);
+      },
+      noFunc: false,
+    });
     // this.props.deleteProject(this.props.search.findResults[row].id);
-  }
+  };
 
   dupSelectClose = (project) => {
     this.setState(project);
-  }
+  };
 
   dupsDialogClose = () => {
     this.setState({ openDupsDialog: false });
-  }
+  };
 
   render() {
     const { currentViews } = this.props;
     // const { classes, currentViews, width, currentProject, search } = this.props;
     // console.log('Search Render:',
-      // 'state:', this.state,
+    // 'state:', this.state,
     //   'currentProject:', currentProject,
     //   'currentViews:', currentViews,
     //   'find:', search.find,
@@ -406,7 +385,7 @@ class Search extends Component {
 
     if (this.state.redirectUrl) {
       // console.log('also here');
-      return (<Redirect to={this.state.redirectUrl} />)
+      return <Redirect to={this.state.redirectUrl} />;
     }
 
     // Test to make sure we can render Screen.  Only set to true when
@@ -425,9 +404,7 @@ class Search extends Component {
     }
 
     if (this.props.currentProject.job_number) {
-      return (
-        <Redirect to={this.props.currentProject.url} />
-      );
+      return <Redirect to={this.props.currentProject.url} />;
     }
 
     let currentView = [];
@@ -435,13 +412,12 @@ class Search extends Component {
     //   currentView = currentViews.children.filter((view) => view.category === this.state.currentView)  // array of subviews (sections) that make up whole view.
     // }
     if (currentViews.length > 0) {
-        currentView = currentViews.filter((view) => view.category === this.state.currentView)  // array of subviews (sections) that make up whole view.
+      currentView = currentViews.filter((view) => view.category === this.state.currentView); // array of subviews (sections) that make up whole view.
     } else {
       return null;
     }
 
     const title = currentView[0].label;
-
 
     // console.log('currentView', currentView);
 
@@ -455,77 +431,77 @@ class Search extends Component {
         title={title}
         topActionBarLeft={this.topActionBarLeft}
         topActionBarRight={this.topActionBarRight}
-        bottomActionBar={this.bottomActionBar}
-      >
-        {currentView.map((view,vid)=>{  // loop on views
-          return (
-            view.children.map((group,gid)=>{  // loop on objects in views.  Usually field groups.
-            switch (group.name) {
-              case 'search_results':
-                const fChildren = group.children.filter((field) => field.entity_type === 'FIELD')  // array of fields minus sub field groups.
-                const fgChildren = group.children.find((field) => field.entity_type === 'FIELD_GROUP')  // Find the first (and only) field group.
-                const updGroup = Object.assign({},group,{children:fChildren});
-                // console.log('search_results', fChildren, fgChildren, group);
-                return(<SearchTabularFG
-                        key={gid}
-                        fieldGroup = {updGroup}
-                        parentState = {this.state}
-                        data = {this.props.search.findResults}
-                        updateState = {this.updateState}
-                        subGroupKey = 'scope'
-                        subFG = {fgChildren}
-                        fgTools={this.fieldGroupToolsTabular}
-                        handleSave={this.handleSave}
-                        handleDelete={this.handleDelete}
-                      />)
+        bottomActionBar={this.bottomActionBar}>
+        {
+          currentView.map((view, vid) => {
+            // loop on views
+            return view.children.map((group, gid) => {
+              // loop on objects in views.  Usually field groups.
+              switch (group.name) {
+                case 'search_results':
+                  const fChildren = group.children.filter((field) => field.entity_type === 'FIELD'); // array of fields minus sub field groups.
+                  const fgChildren = group.children.find((field) => field.entity_type === 'FIELD_GROUP'); // Find the first (and only) field group.
+                  const updGroup = Object.assign({}, group, { children: fChildren });
+                  // console.log('search_results', fChildren, fgChildren, group);
+                  // console.log('findResults', this.props.search.findResults);
+                  return (
+                    <SearchTabularFG
+                      key={gid}
+                      fieldGroup={updGroup}
+                      parentState={this.state}
+                      data={this.props.search.findResults}
+                      updateState={this.updateState}
+                      subGroupKey='scope'
+                      subFG={fgChildren}
+                      fgTools={this.fieldGroupToolsTabular}
+                      handleSave={this.handleSave}
+                      handleDelete={this.handleDelete}
+                    />
+                  );
                 // break;
-              case 'search_criteria':
-                return(<DefaultFG
-                        key={gid}
-                        fieldGroup = {group}
-                        state = {this.state}
-                        updateState = {this.updateState}
-                        hide={this.state.showSearchByFields} // Show Find.  Hide Search By Fields
-                        fgTools={this.fieldGroupTools}
-                      />)
+                case 'search_criteria':
+                  return (
+                    <DefaultFG
+                      key={gid}
+                      fieldGroup={group}
+                      state={this.state}
+                      updateState={this.updateState}
+                      hide={this.state.showSearchByFields} // Show Find.  Hide Search By Fields
+                      fgTools={this.fieldGroupTools}
+                    />
+                  );
                 // break;
-              case 'search_criteria_fields':
-                return(<DefaultFG
-                        key={gid}
-                        fieldGroup = {group}
-                        state = {this.state}
-                        updateState = {this.updateState}
-                        hide={!this.state.showSearchByFields} // Hide Find.  Show Search By Fields
-                        fgTools={this.fieldGroupTools}
-                        fieldTools={this.fieldTools}
-                      />)
+                case 'search_criteria_fields':
+                  return (
+                    <DefaultFG
+                      key={gid}
+                      fieldGroup={group}
+                      state={this.state}
+                      updateState={this.updateState}
+                      hide={!this.state.showSearchByFields} // Hide Find.  Show Search By Fields
+                      fgTools={this.fieldGroupTools}
+                      fieldTools={this.fieldTools}
+                    />
+                  );
                 // break;
-              default:
-                return(<DefaultFG
-                        key={gid}
-                        fieldGroup = {group}
-                        state = {this.state}
-                        updateState = {this.updateState}
-                        hide={false}
-                      />)
-            }  // switch
-          }))  // function-map-return
-        })    // function-map  jsx below.
+                default:
+                  return <DefaultFG key={gid} fieldGroup={group} state={this.state} updateState={this.updateState} hide={false} />;
+              } // switch
+            }); // function-map-return
+          }) // function-map  jsx below.
         }
-        {this.props.dups.length > 0  &&
-        this.state.openDupsDialog &&
-        <DupsDialogContainer
-          open = {this.props.dups.length > 0}
-          onSelectAndClose = {false}
-          onClose = {this.dupsDialogClose}
-          curRec = {this.state.dupRec}
-          selectAllowed = {false}
-        />}
+        {this.props.dups.length > 0 && this.state.openDupsDialog && (
+          <DupsDialogContainer
+            open={this.props.dups.length > 0}
+            onSelectAndClose={false}
+            onClose={this.dupsDialogClose}
+            curRec={this.state.dupRec}
+            selectAllowed={false}
+          />
+        )}
       </CePageContainer>
-    )
-
-  }  // render
-}  // Component
-
+    );
+  } // render
+} // Component
 
 export default withWidth()(withStyles(styles, { withTheme: true })(Search));

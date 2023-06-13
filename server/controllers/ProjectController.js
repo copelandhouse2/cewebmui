@@ -108,6 +108,8 @@ export const listSearch = async (request, response) => {
     } else {
       projects = await ProjectModel.getProjects(request.params);
     }
+    // console.log('list projects', projects);
+
     const projectData = await Promise.all(projects.map((proj) => getScope(proj)));
     // console.log('list PENDING projects with scope:', projectData);
     return response.json(projectData);
@@ -659,7 +661,7 @@ export const commit = (request, response) => {
         var cardUpd = {
           name: cardName,
           desc: cardDesc,
-          pos: 'bottom',
+          // pos: 'bottom',
           due: dueDate ? dueDate.toString() : '',
           closed: false, // this will unarchive the card.
           // idList: trello_list_id,
@@ -1114,7 +1116,7 @@ export const commit = (request, response) => {
       // on the project scope table right here.  Seems like a silly step.
       try {
         console.log('in db update.  Params:', id, tCardID, trello_card_id);
-        if (tCardID !== trello_card_id) {
+        if (tCardID && tCardID !== trello_card_id) {
           console.log('updating the db');
           const dbResponse = await ProjectModel.commitProjectByID(id, tCardID);
           // console.log('database commit response', dbResponse);
@@ -1280,7 +1282,7 @@ export const saveRevisions = async (request, response) => {
 
   try {
     const revResponses = await Promise.all(revPromises);
-    console.log('scope records created / updated: ', revResponses);
+    // console.log('scope records created / updated: ', revResponses);
   } catch (err) {
     console.log('Scope record create error:', err);
     errors.push(err);

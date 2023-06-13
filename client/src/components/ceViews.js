@@ -43,6 +43,11 @@ const styles = (theme) => ({
     color: theme.palette.secondary.contrastText,
     backgroundColor: theme.palette.secondary.main,
   },
+  titleTooltipText: {
+    color: theme.palette.primary.contrastText,
+    // backgroundColor: theme.palette.primary.dark,
+    fontWeight: 500,
+  },
   imageSrc: {
     height: 20,
     color: theme.palette.secondary.contrastText,
@@ -92,13 +97,54 @@ const styles = (theme) => ({
 //   })
 // };
 
-const date = (dayAdj = 0) => {
-  let returnDate = new Date();
-  returnDate.setDate(returnDate.getDate() + dayAdj);
-  const theMonth = returnDate.getMonth() + 1 < 10 ? `0${returnDate.getMonth() + 1}` : `${returnDate.getMonth() + 1}`;
-  const theDay = returnDate.getDate() < 10 ? `0${returnDate.getDate()}` : `${returnDate.getDate()}`;
+function isValidDate(date) {
+  return date && Object.prototype.toString.call(date) === '[object Date]' && !isNaN(date);
+}
 
-  return `${returnDate.getFullYear()}-${theMonth}-${theDay}`;
+function isFormattedStringDate(date) {
+  // YYYY-MM-DD default in system.
+  // console.log('tests', typeof date, date.length, date.slice(4, 5));
+  return typeof date === 'string' && date.slice(4, 5) === '-' && date.slice(7, 8) === '-' && (date.length === 10 || date.length === 24);
+}
+
+const formatDate = (theDate, format, dayAdj = 0) => {
+  // console.log('formatDate', theDate, new Date(theDate));
+  let d = null;
+  if (theDate) {
+    if (isValidDate(theDate)) {
+      // console.log('formatDate It is a date');
+      d = theDate;
+    } else if (isFormattedStringDate(theDate) && theDate.length === 24) {
+      //YYYY-MM-DDThh:mm:ss.000Z  db value with time
+      // console.log('formatDate It is a string date with time');
+      d = new Date(theDate);
+    } else if (isFormattedStringDate(theDate) && theDate.length === 10) {
+      // YYYY-MM-DD  db value without time
+      // console.log('formatDate It is a string date without time');
+      d = new Date(theDate);
+      d.setUTCMinutes(d.getTimezoneOffset()); // Since there is no time... fixes the time to be midnight our timezone.
+    } else {
+      // console.log('formatDate something else', theDate);
+      // a value was passed but it was a non date value.
+      return '';
+    }
+    if (format === '/') {
+      d.setDate(d.getDate() + dayAdj);
+      const theMonth = d.getMonth() + 1;
+      const theDay = d.getDate();
+      const theYear = d.getFullYear().toString().substr(-2);
+      // console.log('date parts', theMonth, theDay, theYear);
+      return `${theMonth}/${theDay}/${theYear}`;
+    }
+
+    d.setDate(d.getDate() + dayAdj);
+    const theMonth = d.getMonth() + 1 < 10 ? `0${d.getMonth() + 1}` : `${d.getMonth() + 1}`;
+    const theDay = d.getDate() < 10 ? `0${d.getDate()}` : `${d.getDate()}`;
+    // console.log('date parts', theMonth, theDay, d.getFullYear());
+    return `${d.getFullYear()}-${theMonth}-${theDay}`;
+  }
+  // console.log('formatDate NULL', theDate);
+  return ''; // null value.  Ignore.
 };
 
 const viewButtonList = (props) => {
@@ -174,8 +220,10 @@ class singleView extends Component {
   constructor(props) {
     super(props);
 
-    this.today = date();
-    // this.due = this.props.currentViews.category === 'VOLUME'?date(2):date(21);
+    this.today = formatDate(new Date());
+    // this.today = new Date();
+
+    // this.due = this.props.currentViews.category === 'VOLUME'?formatDate(2):formateDate(21);
 
     this.state = {
       jobNumUnlock: false,
@@ -195,6 +243,7 @@ class singleView extends Component {
       onboard_date: this.today,
       // due_date: this.due,
       scope: this.props.currentViews.category === 'VOLUME' ? [{ control_id: 28, name: 'volfoundation' }] : [],
+      revisions: [],
       saveValue: '', // stores previous values of address/lot/block to test for change
       classification: this.props.currentViews.category,
       geo_lab: this.props.currentViews.category === 'VOLUME' ? 'MLALABS' : null,
@@ -220,6 +269,7 @@ class singleView extends Component {
       onboard_date: this.today,
       // due_date: this.due,
       // scope: this.props.currentViews.category === 'VOLUME'?[{control_id: 28, name: 'volfoundation'}]:[],
+      revisions: [],
       saveValue: '', // stores previous values of address/lot/block to test for change
       // classification: this.props.currentViews.category,
       // geo_lab: this.props.currentViews.category === 'VOLUME'?'MLALABS':null,
@@ -301,6 +351,18 @@ class singleView extends Component {
             child.category !== 'DESIGN' ||
             (child.category === 'DESIGN' && this.state.scope && this.state.scope.find((s) => s.name === child.name))
           ) {
+            // console.log('the fg', child);
+            let title = child.label;
+            if (child.name === 'project' || child.name === 'vol_single_project') {
+              const revs =
+                this.state.revisions
+                  .filter((r) => r.scope_id === -1)
+                  .map((r) => r.revision)
+                  .reverse()
+                  .toString() || '';
+              title = `${child.label} (Revs: ${revs})`;
+            }
+
             this.childArr.push(
               <FieldGroup
                 key={this.oID++}
@@ -309,6 +371,7 @@ class singleView extends Component {
                 toggleScopeDialog={this.toggleScopeDialog}
                 removeScope={false}
                 reviseProject={this.reviseProject}
+                title={title}
               />
             );
             if (child.children) this.viewChildren(child.children); // recursive call.
@@ -339,6 +402,8 @@ class singleView extends Component {
   };
 
   viewScope = (masterScopeList) => {
+    // console.log('master scope, state scope', masterScopeList, this.state.scope);
+    const revAsc = [...this.state.revisions].reverse();
     if (masterScopeList && this.state.scope) {
       this.state.scope.forEach((item, id) => {
         if (!item.delete) {
@@ -346,6 +411,31 @@ class singleView extends Component {
           let child = masterScopeList.find((s) => s.name === item.name);
           // console.log('viewScope', masterScopeList, item, child);
           if (child.entity_type === 'FIELD_GROUP' && child.hidden !== 'Y') {
+            let scopeDate = item.creation_date || this.today;
+            let revs = '';
+            revs =
+              revAsc
+                .filter((r) => r.scope_id === item.id)
+                .map((r) => r.revision)
+                .toString() || '';
+            // console.log('creation date of scope', item.name, scopeDate);
+            const firstRevBefore = this.state.revisions.find((r) => {
+              // console.log('determining correct rev', r.revision, r.rev_date);
+              return r.rev_date < scopeDate;
+            });
+            // revs = firstRevBefore ? revs : `Orig,${revs}`;
+            revs = firstRevBefore ? revs : revs ? `Orig,${revs}` : 'Orig';
+            // const d = item.creation_date || this.today;
+            // console.log(
+            //   'Onboard, item and revs',
+            //   this.state.onboard_date,
+            //   item.name,
+            //   item.creation_date,
+            //   new Date(item.creation_date),
+            //   'Selected',
+            //   d
+            //   // firstRevBefore ? `${firstRevBefore.revision} ${firstRevBefore.rev_date}` : 'OG'
+            // );
             this.childArr.push(
               <FieldGroup
                 key={this.oID++}
@@ -354,6 +444,7 @@ class singleView extends Component {
                 toggleScopeDialog={this.toggleScopeDialog}
                 arrID={id}
                 removeScope={this.removeScope}
+                title={`${child.label} (Added: ${formatDate(scopeDate, '/')}, Revs: ${revs})`}
               />
             );
             if (child.children) this.viewChildren(child.children, id); // almost recursive call.
@@ -478,28 +569,30 @@ class singleView extends Component {
           break;
         case 'client':
           // console.log('subdivison selected', selected);
-          let main = selected.main_contact_email;
-          if (selected.main_contact_phone) {
-            main = main ? `${main} | ${selected.main_contact_phone}` : selected.main_contact_phone;
+          if (selected) {
+            let main = selected.main_contact_email;
+            if (selected.main_contact_phone) {
+              main = main ? `${main} | ${selected.main_contact_phone}` : selected.main_contact_phone;
+            }
+            if (selected.main_contact) {
+              main = main ? `${main} | ${selected.main_contact}` : selected.main_contact;
+            }
+            let bill = selected.billing_contact_email;
+            if (selected.billing_contact_phone) {
+              bill = bill ? `${bill} | ${selected.billing_contact_phone}` : selected.billing_contact_phone;
+            }
+            if (selected.billing_contact) {
+              bill = bill ? `${bill} | ${selected.billing_contact}` : selected.billing_contact;
+            }
+            this.setState({
+              client_id: selected.code,
+              client: selected.name,
+              main_contact: main,
+              billing_contact: bill,
+            });
+          } else {
+            this.setState({ client_id: null, client: null, main_contact: null, billing_contact: null }); // clear out
           }
-          if (selected.main_contact) {
-            main = main ? `${main} | ${selected.main_contact}` : selected.main_contact;
-          }
-          let bill = selected.billing_contact_email;
-          if (selected.billing_contact_phone) {
-            bill = bill ? `${bill} | ${selected.billing_contact_phone}` : selected.billing_contact_phone;
-          }
-          if (selected.billing_contact) {
-            bill = bill ? `${bill} | ${selected.billing_contact}` : selected.billing_contact;
-          }
-          selected // if selected
-            ? this.setState({
-                client_id: selected.code,
-                client: selected.name,
-                main_contact: main,
-                billing_contact: bill,
-              })
-            : this.setState({ client_id: null, client: null, main_contact: null, billing_contact: null }); // clear out
           break;
         default:
           selected // if selected
@@ -738,8 +831,8 @@ class singleView extends Component {
     this.childArr = [];
     // console.log(
     //   'ceViews Render',
-    //   'state:',
-    //   this.state
+    // 'state:',
+    // this.state
     // 'init state', this.initState,
     // 'currentProject:',currentProject,
     // 'currentViews:', currentViews,
@@ -784,11 +877,24 @@ class singleView extends Component {
 
           <Grid item xs={6} md={2}>
             {this.state.job_number && (
-              <Paper elevation={4} className={classes.titleText}>
-                <Typography align='center' variant={width === 'xs' ? 'subtitle2' : 'h6'} className={classes.titleText}>
-                  {`Job #: ${this.state.job_number}${this.state.revision || ''}`}
-                </Typography>
-              </Paper>
+              <Tooltip
+                title={
+                  <Fragment>
+                    <Typography className={classes.titleTooltipText}>
+                      Created by {this.state.entered_by} on {formatDate(this.state.creation_date, '/')}
+                    </Typography>
+                    <Typography className={classes.titleTooltipText}>
+                      Updated by {this.state.last_updated_by_name} on {formatDate(this.state.last_updated_date, '/')}
+                    </Typography>
+                  </Fragment>
+                }
+                aria-label='Popover'>
+                <Paper elevation={4} className={classes.titleText}>
+                  <Typography align='center' variant={width === 'xs' ? 'subtitle2' : 'h6'} className={classes.titleText}>
+                    {`Job #: ${this.state.job_number}${this.state.revision || ''}`}
+                  </Typography>
+                </Paper>
+              </Tooltip>
             )}
           </Grid>
 
