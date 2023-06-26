@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import { Redirect, Link } from "react-router-dom"
+import { Redirect, Link } from 'react-router-dom';
 // import { withNavigationFocus } from 'react-navigation';
 // import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import { withWidth } from "@material-ui/core";
+import { withWidth } from '@material-ui/core';
 
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
@@ -25,7 +25,7 @@ import CePageContainer from '../containers/cePageContainer';
 // import listView from '../img/listView.svg';
 // import columnView from '../img/columnView2.svg';
 
-const styles = theme => ({
+const styles = (theme) => ({
   root: {
     display: 'flex',
   },
@@ -39,7 +39,7 @@ const styles = theme => ({
   },
   titleText: {
     color: theme.palette.secondary.contrastText,
-    backgroundColor: theme.palette.secondary.main
+    backgroundColor: theme.palette.secondary.main,
   },
   imageSrc: {
     height: 20,
@@ -52,7 +52,7 @@ const styles = theme => ({
   findField: {
     backgroundColor: theme.palette.secondary.main,
     color: theme.palette.secondary.contrastText,
-    '&:hover': {backgroundColor: theme.palette.secondary.dark}
+    '&:hover': { backgroundColor: theme.palette.secondary.dark },
   },
   commitType: {
     // width: 120,
@@ -60,7 +60,7 @@ const styles = theme => ({
   addScope: {
     position: 'fixed',
     right: '20%',
-    top: 380
+    top: 380,
   },
   grow: {
     flexGrow: 1,
@@ -80,8 +80,8 @@ const styles = theme => ({
     // padding: 10,
   },
   linkStyle: {
-    textDecoration: 'none'
-  }
+    textDecoration: 'none',
+  },
 });
 
 class Subdivision extends Component {
@@ -92,8 +92,8 @@ class Subdivision extends Component {
       object: 'SUBDIVISION',
       renderScreen: false,
       currentMenuID: this.props.currentViews.id,
-      currentView: this.props.VIEW||'DEFAULT',
-      saveValue: '',  // stores previous values of address/lot/block to test for change      selectedIndexes: [],
+      currentView: this.props.VIEW || 'DEFAULT',
+      saveValue: '', // stores previous values of address/lot/block to test for change      selectedIndexes: [],
       // selectedIndexes: [],
       selected: null,
       redirectUrl: null,
@@ -101,16 +101,14 @@ class Subdivision extends Component {
       last_updated_by: this.props.session.id,
     };
 
-    this.initState = {...this.state};
-
+    this.initState = { ...this.state };
   }
 
   componentDidMount = () => {
     // console.log('CDM Search');
 
     if (this.props.currentViews.name !== 'subdivision_maint') this.props.loadViewsByName('subdivision_maint');
-
-  }
+  };
 
   static getDerivedStateFromProps(nextProps, prevState) {
     // console.log('gDSFP');
@@ -123,8 +121,8 @@ class Subdivision extends Component {
     //   return {renderScreen: true };
     // }
     if (!prevState.renderScreen && currentViews.length > 0) {
-      if (currentViews.findIndex(view => view.category === 'DEFAULT') > -1) {
-        return {renderScreen: true };
+      if (currentViews.findIndex((view) => view.category === 'DEFAULT') > -1) {
+        return { renderScreen: true };
       }
     }
     return null;
@@ -153,35 +151,29 @@ class Subdivision extends Component {
     //     </Button>
     //   </Grid>
     // );
-
-  }
+  };
 
   // actions that show on top of page.  Right side next to Recents
   topActionBarRight = () => {
     return null;
-  }
+  };
 
   // actions that show on bottom of page
   bottomActionBar = () => {
-
     const { classes } = this.props;
 
     return (
-    <Grid container justify="flex-end" style={{marginTop: 10, marginBottom: 10}} spacing={16}>
-      <Grid item className={classes.grow}>
-        <Link to={`/`} className={classes.linkStyle}>
-          <Button title='Return to menu'
-            variant="contained"
-            size='small'
-            color="secondary"
-          >
-            Cancel
-          </Button>
-        </Link>
+      <Grid container justify='flex-end' style={{ marginTop: 10, marginBottom: 10 }} spacing={16}>
+        <Grid item className={classes.grow}>
+          <Link to={`/`} className={classes.linkStyle}>
+            <Button title='Return to menu' variant='contained' size='small' color='secondary'>
+              Cancel
+            </Button>
+          </Link>
+        </Grid>
       </Grid>
-    </Grid>
-    )
-  }
+    );
+  };
 
   // actions that show in field group title bar
   fieldGroupTools = () => {
@@ -206,7 +198,7 @@ class Subdivision extends Component {
     //     label={this.state.showSearchByFields?'Back to Find Field':'Show Fields'}
     //   />
     // )
-  }
+  };
 
   fieldGroupToolsTabular = () => {
     // const { classes, theme, width } = this.props;
@@ -227,29 +219,23 @@ class Subdivision extends Component {
     //     createDialogValue={false}
     //   />
     // )
-  }
+  };
 
   // actions that show next to / below fields in field group
   fieldTools = () => {
-
     return (
       <Grid item>
-      <Button title='Find records'
-        variant="contained"
-        size='small'
-        color="secondary"
-        onClick={this.findClients}
-      >
-        Search
-      </Button>
+        <Button title='Find records' variant='contained' size='small' color='secondary' onClick={this.findClients}>
+          Search
+        </Button>
       </Grid>
-    )
-  }
+    );
+  };
 
   updateState = (updatedValues) => {
     // console.log('updateState', updatedValues);
     this.setState(updatedValues);
-  }
+  };
 
   // handleSelected = () => {
   //   // console.log('In the handleSelected', this.state.selectedIndexes[0]);
@@ -267,7 +253,7 @@ class Subdivision extends Component {
   findSubdivisions = () => {
     // console.log('find geotechs');
     this.props.findSubdivisions(this.state.find);
-  }
+  };
 
   handleSave = (updatedRows) => {
     // let updated = updatedRows.filter(r=>{if (r) return r});
@@ -276,14 +262,10 @@ class Subdivision extends Component {
     // Testing to make sure all the edited projects still have
     // an address, client, and city.
     let dataOk = true;
-    for (let i=0; i<updatedRows.length; i++) {
+    for (let i = 0; i < updatedRows.length; i++) {
       const { subdivision_name } = updatedRows[i];
-      if (!subdivision_name ) {
-        this.props.loadMessage(
-          { ok:false,
-            status: 'Missing Data',
-            statusText: "Missing subdivision name.  Please fill in"
-          }, "ERROR");
+      if (!subdivision_name) {
+        this.props.loadMessage({ ok: false, status: 'Missing Data', statusText: 'Missing subdivision name.  Please fill in' }, 'ERROR');
         dataOk = false;
         break;
       }
@@ -297,18 +279,17 @@ class Subdivision extends Component {
       //   this.props.saveGeotechs(updatedRows[i]);
       // }
       this.props.saveSubdivisions(updatedRows);
-    }  // if dataOk
+    } // if dataOk
+  }; // end of function
 
-  }  // end of function
-
-  handleDelete = (row)=> {
+  handleDelete = (row) => {
     // console.log('Delete sub ', row, row-1, this.props.subSearch.findResults[row-1]);
 
     // This module supports an INSERT row as first row.  Must take into consideration
     // that row passed will be based on the array id with insert row as first row
     // Therefore need to subtract 1 to get right value for props geos array.
-    this.props.deleteSubdivision(this.props.subSearch.findResults[row-1].id);
-  }
+    this.props.deleteSubdivision(this.props.subSearch.findResults[row - 1].id);
+  };
 
   render() {
     const { currentViews, subSearch } = this.props;
@@ -323,7 +304,7 @@ class Subdivision extends Component {
     // if someone clicks recents and wants to navigate to project screen.
     if (this.props.currentProject.url && this.props.currentProject.address1) {
       // console.log('the url',this.props.currentProject.url);
-      return <Redirect to={this.props.currentProject.url} />
+      return <Redirect to={this.props.currentProject.url} />;
     }
     // Test to make sure we can render Screen.  Only set to true when
     // currentProject and currentViews are populated.
@@ -342,7 +323,7 @@ class Subdivision extends Component {
     //   currentView.push(currentViews);
     // }
     if (currentViews.length > 0) {
-        currentView = currentViews.filter((view) => view.category === this.state.currentView)  // array of subviews (sections) that make up whole view.
+      currentView = currentViews.filter((view) => view.category === this.state.currentView); // array of subviews (sections) that make up whole view.
     } else {
       return null;
     }
@@ -352,7 +333,7 @@ class Subdivision extends Component {
 
     // Supporting an INSERT row.
     // let data = clientSearch.find?[...clientSearch.findResults]:[...clients];
-    let data = subSearch.find?[...subSearch.findResults]:[];
+    let data = subSearch.find ? [...subSearch.findResults] : [];
 
     data.unshift({});
 
@@ -361,57 +342,62 @@ class Subdivision extends Component {
         title={title}
         topActionBarLeft={this.topActionBarLeft}
         topActionBarRight={this.topActionBarRight}
-        bottomActionBar={this.bottomActionBar}
-      >
-        {currentView.map((view,vid)=>{  // loop on views
-          return (
-            view.children.map((group,gid)=>{  // loop on objects in views.  Usually field groups.
-            switch (group.name) {
-              case 'subdivision_results':
-                return(<MaterialTabularFG
-                        key={gid}
-                        fieldGroup = {group}
-                        fgStyles = {{marginTop: 10, marginBottom: 0, borderTop: '1px solid black'}}
-                        parentState = {this.state}
-                        data = {data}
-                        updateState = {this.updateState}
-                        // fgTools={this.fieldGroupToolsTabular}
-                        allowAdd={true}
-                        handleSave={this.handleSave}
-                        handleDelete={this.handleDelete}
-                        saveHelp='Save the subdivision'
-                        editHelp='Edit the subdivision'
-                        deleteHelp='Delete the subdivision'
-                      />)
+        bottomActionBar={this.bottomActionBar}>
+        {
+          currentView.map((view, vid) => {
+            // loop on views
+            return view.children.map((group, gid) => {
+              // loop on objects in views.  Usually field groups.
+              switch (group.name) {
+                case 'subdivision_results':
+                  return (
+                    <MaterialTabularFG
+                      key={gid}
+                      fieldGroup={group}
+                      fgStyles={{ marginTop: 10, marginBottom: 0, borderTop: '1px solid black' }}
+                      parentState={this.state}
+                      data={data}
+                      updateState={this.updateState}
+                      // fgTools={this.fieldGroupToolsTabular}
+                      allowAdd={true}
+                      handleSave={this.handleSave}
+                      handleDelete={this.handleDelete}
+                      saveHelp='Save the subdivision'
+                      editHelp='Edit the subdivision'
+                      deleteHelp='Delete the subdivision'
+                    />
+                  );
                 // break;
-              case 'search_criteria':
-                return(<DefaultFG
-                        key={gid}
-                        fieldGroup = {group}
-                        state = {this.state}
-                        updateState = {this.updateState}
-                        fgTools={this.fieldGroupTools}
-                        findAction={this.findSubdivisions}
-                      />)
+                case 'search_criteria':
+                  return (
+                    <DefaultFG
+                      key={gid}
+                      fieldGroup={group}
+                      state={this.state}
+                      updateState={this.updateState}
+                      fgTools={this.fieldGroupTools}
+                      findAction={this.findSubdivisions}
+                    />
+                  );
                 // break;
-              default:
-                return(<DefaultFG
-                        key={gid}
-                        fieldGroup = {group}
-                        state = {this.state}
-                        updateState = {this.updateState}
-                        hide={false}
-                        findAction={this.findSubdivisions}
-                      />)
-            }  // switch
-          }))  // function-map-return
-        })    // function-map  jsx below.
+                default:
+                  return (
+                    <DefaultFG
+                      key={gid}
+                      fieldGroup={group}
+                      state={this.state}
+                      updateState={this.updateState}
+                      hide={false}
+                      findAction={this.findSubdivisions}
+                    />
+                  );
+              } // switch
+            }); // function-map-return
+          }) // function-map  jsx below.
         }
       </CePageContainer>
-    )  // return
-
-  }  // render
-}  // Component
-
+    ); // return
+  } // render
+} // Component
 
 export default withWidth()(withStyles(styles, { withTheme: true })(Subdivision));

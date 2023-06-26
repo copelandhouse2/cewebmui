@@ -3,6 +3,9 @@ import JobNumberSeqModel from '../models/JobNumberSeqModel';
 import { sql } from '../mysqldb';
 import { trello, tBoards, theToken, TrelloModel } from '../models/TrelloModel';
 import { client as boxClient } from '../models/BoxModel';
+import { sendMail } from './MailController.js';
+import { formatDate } from '../utils';
+
 // code to test for daylight savings time or not.
 // Date.prototype.stdTimezoneOffset = () => {
 //     var jan = new Date(this.getFullYear(), 0, 1);
@@ -1265,20 +1268,63 @@ export const saveRevisions = async (request, response) => {
   var errors = [];
 
   let revPromises = [];
+  let emailSend = undefined;
+  let emailRecipients = undefined;
+  let emailBody = undefined;
+  // let revList = request.body.filter((r) => r.change && r.change !== 'delete');
+  // console.log('revs to update', request.body);
   request.body.forEach((rev, i) => {
     // console.log('rev: Adding / Adjusting: ', rev.id, rev.scope);
 
     // rev.change is either unset or value = add, update, delete
     // if unset, skip updating.
+
     if (rev.change === 'delete') {
       //checking to see if we are to delete rev.
       // console.log('delete scope', item.id);
       revPromises.push(ProjectModel.deleteRevisions(rev.id));
     } else if (rev.change) {
+      if (typeof emailSend === 'undefined') {
+        emailSend = rev.emailSend;
+        emailRecipients = rev.emailRecipients;
+        emailBody = rev.emailBody;
+      }
       // wish to delete the scope record.
+      // console.log('ProjectController: saveRevisions', rev);
       revPromises.push(ProjectModel.addRevisions(rev));
     }
   });
+
+  if (emailSend) {
+    let revBody = '';
+    request.body.forEach((r, i) => {
+      if (i === 0) {
+        revBody = `
+          <h4>Rev ${r.revision} ${formatDate(r.rev_date, '/')} submitted for:</h4>
+          <p>Scope: ${r.scope_label}<br>
+          Description: ${r.revision_desc}<br>
+          Reason: ${r.revision_reason}<br>
+          Price: ${r.revision_price}</p>`;
+      } else {
+        revBody = `${revBody}<p />
+          <p>Scope: ${r.scope_label}<br>
+          Description: ${r.revision_desc}<br>
+          Reason: ${r.revision_reason}<br>
+          Price: ${r.revision_price}</p>`;
+      }
+    });
+    const mailOptions = {
+      from: 'projectmanager@copeland-eng.com',
+      to: emailRecipients, // list of receivers
+      subject: `${request.body[0].name} Rev: ${request.body[0].revision}`, // Subject line
+      // text: 'Reset Password',
+      html: `<h4>Dear Client</h4>
+      <p>This email is to inform you that a revision to the previous design has been requested:</p>
+      ${revBody}
+      <p>${emailBody}</p>`, // html body
+    };
+    sendMail(mailOptions);
+  }
 
   try {
     const revResponses = await Promise.all(revPromises);

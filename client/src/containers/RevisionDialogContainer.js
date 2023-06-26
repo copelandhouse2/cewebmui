@@ -1,15 +1,17 @@
-import { connect } from "react-redux";
-import RevisionDialog from "../components/RevisionDialog";
-import { loadMessage, loadLocalView, loadProjectRevisions
-  , saveRevisions, deleteRevision } from "../actions";
+import { connect } from 'react-redux';
+import RevisionDialog from '../components/RevisionDialog';
+import { loadMessage, loadLocalView, loadProjectRevisions, saveRevisions, deleteRevision } from '../actions';
 
 function mapStateToProps(state) {
   return {
     session: state.session,
+    preferences: state.preferences,
     search: state.search,
     message: state.message,
     localView: state.localView,
     projectRevisions: state.projectRevisions,
+    currentProject: state.currentProject,
+    clients: state.clients,
   };
 }
 
@@ -33,4 +35,4 @@ function mapDispatchToProps(dispatch) {
   };
 }
 
-export default connect(mapStateToProps,mapDispatchToProps)(RevisionDialog);
+export default connect(mapStateToProps, mapDispatchToProps)(RevisionDialog);

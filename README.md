@@ -2,6 +2,13 @@
 
 Copeland Engineering Web Tools.
 
+## v2.1.13 6/13/2023
+
+- Enh: Revisions Screen: Email section with fields: Send Email?, Recipients, Closing Body
+- Enh: Settings – Ability to set your preference: Send Email checkbox on or off as the default.
+- Enh: Nodemailer plugin. Added and configured to send emails.
+- Bug: Recents now updated when you save a revision.
+
 ## v2.1.12 3/1/2023
 
 - Enh: Revision Dialog Screen: Now allows you to select multiple scope items for a revision.

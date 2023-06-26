@@ -310,7 +310,7 @@ const styles = (theme) => ({
   tableSize: {
     // width: '100%',
     maxHeight: 530,
-    minHeight: 400,
+    // minHeight: 400,
     overflowX: 'auto',
   },
   actionButtons: {
@@ -811,6 +811,7 @@ export const MaterialTabularFG = withStyles(styles, { withTheme: true })(
 
     handleEdit = (row) => {
       let edited = [...this.state.editedRows];
+      // console.log('handleEdit the data', this.props.data);
       // trying to do a deep copy here.  Copying scope separately since it is an
       // array by itself.
       // const scope = edited[row]?[...edited[row].scope]:[...this.props.data[row].scope];
@@ -825,7 +826,7 @@ export const MaterialTabularFG = withStyles(styles, { withTheme: true })(
     };
 
     handleSave = (row, andCommit = false) => {
-      // console.log('Save project ', this.state.editedRows[row]);
+      console.log('Save project ', row, this.state.editedRows[row]);
       // updating local state.
       let edited = [...this.state.editedRows];
       edited[row] = this.props.allowAdd && row === 0 ? this.INIT_REC : undefined;
@@ -858,6 +859,8 @@ export const MaterialTabularFG = withStyles(styles, { withTheme: true })(
       const { classes, theme, fieldGroup, data, parentState, subGroupKey, subFG, fgTools, saveHelp, editHelp, deleteHelp } = this.props;
       // console.log('FG tabular state', fieldGroup, data, this.state.columns);
       // console.log('FG tabular state sub table', subGroupKey, subFG);
+      // console.log('FG tabular parentState', parentState);
+      // console.log('FG tabular state', this.state);
 
       // const editedRows = this.state.editedRows.filter(r=>{
       //   if (r) return r;
@@ -1576,13 +1579,20 @@ export const RevUpdateFG = withStyles(styles, { withTheme: true })(
 
       this.state = {
         open: false,
+        emailOpen: false,
       };
 
       this.initState = { ...this.state };
+      this.fEmailSend = {};
+      this.fEmailRecipients = {};
+      this.fEmailBody = {};
     }
 
     componentDidMount = () => {
       // console.log('revision CDM: local state', this.state, 'parent state:', this.props.parentState);
+      this.fEmailSend = this.props.fieldGroup.children.find((f) => f.name === 'emailSend');
+      this.fEmailRecipients = this.props.fieldGroup.children.find((f) => f.name === 'emailRecipients');
+      this.fEmailBody = this.props.fieldGroup.children.find((f) => f.name === 'emailBody');
       this.resetScope();
     };
 
@@ -1593,13 +1603,29 @@ export const RevUpdateFG = withStyles(styles, { withTheme: true })(
         .lookup_list.forEach((s, i) => {
           scopeList[s.code] = false;
         });
-      this.setState(scopeList);
+      this.setState({ ...scopeList });
     };
 
-    handleChange = (name) => (e) => {
-      this.setState({ [name]: e.target.checked });
+    // handleChange = (name) => (e) => {
+    //   this.setState({ [name]: e.target.checked });
+    // };
+    handleChange = (updatedValues, overrideCascade = false) => {
+      // console.log('updatedValues', updatedValues);
+      this.setState(updatedValues);
     };
 
+    handleChangeLocal = (name) => (e) => {
+      // console.log('handleChange', name, e.target.value);
+
+      e.target.type === 'checkbox'
+        ? this.setState({ [name]: e.target.checked })
+        : this.setState({ [name]: e.target.value === '' ? null : e.target.value });
+    };
+
+    handleOpen = () => {
+      // console.log('I am here');
+      this.setState({ emailOpen: !this.state.emailOpen });
+    };
     handleClear = () => {
       // console.log('In handleClear');
       // this.setState({ open: !this.state.open })
@@ -1608,7 +1634,7 @@ export const RevUpdateFG = withStyles(styles, { withTheme: true })(
     };
 
     handleSave = () => {
-      // console.log('In handleSave');
+      // console.log('In handleSave', this.state);
       // this.setState({ open: !this.state.open });
 
       // the save function passed takes an array to allow saving multiple
@@ -1617,7 +1643,17 @@ export const RevUpdateFG = withStyles(styles, { withTheme: true })(
       this.props.parentState.altLookups
         .find((f) => f.name === 'scope')
         .lookup_list.forEach((s, i) => {
-          if (this.state[s.code]) rows.push({ ...this.props.parentState, scope_id: s.code });
+          if (this.state[s.code]) {
+            // console.log('selected scopes', s);
+            rows.push({
+              ...this.props.parentState,
+              scope_id: s.code,
+              scope_label: s.name,
+              emailSend: this.state.emailSend,
+              emailRecipients: this.state.emailRecipients,
+              emailBody: this.state.emailBody,
+            });
+          }
         });
       // rows.push(this.props.parentState);
       // console.log('the rows', rows);
@@ -1634,7 +1670,7 @@ export const RevUpdateFG = withStyles(styles, { withTheme: true })(
       // const { classes, theme, fieldGroup, dialogState, updateState } = this.props;
       // const { classes, theme, fieldGroup, toggleScopeDialog, removeScope, dialogState, scopeID, updateState } = props;
       // console.log('RevUpdateFG', dialogState.altLookups);
-      // console.log('alt lookups', parentState.altLookups);
+      // console.log('parentState', parentState);
       // console.log('state', this.state);
 
       let i = 0;
@@ -1646,6 +1682,9 @@ export const RevUpdateFG = withStyles(styles, { withTheme: true })(
                 {fieldGroup.children.map((field, id) => {
                   if (field.hidden === 'Y') return null;
                   if (field.name === 'scope') return null;
+                  if (field.name === 'emailSend') return null;
+                  if (field.name === 'emailRecipients') return null;
+                  if (field.name === 'emailBody') return null;
                   return (
                     <Field2Container
                       key={id}
@@ -1654,7 +1693,7 @@ export const RevUpdateFG = withStyles(styles, { withTheme: true })(
                       arrID={false}
                       state={parentState}
                       updateState={updateState}
-                      altLookups={parentState.altLookups.find((f) => f.name === field.name) ? parentState.altLookups : null}
+                      // altLookups={parentState.altLookups.find((f) => f.name === field.name) ? parentState.altLookups : null}
                       // props that are not used.
                       loadFind={() => {}}
                       searchForDups={() => {}}
@@ -1670,9 +1709,11 @@ export const RevUpdateFG = withStyles(styles, { withTheme: true })(
                 </Tooltip>
               </ListItem>
 
-              <ListItem key={i + 1}>
+              <ListItem>
                 <FormControl component='fieldset'>
-                  <FormLabel component='legend'>Scope</FormLabel>
+                  <FormLabel component='legend' style={{ font: 'bold 16px "Roboto"' }}>
+                    Scope
+                  </FormLabel>
                   <FormGroup row>
                     {parentState.altLookups
                       .find((f) => f.name === 'scope')
@@ -1682,7 +1723,7 @@ export const RevUpdateFG = withStyles(styles, { withTheme: true })(
                           return (
                             <Tooltip key={i} title='Changes to address, lot, or soil information.  Do not use as an "other" or catch all revision'>
                               <FormControlLabel
-                                control={<Checkbox checked={this.state[s.code] || false} onChange={this.handleChange(s.code)} />}
+                                control={<Checkbox checked={this.state[s.code] || false} onChange={this.handleChangeLocal(s.code)} />}
                                 label={s.name}
                               />
                             </Tooltip>
@@ -1691,7 +1732,7 @@ export const RevUpdateFG = withStyles(styles, { withTheme: true })(
                         return (
                           <FormControlLabel
                             key={i}
-                            control={<Checkbox checked={this.state[s.code] || false} onChange={this.handleChange(s.code)} />}
+                            control={<Checkbox checked={this.state[s.code] || false} onChange={this.handleChangeLocal(s.code)} />}
                             label={s.name}
                           />
                         );
@@ -1699,6 +1740,53 @@ export const RevUpdateFG = withStyles(styles, { withTheme: true })(
                   </FormGroup>
                 </FormControl>
               </ListItem>
+              <ListItem style={{ paddingLeft: 0 }}>
+                <IconButton aria-label='Expand' onClick={this.handleOpen}>
+                  {this.state.emailOpen ? <ExpandLess /> : <ExpandMore />}
+                </IconButton>
+                {/* <Typography style={{ font: 'bold 16px "Roboto"', color: 'darkgray', paddingRight: 20 }}>Email Settings</Typography> */}
+                <FormLabel component='legend' style={{ font: 'bold 16px "Roboto"', paddingRight: 20 }}>
+                  Email Settings
+                </FormLabel>
+
+                <FormControlLabel
+                  control={<Checkbox checked={parentState.emailSend || false} onChange={(e) => updateState({ emailSend: e.target.checked })} />}
+                  label='Send Email?'
+                />
+              </ListItem>
+              <Collapse in={this.state.emailOpen}>
+                <ListItem>
+                  <Field2Container
+                    key={this.fEmailRecipients.id}
+                    // key={field.id}
+                    field={this.fEmailRecipients}
+                    arrID={false}
+                    state={parentState}
+                    updateState={updateState}
+                    // altLookups={parentState.altLookups.find((f) => f.name === field.name) ? parentState.altLookups : null}
+                    // props that are not used.
+                    loadFind={() => {}}
+                    searchForDups={() => {}}
+                    loadMessage={() => {}}
+                  />
+                </ListItem>
+                <ListItem>
+                  <Field2Container
+                    key={this.fEmailBody.id}
+                    // key={field.id}
+                    field={this.fEmailBody}
+                    arrID={false}
+                    state={parentState}
+                    updateState={updateState}
+                    // altLookups={parentState.altLookups.find((f) => f.name === field.name) ? parentState.altLookups : null}
+                    // props that are not used.
+                    rows={6}
+                    loadFind={() => {}}
+                    searchForDups={() => {}}
+                    loadMessage={() => {}}
+                  />
+                </ListItem>
+              </Collapse>
             </List>
             <Divider />
           </Grid>

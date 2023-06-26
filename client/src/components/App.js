@@ -1,81 +1,81 @@
 // v2.1.3
-import React, { Component, Fragment } from "react";
+import React, { Component, Fragment } from 'react';
 
 // import "../css/App.css";
-import { Route, Switch, Redirect } from "react-router-dom";
+import { Route, Switch, Redirect } from 'react-router-dom';
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { withStyles } from '@material-ui/core/styles';
 // import { styled } from '@material-ui/styles';
-import HeaderContainer from "../containers/HeaderContainer";
-import Footer from "./Footer";
+import HeaderContainer from '../containers/HeaderContainer';
+import Footer from './Footer';
 // import Body from "./Body";
-import { Grid } from "@material-ui/core";
+import { Grid } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 
-import AlertDialogContainer from "../containers/AlertDialogContainer";
+import AlertDialogContainer from '../containers/AlertDialogContainer';
 // import StartsContainer from "./containers/StartsContainer";
 // import ClientContainer from "./containers/ClientContainer";
 // import CitySubContainer from "./containers/CitySubContainer";
 // import Main from "./Main";
 import Drawer from '@material-ui/core/Drawer';
 
-import Navbar from "./Navbar";
+import Navbar from './Navbar';
 // import ProjectMgmtContainer from "../containers/ProjectMgmtContainer";
-import SignUpSignInContainer from "../containers/SignUpSignInContainer";
-import WelcomeContainer from "../containers/WelcomeContainer";
-import UnderConstruction from "../components/UnderConstruction";
-import ProjectCustomContainer from "../containers/ProjectCustomContainer";
+import SignUpSignInContainer from '../containers/SignUpSignInContainer';
+import WelcomeContainer from '../containers/WelcomeContainer';
+import UnderConstruction from '../components/UnderConstruction';
+import ProjectCustomContainer from '../containers/ProjectCustomContainer';
 import SearchContainer from '../containers/SearchContainer';
 import ClientContainer from '../containers/ClientContainer';
 import GeotechContainer from '../containers/GeotechContainer';
 import SubdivisionContainer from '../containers/SubdivisionContainer';
 import CityContainer from '../containers/CityContainer';
-import InspectionContainer from "../containers/InspectionContainer";
+import InspectionContainer from '../containers/InspectionContainer';
 // import TrelloTokenDialogContainer from "../containers/TrelloTokenDialogContainer";
 
 import blueGrey from '@material-ui/core/colors/blueGrey';
 
-const styles = theme => ({
+const styles = (theme) => ({
   root: {
     // width:"75%",
-    margin: "auto",
+    margin: 'auto',
     height: '100%',
-    paddingTop: 60
+    paddingTop: 60,
     // flexGrow: 1
   },
   appBody: {
     // width: "80%",
-    margin: "auto",
-    minHeight: "100%",
-    paddingTop: 60,  // ensures the app is crowned by header
-    paddingBottom: 60,  // ensures the app doesn't go behind footer.
+    margin: 'auto',
+    minHeight: '100%',
+    paddingTop: 60, // ensures the app is crowned by header
+    paddingBottom: 60, // ensures the app doesn't go behind footer.
     // zIndex: theme.zIndex.drawer+1,
     // overflow: 'auto',
   },
   appBodyWide: {
     width: '100%',
-    margin: "auto"
+    margin: 'auto',
   },
   appHeight: {
-    minHeight: "100%",
+    minHeight: '100%',
     // height: "100%"
   },
   // Paper: { padding: 20, marginTop: 10, marginBottom: 10 },
   navWidth: {
-    [theme.breakpoints.up("xs")]: {
-      width: "100%",
+    [theme.breakpoints.up('xs')]: {
+      width: '100%',
     },
-    [theme.breakpoints.up("md")]: {
-      width: "60px",
-    }
+    [theme.breakpoints.up('md')]: {
+      width: '60px',
+    },
   },
   toolbar2: theme.mixins.toolbar,
   navBar: {
-    marginTop: 60,  // used to avoid toolbar going behind header.
+    marginTop: 60, // used to avoid toolbar going behind header.
   },
   tParent: {
-    minHeight: '100%'
+    minHeight: '100%',
   },
   // tChild: {
   //   backgroundColor: pink[200],
@@ -90,7 +90,6 @@ const styles = theme => ({
   //   marginTop: -60,
   //   clear: 'both'
   // },
-
 });
 
 // const promiseFn = theFunction => {
@@ -111,7 +110,7 @@ class App extends Component {
     super(props);
     this.state = {
       authenticated: localStorage.getItem('token') || false,
-      open: false,  // navBar
+      open: false, // navBar
       welcome: true,
       authInProgress: false,
       trelloToken: localStorage.getItem('trello_token') || false,
@@ -126,12 +125,11 @@ class App extends Component {
     // console.log('CDM App.js',this.state);
     const theToken = localStorage.getItem('token');
     if (theToken !== null) {
-      this.setState({ authInProgress: true}, () =>
-      {
+      this.setState({ authInProgress: true }, () => {
         // console.log('CDM... authenticating ', theToken)
         this.props.authenticate();
-      })
-    };
+      });
+    }
 
     if (this.state.trelloToken) this.props.initiateTrello(this.state.trelloToken);
 
@@ -191,12 +189,11 @@ class App extends Component {
 
     let updatedValues = {};
     if (!session.authInProgress) {
-      Object.assign(updatedValues, {authInProgress: false});
+      Object.assign(updatedValues, { authInProgress: false });
     }
 
-    if (!prevState.renderScreen && avffControls.length > 0 && avffRelationships.length > 0
-    ) {
-      Object.assign(updatedValues, {renderScreen: true});
+    if (!prevState.renderScreen && avffControls.length > 0 && avffRelationships.length > 0) {
+      Object.assign(updatedValues, { renderScreen: true });
     }
 
     return updatedValues;
@@ -226,10 +223,8 @@ class App extends Component {
     // let prefs = {...this.props.preferences.user};
 
     // prefs = Object.assign(prefs,
-      // {accentColor: color});
-    const prefs = {id: this.props.preferences.user.id
-      , updatedKey: 'accentColor'
-      , value: color};
+    // {accentColor: color});
+    const prefs = { id: this.props.preferences.user.id, updatedKey: 'accentColor', value: color };
     // settings[created_by] = typeof settings.created_by === 'undefined'? this.props.session.id:settings.created_by;
 
     // this.setState({ settings: settings }, () => {
@@ -242,27 +237,25 @@ class App extends Component {
     // this.props.updateSettings(session);
     // console.log('in updateAccentColor', this.props.session, settings);
     this.props.updatePreferences(prefs);
-
-  }
+  };
 
   handleSignOut = () => {
     localStorage.removeItem('token');
     this.setState({
       authenticated: false,
     });
-  }
+  };
 
   toggleWelcomeScreen = (state) => {
     this.setState({
       welcome: state,
-      open: false
+      open: false,
     });
-  }
+  };
 
   toggleDrawer = () => {
     this.setState({ open: !this.state.open });
   };
-
 
   renderSignUpSignIn = () => {
     return (
@@ -273,7 +266,7 @@ class App extends Component {
       <SignUpSignInContainer />
       // <h1>I am not authenticated</h1>
     );
-  }
+  };
 
   // getTrelloToken() {
   //   return ( <TrelloTokenDialogContainer /> );
@@ -282,10 +275,9 @@ class App extends Component {
   trelloAuthSuccess = () => {
     const trelloToken = localStorage.getItem('trello_token');
     // console.log('Successful authentication', trello_token);
-    this.setState({ trelloToken: trelloToken }, ()=> {
+    this.setState({ trelloToken: trelloToken }, () => {
       this.props.initiateTrello(trelloToken);
     });
-
   };
 
   trelloAuthFailure = () => {
@@ -295,47 +287,53 @@ class App extends Component {
   boxAuthWindow = window;
   BoxAuth = () => {
     return (
-      <Grid container style={{height:'100%'}} direction='column' justify='center' alignItems='center' spacing={40}>
+      <Grid container style={{ height: '100%' }} direction='column' justify='center' alignItems='center' spacing={40}>
         <Grid item>
-          <h3>{this.props.session.first_name}, Webtools needs to get box authorization from you.  This will enable webtools to create folders on your behalf.</h3>
+          <h3>
+            {this.props.session.first_name}, Webtools needs to get box authorization from you. This will enable webtools to create folders on your
+            behalf.
+          </h3>
         </Grid>
         <Grid item>
-          <Button disabled={this.state.boxAuthClicked} variant='contained' onClick={()=>{
-            this.setState({boxAuthClicked:true})
-            this.boxAuthWindow.open(`http://localhost:3001/boxauth/${this.props.session.id}`,'Box Auth', 'width=600,height=600')
-          }}>
-            {this.state.boxAuthClicked?'Refresh Screen':'Authorize Box'}
+          <Button
+            disabled={this.state.boxAuthClicked}
+            variant='contained'
+            onClick={() => {
+              this.setState({ boxAuthClicked: true });
+              this.boxAuthWindow.open(`http://localhost:3001/boxauth/${this.props.session.id}`, 'Box Auth', 'width=600,height=600');
+            }}>
+            {this.state.boxAuthClicked ? 'Refresh Screen' : 'Authorize Box'}
           </Button>
         </Grid>
       </Grid>
-    )
-  }
+    );
+  };
   BoxAuthComplete = (props) => {
     return (
-      <Grid container style={{height:'100%'}} direction='column' justify='center' alignItems='center' spacing={40}>
+      <Grid container style={{ height: '100%' }} direction='column' justify='center' alignItems='center' spacing={40}>
         <Grid item>
-          <h3>Almost Done!  Click button to save token.</h3>
+          <h3>Almost Done! Click button to save token.</h3>
           <h3>Then refresh previous screen</h3>
         </Grid>
         <Grid item>
-          <Button variant='contained' onClick={()=>this.boxSuccess(props)}>
+          <Button variant='contained' onClick={() => this.boxSuccess(props)}>
             Save
           </Button>
         </Grid>
       </Grid>
-    )
-  }
+    );
+  };
   boxSuccess = (props) => {
-    console.log('boxSuccess',props.match.params);
+    console.log('boxSuccess', props.match.params);
     localStorage.setItem('box_token', props.match.params.token);
     this.setState({ boxToken: props.match.params.token });
     this.boxAuthWindow.close();
-  }
+  };
 
   renderBoxAuth(classes) {
     return (
-        <Fragment>
-        <HeaderContainer toggleDrawer = {this.toggleDrawer} navOpen = {this.state.open} updateAccentColor={this.updateAccentColor}/>
+      <Fragment>
+        <HeaderContainer toggleDrawer={this.toggleDrawer} navOpen={this.state.open} updateAccentColor={this.updateAccentColor} />
         <Grid container className={classes.appBody}>
           <Drawer
             open={this.state.open}
@@ -347,29 +345,29 @@ class App extends Component {
           >
             <Navbar />
           </Drawer>
-          <Grid item xs={12} >
+          <Grid item xs={12}>
             <Switch>
               {/*when you get here, the currentMenu is loaded.*/}
-              <Route path="/boxauthcomplete/:token" component={this.BoxAuthComplete} />
-              <Route path="/" component={this.BoxAuth} />
+              <Route path='/boxauthcomplete/:token' component={this.BoxAuthComplete} />
+              <Route path='/' component={this.BoxAuth} />
             </Switch>
           </Grid>
         </Grid>
         <Footer />
-        </Fragment>
+      </Fragment>
     );
   }
 
   renderApp(classes) {
     // Test for user reload of page.  Now placed in renderApp
     if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
-      console.info( "User reloaded page" );
-      window.history.pushState('','',`/`);
+      console.info('User reloaded page');
+      window.history.pushState('', '', `/`);
     }
 
     return (
-        <Fragment>
-        <HeaderContainer toggleDrawer = {this.toggleDrawer} navOpen = {this.state.open} updateAccentColor={this.updateAccentColor}/>
+      <Fragment>
+        <HeaderContainer toggleDrawer={this.toggleDrawer} navOpen={this.state.open} updateAccentColor={this.updateAccentColor} />
         <Grid container className={classes.appBody}>
           <Drawer
             open={this.state.open}
@@ -381,50 +379,52 @@ class App extends Component {
           >
             <Navbar />
           </Drawer>
-          <Grid item xs={12} >
+          <Grid item xs={12}>
             <Switch>
               {/*when you get here, the currentMenu is loaded.*/}
-              <Route path="/volumeproject" component={ProjectCustomContainer} />
-              <Route path="/customproject" component={ProjectCustomContainer} />
-              <Route path="/inspection" component={InspectionContainer} />
-              <Route path="/search" component={SearchContainer} />
-              <Route path="/client" component={ClientContainer} />
-              <Route path="/city" component={CityContainer} />
-              <Route path="/subdivision" component={SubdivisionContainer} />
-              <Route path="/geotech" component={GeotechContainer} />
-              <Route path="/underconstruction" component={UnderConstruction} />
-              <Route path="/boxauth" component={UnderConstruction} />
+              <Route path='/volumeproject' component={ProjectCustomContainer} />
+              <Route path='/customproject' component={ProjectCustomContainer} />
+              <Route path='/inspection' component={InspectionContainer} />
+              <Route path='/search' component={SearchContainer} />
+              <Route path='/client' component={ClientContainer} />
+              <Route path='/city' component={CityContainer} />
+              <Route path='/subdivision' component={SubdivisionContainer} />
+              <Route path='/geotech' component={GeotechContainer} />
+              <Route path='/underconstruction' component={UnderConstruction} />
+              <Route path='/boxauth' component={UnderConstruction} />
 
-              <Route path="/boxauthcomplete/:token" render={(props) => {
-                return (
+              <Route
+                path='/boxauthcomplete/:token'
+                render={(props) => {
+                  return (
+                    <Grid container justify='center' alignItems='center'>
+                      <Grid item>
+                        <h1>Box is validated</h1>
+                        <Button onClick={() => this.boxSuccess(props)}>Close window and refresh previous screen</Button>
+                      </Grid>
+                    </Grid>
+                  );
+                }}
+              />
+              <Route
+                path='/dashboard'
+                render={() => (
                   <Grid container justify='center' alignItems='center'>
                     <Grid item>
-                      <h1>Box is validated</h1>
-                      <Button onClick={()=>this.boxSuccess(props)}>
-                        Close window and refresh previous screen
-                      </Button>
+                      <h1>The Dashboard</h1>
                     </Grid>
                   </Grid>
                 )}
-              } />
-              <Route path="/dashboard" render={() =>
-                <Grid container justify='center' alignItems='center'>
-                  <Grid item>
-                    <h1>The Dashboard</h1>
-                  </Grid>
-                </Grid>
-              } />
-
-              <Route path="/" render={() =>
-                <WelcomeContainer toggleWelcomeScreen={this.toggleWelcomeScreen} /> }
               />
+
+              <Route path='/' render={() => <WelcomeContainer toggleWelcomeScreen={this.toggleWelcomeScreen} />} />
 
               <Route render={() => <h1>NOT FOUND!</h1>} />
             </Switch>
           </Grid>
         </Grid>
         <Footer />
-        </Fragment>
+      </Fragment>
     );
   }
 
@@ -450,17 +450,16 @@ class App extends Component {
     // localStorage.removeItem('trello_token');
     // console.log('the trello function',window.Trello);
 
-
     // console.log('Render Apps.js',
-      // 'state:', this.state,
-      // 'cities', this.props.cities,
-      // 'designers:', this.props.designers,
-      // 'inspectors:', this.props.inspectors,
-      // 'revReasonLookup:', this.props.revReasonLookup,
-      // 'revRespLookup:', this.props.revRespLookup,
-      // 'preferences', this.props.preferences,
-      // 'organizations', this.props.organizations,
-      // 'session:', session
+    // 'state:', this.state,
+    // 'cities', this.props.cities,
+    // 'designers:', this.props.designers,
+    // 'inspectors:', this.props.inspectors,
+    // 'revReasonLookup:', this.props.revReasonLookup,
+    // 'revRespLookup:', this.props.revRespLookup,
+    // 'preferences', preferences
+    // 'organizations', this.props.organizations,
+    // 'session:', session
     // );
 
     // if (session.authInProgress) return null;
@@ -477,9 +476,11 @@ class App extends Component {
       return null;
     }
 
-    const accent = preferences.user.hasOwnProperty('accentColor')?preferences.user.accentColor:
-      preferences.system.hasOwnProperty('accentColor')?preferences.system.accentColor:
-      '#42a5f5';
+    const accent = preferences.user.hasOwnProperty('accentColor')
+      ? preferences.user.accentColor
+      : preferences.system.hasOwnProperty('accentColor')
+      ? preferences.system.accentColor
+      : '#42a5f5';
     // console.log('accent', accent, preferences);
     let theme = createMuiTheme({
       typography: {
@@ -505,7 +506,6 @@ class App extends Component {
           // main: blue[400],
           // main: '#f44336',
           // contrastText: '#000'
-
         },
 
         // primary: blueGrey,
@@ -529,10 +529,10 @@ class App extends Component {
         //   contrastText: '#000',
         // },
         error: {
-        light: "#e57373",
-        main: "#f44336",
-        dark: "#d32f2f",
-        contrastText: "#fff",
+          light: '#e57373',
+          main: '#f44336',
+          dark: '#d32f2f',
+          contrastText: '#fff',
         },
       },
       overrides: {
@@ -541,10 +541,10 @@ class App extends Component {
           root: {
             // minWidth: 80,
             '@media (min-width: 960px)': {
-              minWidth: 80
-            }
+              minWidth: 80,
+            },
           },
-        }
+        },
       },
     });
 
@@ -552,7 +552,7 @@ class App extends Component {
 
     if (session.authenticated) {
       console.log('session authenticated and settings loaded.  Render something');
-      const boxToken = localStorage.getItem('box_token')||false;
+      const boxToken = localStorage.getItem('box_token') || false;
 
       if (!this.state.trelloToken) {
         console.log('Requesting Trello authorization');
@@ -563,22 +563,20 @@ class App extends Component {
           name: 'CE Webtools',
           scope: {
             read: 'true',
-            write: 'true' },
+            write: 'true',
+          },
           expiration: 'never',
           success: this.trelloAuthSuccess,
-          error: this.trelloAuthFailure
+          error: this.trelloAuthFailure,
         });
-      // // Get Box Authorization
-      // } else if (!boxToken) {
-      //   console.log('box token not set')
-      //   whatToRender = this.renderBoxAuth(classes);
+        // // Get Box Authorization
+        // } else if (!boxToken) {
+        //   console.log('box token not set')
+        //   whatToRender = this.renderBoxAuth(classes);
       } else {
         whatToRender = this.renderApp(classes);
       }
-
-    }
-
-    else {
+    } else {
       console.log('display signup signin');
       whatToRender = this.renderSignUpSignIn();
     }
@@ -587,17 +585,14 @@ class App extends Component {
     return (
       <Fragment>
         <CssBaseline />
-          <MuiThemeProvider theme={theme}>
-            {
-              whatToRender
-            }
-            <AlertDialogContainer />
-          </MuiThemeProvider>
+        <MuiThemeProvider theme={theme}>
+          {whatToRender}
+          <AlertDialogContainer />
+        </MuiThemeProvider>
       </Fragment>
     );
 
     // return whatToRender2
   }
-
 }
 export default withStyles(styles)(App);

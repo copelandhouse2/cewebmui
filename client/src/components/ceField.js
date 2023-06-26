@@ -1013,7 +1013,7 @@ const textField2 = (props) => {
       // }
       onChange={props.handleChangeCustomized ? (e) => props.handleChangeCustomized(field, e) : handleChange(field.name, arrID, state, updateState)}
       multiline={field.data_type === 'multilongtext' ? true : false}
-      rows={field.data_type === 'multilongtext' ? 2 : 1}
+      rows={props.rows ? props.rows : field.data_type === 'multilongtext' ? 2 : 1}
       type={field.data_type === 'multilongtext' || field.data_type === 'longtext' ? 'text' : field.data_type}
       onKeyDown={(e) => {
         if (e.keyCode === 9 || e.keyCode === 13) {

@@ -314,21 +314,33 @@ function projectRevisionsLoaded(revisions) {
 
 // Action to save the revisions
 export function saveRevisions(project_id, revs) {
-  return function (dispatch) {
+  return function (dispatch, getState) {
     // console.log('saveRevisions', project_id, revs);
     fetch('/revisions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(revs),
-    }).then(() => dispatch(loadProjectRevisions(project_id)));
+    }).then(() => {
+      dispatch(loadProjectRevisions(project_id));
+      dispatch(loadRecents());
+      const { search } = getState();
+      // console.log('update find');
+      dispatch(loadFind(search.find, null));
+    });
   };
 }
 
 // Action to delete the Subdivision
 export function deleteRevision(project_id, id) {
-  return function (dispatch) {
+  return function (dispatch, getState) {
     fetch(`/revisions/${id}`, {
       method: 'DELETE',
-    }).then(() => dispatch(loadProjectRevisions(project_id)));
+    }).then(() => {
+      dispatch(loadProjectRevisions(project_id));
+      dispatch(loadRecents());
+      const { search } = getState();
+      // console.log('update find');
+      dispatch(loadFind(search.find, null));
+    });
   };
 }

@@ -51,9 +51,10 @@ class RevisionDialog extends Component {
   constructor(props) {
     super(props);
 
-    const today = date();
     // const today = new Date();
-
+    const today = date();
+    const { clients, parentState, preferences } = this.props;
+    // console.log('Rev Dialog, preferences', preferences.user);
     // console.log('scope', this.props.parentState.scope);
     let scopeLookup = this.props.parentState.scope.map((s) => {
       if (s.id !== null) {
@@ -63,14 +64,18 @@ class RevisionDialog extends Component {
     });
     scopeLookup.unshift({ code: -1, name: 'Project Details' });
     const altLookup = [{ name: 'scope', name_id: 'scope_id', lookup_list: scopeLookup }];
+    const curClient = clients.find((c) => c.id === parentState.client_id);
+    // console.log('cur client', curClient);
+    const recipients = `${curClient.main_contact_email},${curClient.billing_contact_email}`;
 
     this.state = {
       id: null,
-      job_number: this.props.parentState.job_number,
-      project_id: this.props.parentState.id,
+      job_number: parentState.job_number,
+      project_id: parentState.id,
       scope: null,
       scope_id: null,
-      curRevs: this.props.parentState.revisions, // current revision list.
+      scope_name: null,
+      curRevs: parentState.revisions, // current revision list.
       revision: null,
       revision_desc: null,
       revision_reason: null,
@@ -87,6 +92,9 @@ class RevisionDialog extends Component {
       created_by: this.props.session.id,
       last_updated_by: this.props.session.id,
       getNextRev: getNextRev,
+      emailSend: preferences.user.sendEmailDefault,
+      emailRecipients: recipients,
+      emailBody: 'Please reply with approval.',
       // selectedIndexes: []
     };
 
@@ -155,73 +163,101 @@ class RevisionDialog extends Component {
   // handles new (this.state) as well as existing rows.  Can handle an array.
   handleSave = (rowArr) => {
     // console.log('handleSave', rowArr);
-
+    const { parentState } = this.props;
     let noError = true;
     let revisions = [];
     let incrementRev = false;
-    rowArr.forEach((row) => {
-      if (row.id === null) incrementRev = true;
-      if (!row.scope && !row.scope_id) {
-        this.props.loadMessage(
-          {
-            ok: false,
-            status: 'Missing Data',
-            statusText: `Please fill in scope for Rev: ${row.revision}
-            , Scope: ${row.scope}, Reason: ${row.revision_reason}, Resp: ${row.revision_resp}`,
-          },
-          'ERROR'
-        );
-        noError = false;
-      } else if (!row.revision) {
-        this.props.loadMessage(
-          {
-            ok: false,
-            status: 'Missing Data',
-            statusText: `Please fill in a revision for Rev: ${row.revision}
-              , Scope: ${row.scope}, Reason: ${row.revision_reason}, Resp: ${row.revision_resp}`,
-          },
-          'ERROR'
-        );
-        noError = false;
-        // } else if (!row.revision_reason) {
-        //   this.props.loadMessage(
-        //     { ok:false,
-        //       status: 'Missing Data',
-        //       statusText: `Please fill in reason for Rev: ${row.revision}
-        //       , Scope: ${row.scope}, Reason: ${row.revision_reason}, Resp: ${row.revision_resp}`
-        //     }, "ERROR");
-        //   noError = false;
-        // } else if (!row.revision_resp) {
-        //   this.props.loadMessage(
-        //     { ok:false,
-        //       status: 'Missing Data',
-        //       statusText: `Please fill in responsibility for Rev: ${row.revision}
-        //       , Scope: ${row.scope}, Reason: ${row.revision_reason}, Resp: ${row.revision_resp}`
-        //     }, "ERROR");
-        //   noError = false;
-      } else {
-        revisions.push({
-          change: row.id ? 'change' : 'new',
-          id: row.id,
-          job_number: row.job_number,
-          project_id: row.project_id,
-          scope_id: row.scope_id,
-          scope: row.scope,
-          revision: row.revision,
-          revision_desc: row.revision_desc,
-          revision_reason: row.revision_reason,
-          revision_reason_code: row.revision_reason_code,
-          revision_resp: row.revision_resp,
-          revision_resp_code: row.revision_resp_code,
-          revision_price: row.revision_price,
-          designer: row.designer,
-          designer_id: row.designer_id,
-          alt_billing_party: row.alt_billing_party,
-          alt_billing_party_id: row.alt_billing_party_id,
-          rev_date: row.rev_date,
-        });
-      }
-    });
+    if (rowArr.length !== 0) {
+      rowArr.forEach((row) => {
+        if (row.id === null) incrementRev = true;
+        if (!row.scope && !row.scope_id) {
+          this.props.loadMessage(
+            {
+              ok: false,
+              status: 'Missing Data',
+              statusText: `Please fill in scope for Rev: ${row.revision}
+        , Scope: ${row.scope}, Reason: ${row.revision_reason}, Resp: ${row.revision_resp}`,
+            },
+            'ERROR'
+          );
+          noError = false;
+        } else if (!row.revision) {
+          this.props.loadMessage(
+            {
+              ok: false,
+              status: 'Missing Data',
+              statusText: `Please fill in a revision for Rev: ${row.revision}
+          , Scope: ${row.scope}, Reason: ${row.revision_reason}, Resp: ${row.revision_resp}`,
+            },
+            'ERROR'
+          );
+          noError = false;
+        } else if (!row.revision_reason) {
+          this.props.loadMessage(
+            {
+              ok: false,
+              status: 'Missing Data',
+              statusText: `Please fill in reason for Rev: ${row.revision}
+          , Scope: ${row.scope}, Reason: ${row.revision_reason}, Resp: ${row.revision_resp}`,
+            },
+            'ERROR'
+          );
+          noError = false;
+          // } else if (!row.revision_resp) {
+          //   this.props.loadMessage(
+          //     { ok:false,
+          //       status: 'Missing Data',
+          //       statusText: `Please fill in responsibility for Rev: ${row.revision}
+          //       , Scope: ${row.scope}, Reason: ${row.revision_reason}, Resp: ${row.revision_resp}`
+          //     }, "ERROR");
+          //   noError = false;
+        } else {
+          revisions.push({
+            change: row.id ? 'change' : 'new',
+            id: row.id,
+            scope_id: row.scope_id,
+            scope: row.scope,
+            scope_label: row.scope_label,
+            revision: row.revision,
+            revision_desc: row.revision_desc,
+            revision_reason: row.revision_reason,
+            revision_reason_code: row.revision_reason_code,
+            revision_resp: row.revision_resp,
+            revision_resp_code: row.revision_resp_code,
+            revision_price: row.revision_price,
+            designer: row.designer,
+            designer_id: row.designer_id,
+            alt_billing_party: row.alt_billing_party,
+            alt_billing_party_id: row.alt_billing_party_id,
+            rev_date: row.rev_date,
+            // email settings
+            emailSend: this.state.emailSend,
+            emailRecipients: this.state.emailRecipients,
+            emailBody: this.state.emailBody,
+            // project info
+            project_id: parentState.id,
+            job_number: parentState.job_number,
+            address1: parentState.address1,
+            name: parentState.name,
+            client_id: parentState.client_id,
+            client: parentState.client,
+            city: parentState.city,
+            subdivision: parentState.subdivision,
+          });
+        }
+      });
+    } else {
+      this.props.loadMessage(
+        {
+          ok: false,
+          status: 'Missing Data',
+          statusText: `Please select a scope item`,
+        },
+        'ERROR'
+      );
+      noError = false;
+    }
+
     if (noError) {
       // console.log('Saving... ', revisions);
       this.props.saveRevisions(this.state.project_id, revisions);
@@ -266,6 +302,7 @@ class RevisionDialog extends Component {
     // console.log('Rev Dialog Render:', 'dialog state', this.state);
     // console.log('Rev Dialog Render:', 'parent state', this.props.parentState);
     // console.log('Rev Dialog Render:', 'init state', this.initState);
+    // console.log('Rev Dialog Render:', 'Client info', this.props.currentClient, this.props.clients);
 
     return (
       <CeDialog
