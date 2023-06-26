@@ -1300,7 +1300,8 @@ export const saveRevisions = async (request, response) => {
     request.body.forEach((r, i) => {
       if (i === 0) {
         revBody = `
-          <h4>Rev ${r.revision} ${formatDate(r.rev_date, '/')} submitted for:</h4>
+          <h4>Rev ${r.revision} ${formatDate(r.rev_date, '/')}</h4>
+          <h4>submitted for:</h4>
           <p>Scope: ${r.scope_label}<br>
           Description: ${r.revision_desc}<br>
           Reason: ${r.revision_reason}<br>

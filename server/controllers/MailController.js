@@ -1,10 +1,11 @@
 import nodemailer from 'nodemailer';
+import { env } from '../envVars';
 
 let transporter = nodemailer.createTransport({
   service: 'Outlook365', // no need to set host or port etc.
   auth: {
-    user: 'projectmanager@copeland-eng.com',
-    pass: 'CEMar2016',
+    user: env.EMAIL_USER,
+    pass: env.EMAIL_PWD,
   },
 });
 
