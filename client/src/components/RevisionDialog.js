@@ -167,7 +167,17 @@ class RevisionDialog extends Component {
     let noError = true;
     let revisions = [];
     let incrementRev = false;
-    if (rowArr.length !== 0) {
+    if (this.state.emailSend && (!this.state.emailRecipients.includes('@') || !this.state.emailRecipients.includes('.'))) {
+      this.props.loadMessage(
+        {
+          ok: false,
+          status: 'Email Issue',
+          statusText: `"Send Email?" is checked but the recipients list is invalid.  Please correct`,
+        },
+        'ERROR'
+      );
+      noError = false;
+    } else if (rowArr.length !== 0) {
       rowArr.forEach((row) => {
         if (row.id === null) incrementRev = true;
         if (!row.scope && !row.scope_id) {

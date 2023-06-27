@@ -1323,6 +1323,12 @@ export const saveRevisions = async (request, response) => {
       <p>This email is to inform you that a revision to the previous design has been requested:</p>
       ${revBody}
       <p>${emailBody}</p>`, // html body
+      dsn: {
+        id: `${request.body[0].name} Rev: ${request.body[0].revision}`,
+        return: 'headers',
+        notify: ['failure', 'delay'],
+        recipient: 'cmcopeland@copeland-eng.com',
+      },
     };
     sendMail(mailOptions);
   }

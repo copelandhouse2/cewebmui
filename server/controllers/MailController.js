@@ -15,8 +15,8 @@ let transporter = nodemailer.createTransport({
 //   port: 587,
 //   secure: false,
 //   auth: {
-//     user: 'wcwood@copeland-eng.com',
-//     pass: 'iamgone@2016',
+//     user: {value},
+//     pass: {value},
 //   },
 //   tls: { ciphers: 'SSLv3' },
 // });
@@ -25,7 +25,7 @@ export const sendMail = (mailOptions) => {
   // if (!req.headers.authorization || req.headers.authorization.indexOf('Basic ') === -1) {
   //   return res.status(401).json({ message: 'Missing Authorization Header' });
   // }
-  console.log('In sendMail', transporter.options);
+  // console.log('In sendMail', transporter.options);
 
   transporter.sendMail(mailOptions, (err, res) => {
     if (err) {
