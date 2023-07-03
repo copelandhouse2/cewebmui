@@ -66,7 +66,10 @@ class RevisionDialog extends Component {
     const altLookup = [{ name: 'scope', name_id: 'scope_id', lookup_list: scopeLookup }];
     const curClient = clients.find((c) => c.id === parentState.client_id);
     // console.log('cur client', curClient);
-    const recipients = `${curClient.main_contact_email},${curClient.billing_contact_email}`;
+    const recipients =
+      curClient.main_contact_email && curClient.billing_contact_email
+        ? `${curClient.main_contact_email || ''},${curClient.billing_contact_email || ''}`
+        : `${curClient.main_contact_email || curClient.billing_contact_email || ''}`;
 
     this.state = {
       id: null,
