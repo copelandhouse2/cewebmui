@@ -1,4 +1,4 @@
-import { sql } from "../mysqldb";
+import { sql } from '../mysqldb';
 
 const sqlPromise = (SQLstmt, values) => {
   return new Promise((resolve, reject) => {
@@ -17,7 +17,6 @@ FROM geotechs
 WHERE 1=1`;
 
 const GeotechModel = {
-
   getGeos: () => {
     const SQLstmt = SQL_GEO_SELECT + ' order by name';
     const values = [];
@@ -27,7 +26,7 @@ const GeotechModel = {
   findGeos: (params) => {
     const { findString } = params;
     let values = [];
-    let findClause = ''
+    let findClause = '';
 
     // console.log('findGeos', findString);
     if (findString) {
@@ -35,21 +34,35 @@ const GeotechModel = {
       findClause = ` and CONCAT_WS( '~', code, name, firm_num
       , main_contact, main_contact_phone, main_contact_email)
        like ?`;
-      values.push('%'+findString+'%');
+      values.push('%' + findString + '%');
     }
 
-    let SQLstmt = SQL_GEO_SELECT
-    + findClause
-    + ' order by name';
+    let SQLstmt = SQL_GEO_SELECT + findClause + ' order by name';
 
     return sqlPromise(SQLstmt, values);
   },
 
   saveGeo: (geo) => {
-    const { id, geo_code, geotech, address1, city, state_prov, zipcode, firm_num
-    , main_contact, main_contact_phone, main_contact_email, secondary_contact
-    , secondary_contact_phone, secondary_contact_email, created_by, last_updated_by }
-    = geo;
+    // console.log('save geotech', geo);
+
+    const {
+      id,
+      geo_code,
+      geotech,
+      address1,
+      city,
+      state_prov,
+      zipcode,
+      firm_num,
+      main_contact,
+      main_contact_phone,
+      main_contact_email,
+      secondary_contact,
+      secondary_contact_phone,
+      secondary_contact_email,
+      created_by,
+      last_updated_by,
+    } = geo;
 
     const SQLstmt = `INSERT INTO geotechs (id, code, name, address, city, state, zipcode, firm_num
     , main_contact, main_contact_phone, main_contact_email, secondary_contact
@@ -60,14 +73,38 @@ const GeotechModel = {
     , main_contact_email = ?, secondary_contact = ?, secondary_contact_phone = ?
     , secondary_contact_email = ?, last_updated_by = ?`;
 
-    const values = [id, geo_code, geotech, address1, city, state_prov, zipcode, firm_num
-    , main_contact, main_contact_phone, main_contact_email, secondary_contact
-    , secondary_contact_phone, secondary_contact_email, created_by
-    , last_updated_by
+    const values = [
+      id,
+      geo_code,
+      geotech,
+      address1,
+      city,
+      state_prov,
+      zipcode,
+      firm_num,
+      main_contact,
+      main_contact_phone,
+      main_contact_email,
+      secondary_contact,
+      secondary_contact_phone,
+      secondary_contact_email,
+      created_by,
+      last_updated_by,
 
-    , geo_code, geotech, address1, city, state_prov, zipcode, firm_num
-    , main_contact, main_contact_phone, main_contact_email, secondary_contact
-    , secondary_contact_phone, secondary_contact_email, last_updated_by
+      geo_code,
+      geotech,
+      address1,
+      city,
+      state_prov,
+      zipcode,
+      firm_num,
+      main_contact,
+      main_contact_phone,
+      main_contact_email,
+      secondary_contact,
+      secondary_contact_phone,
+      secondary_contact_email,
+      last_updated_by,
     ];
 
     // console.log('Model addGeos: SQL', SQLstmt);
@@ -77,25 +114,25 @@ const GeotechModel = {
   },
 
   deleteGeo: (id) => {
-    const SQLstmt = "DELETE from geotechs where id = ?";
+    const SQLstmt = 'DELETE from geotechs where id = ?';
     const values = [id];
     return sqlPromise(SQLstmt, values);
   },
 
   getMasterData: (ID) => {
-    let geoClause = ''
+    let geoClause = '';
     let values = [];
     if (ID) {
       geoClause = ' and geotech_id = ?';
       values.push(ID);
-    };
+    }
 
-    const SQLstmt = `SELECT id, geotech_id, pi, fill, emc, eme, ymc, yme, notes, beam_depth
+    const SQLstmt =
+      `SELECT id, geotech_id, pi, fill, emc, eme, ymc, yme, notes, beam_depth
       , beam_width, beam_spacing, ext_beam_cables, int_beam_cables, bearing_capacity
       , penetration
       from geotech_data
-      where report_id IS NULL`
-      + geoClause;
+      where report_id IS NULL` + geoClause;
 
     return sqlPromise(SQLstmt, values);
   },
@@ -109,7 +146,6 @@ const GeotechModel = {
     const values = [ID];
     return sqlPromise(SQLstmt, values);
   },
-
 };
 
 export default GeotechModel;

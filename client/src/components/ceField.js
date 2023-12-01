@@ -180,7 +180,7 @@ const handleChange =
   (name, arrID, state, updateState, clear = false) =>
   (event) => {
     // name === 'jobNumUnlock'?console.log('event target', event.target):null;
-    // console.log('ceField handleChange', name, state);
+    // console.log('ceField handleChange', name, arrID, state, event.target.value, clear);
     // console.log('handleChange', name, event.target.value);
 
     if (arrID || arrID === 0) {
@@ -230,6 +230,7 @@ const handleChange =
           //       this.searchForExisting('LOT')
           //     }}
           //   ) :
+          // console.log('acout to update state');
           updateState({ [name]: clear ? null : event.target.value });
     }
   };
@@ -486,6 +487,10 @@ const findProjectHelp = () => {
         <li>cusdrain - Drain for custom projects</li>
         <li>volother - Other scope for volume projects</li>
         <li>cusother - Other scope for custom projects</li>
+        <li>inspcommon - Inspections</li>
+        <li>inspcsi - Copeland Structural Investigation</li>
+        <li>insp3rd - Third Party Inspection</li>
+        <li>cpr - Construction Phase Revision</li>
       </Typography>
     </div>
   );

@@ -2,6 +2,14 @@
 
 Copeland Engineering Web Tools.
 
+## v2.1.14 11/30/2023
+
+- Bug: Clients Maint: Last updated by column not getting updated. Fixed
+- Bug: Cities Maint: Last updated by column not getting updated. Fixed
+- Bug: Subdivisions Maint: Last updated by column not getting updated. Fixed
+- Bug: Trello description repeating info on update. Code now considering new Trello formatting. Fixed.
+- Enh: User can add a new scope and create a revision at the same time.
+
 ## v2.1.13 6/13/2023
 
 - Enh: Revisions Screen: Email section with fields: Send Email?, Recipients, Closing Body

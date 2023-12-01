@@ -1,12 +1,24 @@
 import express from 'express';
 // import { list, show, create, update, delete } from '../controllers/AddressController';
-import { list, show, create, remove, listPending, listSearch, commit, listDups,
-  getHistory, getRevisions, saveRevisions, removeRevision } from '../controllers/ProjectController';
+import {
+  list,
+  show,
+  create,
+  remove,
+  listPending,
+  listSearch,
+  commit,
+  listDups,
+  getHistory,
+  getRevisions,
+  saveRevisions,
+  removeRevision,
+  saveNewScopesWithRevs,
+} from '../controllers/ProjectController';
 const router = express.Router();
 
 //Getting the data... the entire list
-router.get(`/projects/:pending/:dateRange/:enteredBy/:jobNumber/:address/:requestedBy/:client/:city/:subdivision/:status`
-  , list);
+router.get(`/projects/:pending/:dateRange/:enteredBy/:jobNumber/:address/:requestedBy/:client/:city/:subdivision/:status`, list);
 
 //Getting the projects... those pending for the user
 router.get('/pending/:userID', listPending);
@@ -16,8 +28,7 @@ router.get('/recents/:ver/:enteredBy/:filter', listSearch);
 
 //Searching for projects with the v2.0+ software
 router.get('/find/:ver/:find', listSearch);
-router.get(`/find/:ver/:jobNumber/:address/:dateRange/:client/:subdivision/:city/:enteredBy/:requestedBy/:status/:lastUpdatedBy`
-  , listSearch);
+router.get(`/find/:ver/:jobNumber/:address/:dateRange/:client/:subdivision/:city/:enteredBy/:requestedBy/:status/:lastUpdatedBy`, listSearch);
 
 //Getting the data... just one entity
 router.get('/projects/:id', show);
@@ -34,13 +45,14 @@ router.put('/commits/:userID/:create', commit);
 router.put('/commits/:userID/:create/:v2/:trelloToken', commit);
 
 //Getting the data... the entire list
-router.get(`/dups/:test/:address/:subdivision/:phase/:section/:block/:lot`
-  , listDups);
+router.get(`/dups/:test/:address/:subdivision/:phase/:section/:block/:lot`, listDups);
 
 // revisions calls
 router.get('/projecthistory/:id', getHistory);
 router.get('/revisions/:id', getRevisions);
 router.post('/revisions', saveRevisions); //handles add, update, delete.
 router.delete('/revisions/:id', removeRevision);
+
+router.post('/scoperev', saveNewScopesWithRevs);
 
 export default router;

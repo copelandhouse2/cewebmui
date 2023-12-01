@@ -1,4 +1,4 @@
-import { sql } from "../mysqldb";
+import { sql } from '../mysqldb';
 
 const sqlPromise = (SQLstmt, values) => {
   return new Promise((resolve, reject) => {
@@ -18,7 +18,6 @@ FROM organizations
 WHERE 1=1`;
 
 const OrganizationModel = {
-
   getOrgs: () => {
     const SQLstmt = SQL_ORG_SELECT + ' order by name';
     const values = [];
@@ -28,7 +27,7 @@ const OrganizationModel = {
   findOrgs: (params) => {
     const { findString } = params;
     let values = [];
-    let findClause = ''
+    let findClause = '';
 
     // console.log('findGeos', findString);
     if (findString) {
@@ -36,22 +35,36 @@ const OrganizationModel = {
       findClause = ` and CONCAT_WS( '~', code, name, firm_num
       , main_contact, main_contact_phone, main_contact_email, org_type)
        like ?`;
-      values.push('%'+findString+'%');
+      values.push('%' + findString + '%');
     }
 
-    let SQLstmt = SQL_ORG_SELECT
-    + findClause
-    + ' order by name';
+    let SQLstmt = SQL_ORG_SELECT + findClause + ' order by name';
 
     return sqlPromise(SQLstmt, values);
   },
 
   saveOrg: (org) => {
-    const { id, org_code, organization, address1, city, state_prov, zipcode, firm_num
-    , main_contact, main_contact_phone, main_contact_email, secondary_contact
-    , secondary_contact_phone, secondary_contact_email, org_type
-    , created_by, last_updated_by }
-    = org;
+    // console.log('save org', org);
+
+    const {
+      id,
+      org_code,
+      organization,
+      address1,
+      city,
+      state_prov,
+      zipcode,
+      firm_num,
+      main_contact,
+      main_contact_phone,
+      main_contact_email,
+      secondary_contact,
+      secondary_contact_phone,
+      secondary_contact_email,
+      org_type,
+      created_by,
+      last_updated_by,
+    } = org;
 
     const SQLstmt = `INSERT INTO organizations (id, code, name, address, city, state, zipcode, firm_num
     , main_contact, main_contact_phone, main_contact_email, secondary_contact
@@ -62,14 +75,40 @@ const OrganizationModel = {
     , main_contact_email = ?, secondary_contact = ?, secondary_contact_phone = ?
     , secondary_contact_email = ?, org_type = ?, last_updated_by = ?`;
 
-    const values = [id, org_code, organization, address1, city, state_prov, zipcode, firm_num
-    , main_contact, main_contact_phone, main_contact_email, secondary_contact
-    , secondary_contact_phone, secondary_contact_email, org_type, created_by
-    , last_updated_by
+    const values = [
+      id,
+      org_code,
+      organization,
+      address1,
+      city,
+      state_prov,
+      zipcode,
+      firm_num,
+      main_contact,
+      main_contact_phone,
+      main_contact_email,
+      secondary_contact,
+      secondary_contact_phone,
+      secondary_contact_email,
+      org_type,
+      created_by,
+      last_updated_by,
 
-    , org_code, organization, address1, city, state_prov, zipcode, firm_num
-    , main_contact, main_contact_phone, main_contact_email, secondary_contact
-    , secondary_contact_phone, secondary_contact_email, org_type, last_updated_by
+      org_code,
+      organization,
+      address1,
+      city,
+      state_prov,
+      zipcode,
+      firm_num,
+      main_contact,
+      main_contact_phone,
+      main_contact_email,
+      secondary_contact,
+      secondary_contact_phone,
+      secondary_contact_email,
+      org_type,
+      last_updated_by,
     ];
 
     // console.log('Model addGeos: SQL', SQLstmt);
@@ -79,26 +118,26 @@ const OrganizationModel = {
   },
 
   deleteOrg: (id) => {
-    const SQLstmt = "DELETE from organizations where id = ?";
+    const SQLstmt = 'DELETE from organizations where id = ?';
     const values = [id];
     return sqlPromise(SQLstmt, values);
   },
 
-// Geotech related queries
+  // Geotech related queries
   getMasterData: (ID) => {
-    let geoClause = ''
+    let geoClause = '';
     let values = [];
     if (ID) {
       geoClause = ' and geotech_id = ?';
       values.push(ID);
-    };
+    }
 
-    const SQLstmt = `SELECT id, geotech_id, pi, fill, emc, eme, ymc, yme, notes, beam_depth
+    const SQLstmt =
+      `SELECT id, geotech_id, pi, fill, emc, eme, ymc, yme, notes, beam_depth
       , beam_width, beam_spacing, ext_beam_cables, int_beam_cables, bearing_capacity
       , penetration
       from geotech_data
-      where report_id IS NULL`
-      + geoClause;
+      where report_id IS NULL` + geoClause;
 
     return sqlPromise(SQLstmt, values);
   },
@@ -112,7 +151,6 @@ const OrganizationModel = {
     const values = [ID];
     return sqlPromise(SQLstmt, values);
   },
-
 };
 
 export default OrganizationModel;

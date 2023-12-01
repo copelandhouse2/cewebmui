@@ -476,7 +476,7 @@ class singleView extends Component {
   };
 
   updateState = (updatedValues) => {
-    // console.log('updateState', updatedValues);
+    console.log('updateState', updatedValues);
     this.setState(updatedValues);
   };
 
@@ -521,7 +521,7 @@ class singleView extends Component {
   };
 
   handleListChange = (selected, field, arrID) => {
-    console.log('in handleListChange:', field.name, selected, arrID);
+    // console.log('in handleListChange:', field.name, selected, arrID);
 
     if (arrID || arrID === 0) {
       switch (field.name) {
@@ -844,7 +844,7 @@ class singleView extends Component {
       return <Redirect to={this.state.redirectUrl} />;
     }
 
-    // console.log('ceViews Render', 'state:', this.state);
+    // console.log('ceViews Render', 'state:', this.state, 'currentProject:', currentProject);
     // let currentView = [];
     if (currentViews.children) {
       this.currentView = currentViews.children.filter((view) => view.category === this.props.VIEW); // array of subviews (sections) that make up whole view.
@@ -931,6 +931,8 @@ class singleView extends Component {
             toggleScopeDialog={this.toggleScopeDialog}
             currentScope={this.state.scope}
             assignScope={this.assignScope}
+            parentState={this.state}
+            updateParentState={this.updateState}
           />
         )}
         {this.state.openCreateDialog && (

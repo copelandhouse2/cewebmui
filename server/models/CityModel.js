@@ -69,6 +69,8 @@ const CityModel = {
   // This function handles BOTH ADD and UPDATE.
   // Basically an UPSERT feature.
   addCity: function (city, callback) {
+    console.log('addCity', city);
+
     const SQLstmt =
       'insert into cities' +
       ' (id, city, state_prov, country, created_by, last_updated_by)' +
@@ -86,7 +88,6 @@ const CityModel = {
       city.country,
       city.last_updated_by,
     ];
-    // console.log("City Obj", city);
     // console.log("SQL", SQLstmt)
     return sql().query(SQLstmt, values, callback);
   },

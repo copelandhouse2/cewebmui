@@ -1,4 +1,4 @@
-import { loadMessage } from './index';
+import { loadMessage, currentProjectLoaded } from './index';
 /* ADDRESSES ACTIONS */
 // Loading the list of addresses
 export function loadProjects(search) {
@@ -342,5 +342,32 @@ export function deleteRevision(project_id, id) {
       // console.log('update find');
       dispatch(loadFind(search.find, null));
     });
+  };
+}
+
+// New Action to save the scope when first selected
+// AND assign revision to it.
+export function saveScopeRev(scopes) {
+  return function (dispatch, getState) {
+    fetch('/scoperev', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(scopes),
+    })
+      .then((resp) => {
+        return resp.json();
+      })
+      .then((updatedProject) => {
+        // console.log('saveScopeRev', updatedProject);
+        // in the case of avff.currentProjectLoaded, we are not changing projects and validating
+        // the classification to reload the volume or custom views.  So no need to call
+        // parent function avff.updateProject
+        dispatch(currentProjectLoaded(updatedProject));
+        dispatch(loadProjectRevisions(scopes.project_id));
+        dispatch(loadRecents());
+        const { search } = getState();
+        // console.log('update find');
+        dispatch(loadFind(search.find, null));
+      });
   };
 }

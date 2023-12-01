@@ -134,6 +134,7 @@ const ClientModel = {
       last_updated_by,
     } = client;
 
+    // console.log('client', client);
     const SQLstmt = `INSERT into clients
       (id, name, full_name, billing_address1, billing_address2, billing_city
       , billing_state_prov, billing_zipcode, billing_country

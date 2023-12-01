@@ -136,17 +136,38 @@ export const listDups = async (request, response) => {
   }
 };
 
-// function to get details of one address
-export const show = (request, response) => {
-  ProjectModel.getProjectByID(request.params.id, function (err, rows, fields) {
-    if (!err) {
-      // console.log('Data retrieved... Project by ID!');
-      return response.json(rows[0]);
+// function to get details of one project
+export const show = async (request, response) => {
+  try {
+    const p = await ProjectModel.getProjectByID(request.params.id);
+    let project = { ...p[0] };
+    const scope = await ProjectModel.getScopeItems(request.params.id);
+    const revisions = await ProjectModel.getRevisions(request.params.id);
+
+    Object.assign(project, { scope: scope, revisions: revisions });
+    // project = {...p[0], scope: scope, categoryID: request.body.categoryID};
+    // console.log('list SEARCHed projects with scope:', projectData);
+    if (request.params.localFuncCall) {
+      return project;
     } else {
-      // console.log('Project: Error while performing Query.');
+      return response.json(project);
+    }
+  } catch (err) {
+    if (request.params.localFuncCall) {
+      return err;
+    } else {
       return response.json(err);
     }
-  });
+  }
+  // ProjectModel.getProjectByID(request.params.id, function (err, rows, fields) {
+  //   if (!err) {
+  //     // console.log('Data retrieved... Project by ID!');
+  //     return response.json(rows[0]);
+  //   } else {
+  //     // console.log('Project: Error while performing Query.');
+  //     return response.json(err);
+  //   }
+  // });
 };
 
 // function to create a address
@@ -165,7 +186,7 @@ export const create = async (request, response) => {
   console.log(`Classification: ${request.body.classification}   Scope: ${sList.toString()}`);
   console.log('*************************************************');
 
-  console.log('in ProjectController.create', request.body);
+  // console.log('in ProjectController.create', request.body);
   var errors = [];
   var addRecordResponse;
 
@@ -569,11 +590,46 @@ export const commit = (request, response) => {
       if (trello_card_id || trello_list_id) {
         // trello card to be updated / created.
 
-        const enteredDesc = !currentDesc
-          ? ''
-          : currentDesc.search('__________') > -1
-          ? currentDesc.slice(currentDesc.search('__________') + 10)
-          : currentDesc;
+        // const enteredDesc = !currentDesc
+        //   ? ''
+        //   : currentDesc.search('__________') > -1
+        //   ? currentDesc.slice(currentDesc.search('__________') + 10)
+        //   : currentDesc;
+        let enteredDesc = '';
+        if (currentDesc) {
+          const pos1 = currentDesc.lastIndexOf('__________');
+          const pos2 = currentDesc.lastIndexOf('protected.*\n\n---');
+          const pos3 = currentDesc.lastIndexOf('protected._\n\n---');
+          // const maxPos = Math.max(pos1, pos2, pos3);
+          let maxPos = -1;
+          let theLength = -1;
+          if (pos1 > pos2 && pos1 > pos3) {
+            maxPos = pos1;
+            theLength = 10;
+          } else if (pos2 > pos1 && pos2 > pos3) {
+            maxPos = pos2;
+            theLength = 16;
+          } else if (pos3 > pos1 && pos3 > pos2) {
+            maxPos = pos3;
+            theLength = 16;
+          }
+          // const enteredDesc = !currentDesc
+          //   ? ''
+          //   : currentDesc.lastIndexOf('__________') > -1
+          //   ? currentDesc.slice(currentDesc.lastIndexOf('__________') + 10)
+          //   : currentDesc.lastIndexOf('protected.*\n\n---') > -1
+          //   ? currentDesc.slice(currentDesc.lastIndexOf('protected.*\n\n---') + 16)
+          //   : currentDesc;
+          enteredDesc = maxPos > -1 ? currentDesc.slice(maxPos + theLength) : currentDesc;
+          // console.log({
+          //   position1: currentDesc.lastIndexOf('__________'),
+          //   position2: currentDesc.lastIndexOf('protected.*\n\n---'),
+          //   position3: currentDesc.lastIndexOf('protected._\n\n---'),
+          //   currentDesc,
+          //   enteredDesc,
+          // });
+        }
+
         // Defining the title (or name) of the card.
         const subStr = subdivision ? ' - ' + subdivision : '';
         const cityStr = city ? ' - ' + city : '';
@@ -603,7 +659,7 @@ export const commit = (request, response) => {
         const opt = additional_options ? `\n\n**ADDL OPTIONS:**\n${additional_options}` : '';
         const com = notes ? `\n\n**NOTES:**\n${notes}` : '';
         // const end = `\n\n*Do not erase line below.  Used by webtools.  All information above line is auto-generated.  Anything below line is for your use and will be protected from overwrite.*\n__________`;
-        const end = `\n\n*Do not erase line below. Used by webtools. Anything below line is protected.*\n__________`;
+        const end = `\n\n*Do not erase line below. Used by webtools. Anything below line is protected.*\n\n---`;
         // const cardDesc = trello_list === 'CUSTOM QUEUE'? `${rev}${soil}${opt}${com}${end}${enteredDesc}`: `**${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**\n\n${rev}${soil}${opt}${com}${end}${enteredDesc}`;
         // const cardDesc = `**${pt} ${ele}${gs}${ms}${gt}${cp}${bw}, PI=${pi}**\n\n${rev}${soil}${desc}${opt}${com}${end}${enteredDesc}`;
 
@@ -1359,4 +1415,70 @@ export const removeRevision = async (request, response) => {
     // console.log('MySQL Update record Error: ', `${err.errno}:${err.code} - ${err.sqlMessage}`);
     return response.json(err);
   }
+};
+
+export const saveNewScopesWithRevs = async (req, resp) => {
+  // console.log('saveNewScopesWithRevs', req.body);
+  var errors = [];
+
+  if (req.body.project_id) {
+    // console.log('In the scope section.', request.body.scope);
+    let scopePromises = [];
+    req.body.scope.forEach((scope, i) => {
+      // only get the new ones added.
+      if (!scope.id) {
+        scope.project_id = req.body.project_id;
+        // console.log('what is scope?', scope);
+        scopePromises.push(ProjectModel.addProjectScope(scope));
+      }
+      // console.log('Scope: Adding / Adjusting: ', item.id, item.scope_id, item.delete, item.name);
+    });
+
+    try {
+      var scopeResponses = await Promise.all(scopePromises);
+      // console.log('scope records created / updated: ', scopeResponses);
+    } catch (err) {
+      console.log('Scope record create error:', err);
+      errors.push(err);
+    }
+
+    if (req.body.includeRev && !errors.length) {
+      let revPromises = [];
+      scopeResponses.forEach((scope, i) => {
+        console.log('Scope: Adding / Adjusting: ', scope);
+        if (scope.insertId) {
+          const theRev = Object.assign({}, req.body, { scope_id: scope.insertId });
+          // console.log('theRev', theRev);
+          revPromises.push(ProjectModel.addRevisions(theRev));
+        }
+      });
+
+      try {
+        const revResponses = await Promise.all(revPromises);
+        // console.log('scope records created / updated: ', scopeResponses);
+      } catch (err) {
+        console.log('Rev record create error:', err);
+        errors.push(err);
+      }
+    }
+  }
+
+  let updProject = null;
+  try {
+    const showReq = { params: { id: req.body.project_id, localFuncCall: true } };
+    const showResp = {};
+
+    updProject = await show(showReq, showResp);
+    // console.log('Updated Project', updProject);
+  } catch (err) {
+    console.log('Proj record get error:', err);
+    errors.push(err);
+  }
+
+  if (errors.length) {
+    console.log('Done with error(s)', errors);
+    return resp.json(errors);
+  }
+  console.log('Scope(s) and Revision(s) saved');
+  return resp.json(updProject);
 };

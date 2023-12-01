@@ -55,6 +55,7 @@ class ClientDetails extends Component {
       billing_contact_email: null,
       billing_contact_phone: null,
       reporting: {},
+      last_updated_by: props.session.id,
     };
 
     this.state = {
@@ -190,9 +191,7 @@ class ClientDetails extends Component {
 
     const { fGroup, classes } = this.props;
 
-    // console.log('*** Client Details Render:',
-    // 'state:', this.state,
-    // );
+    // console.log('*** Client Details Render:', 'state:', this.state);
     // console.log(fieldGroup);
     // console.log('groups', fGroup);
     const fId = fGroup.children.find((field) => field.name === 'id');
@@ -329,13 +328,11 @@ class ClientDetails extends Component {
             />
 
             <Grid item container xs={12} spacing={16}>
-              <Grid xs={12} style={{ marginTop: 10, marginBottom: 20 }}>
+              <Grid item xs={12} style={{ marginTop: 10, marginBottom: 20 }}>
                 <Divider />
               </Grid>
               <Grid item xs={3}>
-                <Typography color='black' variant='title'>
-                  Main Contact
-                </Typography>
+                <Typography variant='h6'>Main Contact</Typography>
               </Grid>
               <Field2Container
                 key={fMainContact.id}
@@ -364,7 +361,7 @@ class ClientDetails extends Component {
             </Grid>
             <Grid item container xs={12} spacing={16}>
               <Grid item xs={3}>
-                <Typography variant='title'>Billing Contact</Typography>
+                <Typography variant='h6'>Billing Contact</Typography>
               </Grid>
               <Field2Container
                 key={fBillingContact.id}

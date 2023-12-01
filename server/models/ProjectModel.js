@@ -664,8 +664,8 @@ const ProjectModel = {
 
     const cable_company_id = null,
       insp_trello_card_id = null;
-    console.log('new values', architect_contact);
 
+    // console.log('new values', architect_contact);
     // console.log("dwelling_type", dwelling_type);
     // console.log("job_number", job_number);
     // console.log("city", city);
@@ -860,7 +860,7 @@ const ProjectModel = {
       // console.log('Model addProject: in the callback version')
       return sql().query(SQLstmt, values, callback);
     } else {
-      console.log('Model addProject: in the promise version');
+      // console.log('Model addProject: in the promise version');
       return sqlPromise(SQLstmt, values);
     }
   },
