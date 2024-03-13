@@ -11,50 +11,61 @@ export const authenticate = async (request, response) => {
     const trelloCall = await TrelloModel.authenticate(request.params.token);
     // const trelloCall = await TrelloModel.authenticate('12345');
 
-    TrelloModel.setGlobals('AUTH',request.params.token,trelloCall);
+    TrelloModel.setGlobals('AUTH', request.params.token, trelloCall);
     // const boardData = await getTrelloSeed();
     // TrelloModel.setGlobals('SEED',boardData);
-    console.log("Trello is connected ... \n\n", request.params.token);
+    console.log('Trello is connected ... \n\n', request.params.token);
 
     return response.json('Trello Connection Success');
-
   } catch (err) {
-    console.log("Error connecting to Trello ... \n\n", err);
+    console.log('authenticate: Error connecting to Trello ... \n\n', err);
     return response.json(err);
   }
-
-}
+};
 
 export const getTrelloSeed = async (request, response) => {
   try {
     // console.log('trello Seed', request.params.token);
 
-    const boards = await TrelloModel.get(request.params.token,'1/members/me/boards');
-    const boardPromises = boards.map( (board, id) => {
-      let uri = `1/boards/${board.id}/?lists=all&customFields=true`;
-      // console.log('2nd then list map: uri', uri);
-      return TrelloModel.get(request.params.token, uri);
+    // node-trello "get" is now failing due to Trello update on get reqeusts.
+    // Updated to use node-fetch, as shown as examples in Trello API doc.
+
+    const uri = '1/members/me/boards';
+    const opt = `filter=open`; // grabs only open boards.
+    const boards = await TrelloModel.tFetch(request.params.token, uri, opt);
+
+    const boardPromises = boards.map((board, id) => {
+      const uri = `1/boards/${board.id}`;
+      const opt = `fields=name,shortUrl&lists=open&customFields=true`; // gets only id, name, shortUrl, lists, customFields
+      return TrelloModel.tFetch(request.params.token, uri, opt);
     });
     const boardInfo = await Promise.all(boardPromises);
+    // console.log('getTrelloSeed boards', boardInfo);
 
-    TrelloModel.setGlobals('SEED',request.params.token,boardInfo);
+    TrelloModel.setGlobals('SEED', request.params.token, boardInfo);
 
     console.log('Retrieved Trello seed data');
     // return boardInfo;
     return response.json(boardInfo);
-
   } catch (err) {
-    console.log("Error connecting to Trello ... \n\n", err);
+    console.log('getTrelloSeed: Error connecting to Trello ... \n\n', err);
     return response.json(err);
   }
+};
 
-}
-
-export const getCard = async (request, response=null) => {
+export const getCard = async (request, response = null) => {
   try {
     // console.log('trello card',request.params);
 
-    const card = await TrelloModel.get(request.params.token,`1/cards/${request.params.cardID}?board=true&board_fields=name&list=true&checklists=all`);
+    const uri = `1/cards/${request.params.cardID}`;
+    const opt = `board=true&board_fields=name&list=true&checklists=all`;
+    const card = await TrelloModel.tFetch(request.params.token, uri, opt);
+
+    // node-trello "get" is now failing due to Trello update on get reqeusts.
+    // const card = await TrelloModel.get(
+    //   request.params.token,
+    //   `1/cards/${request.params.cardID}?board=true&board_fields=name&list=true&checklists=all`
+    // );
     // console.log('Retrieved card info');
 
     // return response.json(card);
@@ -64,9 +75,8 @@ export const getCard = async (request, response=null) => {
     } else {
       return card;
     }
-
   } catch (err) {
-    console.log("Failed retrieving card", err);
+    console.log('Failed retrieving card', err);
     // return response.json(err);
 
     if (response) {
@@ -75,8 +85,7 @@ export const getCard = async (request, response=null) => {
       return err;
     }
   }
-
-}
+};
 // function to get the trello list of boards.
 // export let tBoards = null;
 // export const TrelloSeed = {

@@ -2,6 +2,10 @@
 
 Copeland Engineering Web Tools.
 
+## v2.1.15 03/13/2024
+
+- Bug: Trello released security changes to REST api get request (no body allowed). This broke node-trello. For Trello get requests, now using node-fetch. Fixed
+
 ## v2.1.14 11/30/2023
 
 - Bug: Clients Maint: Last updated by column not getting updated. Fixed

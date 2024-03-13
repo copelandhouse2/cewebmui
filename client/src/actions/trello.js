@@ -14,51 +14,49 @@
 export function initiateTrello(trelloToken) {
   return function (dispatch) {
     fetch(`/trello/authenticate/${trelloToken}`)
-    .then( (response) => {
-      return response.json();
-    }).then((authString) => {
-      // console.info('authenticate', authString);
-      dispatch(trelloTokenLoaded(trelloToken));
-      dispatch(getTrelloSeed());
-    });
+      .then((response) => {
+        return response.json();
+      })
+      .then((authString) => {
+        // console.info('authenticate', authString);
+        dispatch(trelloTokenLoaded(trelloToken));
+        dispatch(getTrelloSeed());
+      });
     // console.log('authenticating trello')
   };
 }
 
 function trelloTokenLoaded(trelloToken) {
   return {
-    type: "TRELLO_TOKEN_LOADED",
-    value: trelloToken
+    type: 'TRELLO_TOKEN_LOADED',
+    value: trelloToken,
   };
 }
-
 
 export function getTrelloSeed() {
   return function (dispatch, getState) {
     const { trelloToken } = getState();
     fetch(`/trello/seed/${trelloToken}`)
-    .then( (response) => {
-      return response.json();
-    }).then((trelloSeed) => {
-      // console.info('trello seed', trelloSeed);
-      dispatch(trelloSeedLoaded(trelloSeed));
-    });
+      .then((response) => {
+        return response.json();
+      })
+      .then((trelloSeed) => {
+        // console.info('trello seed', trelloSeed[0]);
+        dispatch(trelloSeedLoaded(trelloSeed));
+      });
   };
 }
 
 function trelloSeedLoaded(trelloSeed) {
   return {
-    type: "TRELLO_SEED_LOADED",
-    value: trelloSeed
+    type: 'TRELLO_SEED_LOADED',
+    value: trelloSeed,
   };
 }
 
 // var card_fake = 123;  // for testing errors
 export function getTrelloCard(token, card_id) {
-  return (
-    fetch(`/trello/card/${token}/${card_id}`)
-    .then((res)=>{
-        return res.json();
-    })
-  )
+  return fetch(`/trello/card/${token}/${card_id}`).then((res) => {
+    return res.json();
+  });
 }

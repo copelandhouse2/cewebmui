@@ -1,9 +1,10 @@
-import Trello from 'node-trello';
-// import { trello } from "../controllers/trello";
 import { env } from '../envVars';
+import Trello from 'node-trello';
+import fetch from 'node-fetch';
+// import { trello } from "../controllers/trello";
 
-const key = env.REACT_APP_TRELLO_KEY;
-const token = env.REACT_APP_TRELLO_TOKEN;
+const KEY = env.REACT_APP_TRELLO_KEY;
+const TOKEN = env.REACT_APP_TRELLO_TOKEN;
 // import { promisify } from 'util';
 export let trello = {};
 export let tBoards = null;
@@ -12,13 +13,12 @@ export let theToken;
 
 export const TrelloModel = {
   authenticate: (userToken) => {
-    theToken = userToken?userToken:token;
-    return new Trello(key, theToken);
+    theToken = userToken ? userToken : TOKEN;
+    return new Trello(KEY, theToken);
   },
 
   setGlobals: (key, token, value) => {
-
-    switch(key) {
+    switch (key) {
       case 'AUTH':
         trello[token] = value;
         console.log('setGlobals AUTH value', trello);
@@ -40,6 +40,19 @@ export const TrelloModel = {
         // console.log('resolve for TrelloModel.get promise: ', response);
         resolve(response);
       }); // 1st Trello call
+    });
+  },
+
+  tFetch: (token, uri, opt = null) => {
+    // const trello = new Trello(key, token);
+    const fullUrl = `https://api.trello.com/${uri}?${opt}&key=${KEY}&token=${token}`;
+    return new Promise((resolve, reject) => {
+      fetch(fullUrl, {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+      })
+        .then((res) => resolve(res.json()))
+        .catch((err) => reject(err.json()));
     });
   },
 
@@ -83,22 +96,22 @@ export const TrelloSeed = {
     // console.log('In getBoards, before get call');
 
     TrelloModel.get('1/members/me/boards')
-      .then( response => {
-        let boards = response.map( board => {
-          return {id: board.id, name: board.name}
+      .then((response) => {
+        let boards = response.map((board) => {
+          return { id: board.id, name: board.name };
         });
         // console.log('in getBoards.get promise', boards);
         return boards;
         // callback(null, tBoards);
-      })  // this .then is building a Promise array across the map function.
+      }) // this .then is building a Promise array across the map function.
       .then((boards) => {
         // console.log('2nd then', boards);
-        let promisesLists = boards.map( (board, id) => {
+        let promisesLists = boards.map((board, id) => {
           let uri = `1/boards/${board.id}/lists`;
           // console.log('2nd then list map: uri', uri);
           return TrelloModel.get(uri);
         });
-        let promisesCustomFields = boards.map( (board, id) => {
+        let promisesCustomFields = boards.map((board, id) => {
           let uri = `1/boards/${board.id}/customFields`;
           // console.log('2nd then customFields map: uri', uri);
           return TrelloModel.get(uri);
@@ -113,7 +126,7 @@ export const TrelloSeed = {
         // console.log('the results of promise.all', results);
         console.log(results[0]);
         const boards = results[0];
-        results.shift();  //Removes boards array (1st element).  Now results.length = 2x board.length.
+        results.shift(); //Removes boards array (1st element).  Now results.length = 2x board.length.
         // console.log('Promise.all the board array', boards, boards.length);
         // console.log('Promise.all results array', results, results.length);
 
@@ -122,15 +135,16 @@ export const TrelloSeed = {
         // results lists: element 0 to board.length-1.
         // results customFields: board.length to 2x board.length -1
         // Ex. when i=0 for Board 0: Lists is results[0], customFields is results[0+board.length]
-        for (let i=0; i < boards.length; i++) {
-          let listResults = results[i].map(list => {return {id: list.id, name: list.name}});
+        for (let i = 0; i < boards.length; i++) {
+          let listResults = results[i].map((list) => {
+            return { id: list.id, name: list.name };
+          });
           // Building global tBoards array.  Stores board id, name, lists, and custom fields.
-          console.log(boards[i], listResults, results[i+boards.length]);
-          tBoards.push({ ...boards[i], lists: [...listResults], customFields: [...results[i+boards.length]] });
+          console.log(boards[i], listResults, results[i + boards.length]);
+          tBoards.push({ ...boards[i], lists: [...listResults], customFields: [...results[i + boards.length]] });
         }
         // console.log('tboards element:',tBoards);
         console.log('Retrieved Trello seed data');
-
       })
 
       .catch((err) => {

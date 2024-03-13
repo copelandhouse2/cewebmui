@@ -574,7 +574,11 @@ export const commit = (request, response) => {
       if (trello_card_id) {
         try {
           console.log('pulling values for the card', trello_card_id, request.params.trelloToken);
-          const cardInfo = await TrelloModel.get(request.params.trelloToken, `/1/cards/${trello_card_id}`);
+          // node-trello "get" is now failing due to Trello update on get reqeusts.
+          // Updated to use node-fetch, as shown as examples in Trello API doc.
+          // const cardInfo = await TrelloModel.get(request.params.trelloToken, `/1/cards/${trello_card_id}`);
+          const cardInfo = await TrelloModel.tFetch(request.params.trelloToken, `/1/cards/${trello_card_id}`);
+
           currentDesc = cardInfo.desc;
           // console.log('Pulled description', currentDesc);
           // console.log('Pulled description');
@@ -761,11 +765,17 @@ export const commit = (request, response) => {
             // console.log('Trello Update custom Fields');
             // const me = await TrelloModel.get(`/1/members/me`);
             // console.log('me', me);
-            const currentBoard = await TrelloModel.get(request.params.trelloToken, `/1/cards/${tCardID}/board`);
-            const currentBoardInfo = await TrelloModel.get(request.params.trelloToken, `1/boards/${currentBoard.id}/?customFields=true`);
+
+            // node-trello "get" is now failing due to Trello update on get reqeusts.
+            // Updated to use node-fetch, as shown as examples in Trello API doc.
+            // const currentBoard = await TrelloModel.get(request.params.trelloToken, `/1/cards/${tCardID}/board`);
+            // const currentBoardInfo = await TrelloModel.get(request.params.trelloToken, `1/boards/${currentBoard.id}/?customFields=true`);
+            const currentBoard = await TrelloModel.tFetch(request.params.trelloToken, `/1/cards/${tCardID}/board`);
+            const currentBoardInfo = await TrelloModel.tFetch(request.params.trelloToken, `1/boards/${currentBoard.id}`, `customFields=true`);
             // console.log('the current board', currentBoardInfo);
             // const custFields = tBoards.find(board => board.id === currentBoard.id).customFields;
             // console.log('custFields: ', custFields);
+
             let value = {},
               tUrl = '',
               idValue = '';
